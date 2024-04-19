@@ -1,0 +1,347 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+    string sgdDp = ViewData["SGDDP"].ToString();
+    string rateDp = ViewData["RateDP"].ToString();
+}
+
+<div class="row">
+    <h5 class="col-sm-offset-3">Inventory View</h5>
+    @using (Html.BeginForm("PendingPacking", "TaskList", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-pending-packing" }))
+    {
+        <div class="form-group">
+            @Html.Label("Collection Date *: ", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                <div class="input-group" style="float:left;width:50%;">
+                    <span class="input-group-addon" style="border-radius:0;">
+                        <i class="icon wb-calendar" aria-hidden="true"></i>
+                    </span>
+                    @Html.TextBox("CollectionDate", ViewData["CollectionDate"].ToString(), new { @class = "form-control" })
+                </div>
+				<div class="input-group" style="float:left;width:50%;">
+					<span class="input-group-addon" style="border-radius:0;border-left-width:0px;">
+						<i class="icon wb-time" aria-hidden="true"></i>
+					</span>
+					@Html.TextBox("CollectionTime", ViewData["CollectionTime"].ToString(), new { @class = "form-control", @maxlength="40" })
+					@*@Html.DropDownList("CollectionTime", (SelectList)ViewData["CollectionTimeDropdown"], new { @class = "form-control", @data_plugin = "selectpicker" })*@
+				</div>
+            </div>
+            <div class="col-sm-8 col-sm-offset-3">
+                <div class="col-sm-6">
+                    @Html.ValidationMessage("CollectionDate")
+                </div>
+                <div class="col-sm-6">
+                    @Html.ValidationMessage("CollectionTime")
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Bag Number:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("Bag_Number", ViewData["BagNumber"].ToString(), new { @class = "form-control" })
+                @Html.ValidationMessage("Bag_Number")
+            </div>
+        </div>
+        if (ViewData["BankTransfer"] != null)
+        {
+            <div class="form-group">
+                @Html.Label("Bank Reference Number:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-8">
+                    @Html.TextBox("Bank_Reference_Number", ViewData["BankReferenceNumber"].ToString(), new { @class = "form-control" })
+                    @Html.ValidationMessage("Bank_Reference_Number")
+                    <span class="help-block"><i class="wb-info-circle"></i> Blank field indicates that bank transfer has not been done.</span>
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            @Html.Label("Customer Remarks:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextArea("Customer_Remarks", ViewData["CustomerRemarks"].ToString(), new { @class = "form-control", @rows = "4", @disabled = "disabled" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Sale Remarks:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextArea("Sale_Remarks", ViewData["SaleRemarks"].ToString(), new { @class = "form-control", @rows = "4" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Transaction Type:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("Sale_TransactionType", ViewData["SaleTransactionType"].ToString().Replace("Deposit", "Swap"), new { @class = "form-control", @rows = "4", @disabled = "disabled" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-8">
+                <a href="@Url.Action("GenerateSealingCert", "Sale", new { @id = ViewData["SaleId"].ToString() })" class="btn btn-success">Generate Sealing Cert </a>
+            </div>
+        </div>
+        
+        List<SaleTransaction> transactions = (List<SaleTransaction>)ViewData["SaleTransactionsData"];
+
+        if (transactions.Count > 0)
+        {
+            string transactionType = ViewData["SaleTransactionType"].ToString();
+            string backgroundColor = "";
+
+            if (transactionType == "Buy" || transactionType == "Deposit")
+            {
+                backgroundColor = "#ffeaea";
+            }
+            else
+            {
+                backgroundColor = "#bcd8f1";
+            }
+            <div class="well" style="background-color: @backgroundColor;">
+                @foreach (SaleTransaction transaction in transactions)
+                {
+                    <h5>Transaction ID @ViewData["MemoID"].ToString()-@transaction.TransactionID</h5>
+                    <div class="form-group">
+                        <div class="col-sm-12 table-responsive">
+                            <table class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width:50px">ID</th>
+                                        <th style="min-width:50px">Type</th>
+                                        <th style="min-width:50px">Currency</th>
+                                        <th style="min-width:100px">Payment Mode</th>
+                                        <th style="min-width:150px">Amount (Local)</th>
+                                        <th style="min-width:150px">Amount (Foreign)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>@transaction.TransactionID</td>
+                                        <td>@transaction.TransactionType</td>
+                                        <td>@transaction.Products.CurrencyCode</td>
+                                        <td>@transaction.PaymentMode</td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-addon">$</span>
+                                                @Html.TextBox("Transaction_AmountLocal_" + transaction.ID, transaction.AmountLocal.ToString(sgdDp), new { @class = "form-control", @disabled = "disabled" })
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-addon">@transaction.Products.Symbol</span>
+                                                @Html.TextBox("Transaction_AmountForeign_" + transaction.ID, transaction.AmountForeign.ToString(sgdDp), new { @class = "form-control", @disabled = "disabled" })
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table id="denomination-table-@transaction.ID" class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            Denomination
+                                            @if ((transaction.Sales.TransactionType == "Encashment" && transaction.TransactionType == "Sell") || (transaction.Sales.TransactionType == "Deposit" && transaction.TransactionType == "Buy") || transaction.Sales.TransactionType == "Buy" || transaction.Sales.TransactionType == "Sell" || transaction.Sales.TransactionType == "Cross Currency")
+                                            {
+                                                if (transaction.SaleTransactionDenominations.Count == 0)
+                                                {
+                                                    <button type="button" class="btn btn-xs btn-icon btn-round btn-success" data-toggle="tooltip" data-original-title="Add Product Denominations" onclick="AddProductDenominations(@transaction.ID, @transaction.CurrencyId)"><i class="icon wb-plus"></i></button>
+                                                }
+                                            }
+                                        </th>
+                                        <th>Pieces</th>
+                                        <th>Amt (@transaction.Products.CurrencyCode)</th>
+                                        <th style="display:none">Amt (SGD)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        decimal totalCalculatedForeign = 0;
+                                        
+                                        foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+                                        {
+                                            totalCalculatedForeign +=denomination.AmountForeign;
+                                            
+                                            if (denomination.Denomination == 0)
+                                            {
+                                                <tr class="tr-transaction-denomination">
+                                                    <td>coins @Html.ValidationMessage("Denomination_Value_Denomination_" + transaction.ID + "_" + denomination.ID) @Html.Hidden("Denomination_Value_Denomination_" + transaction.ID + "_" + denomination.ID, denomination.Denomination)</td>
+                                                    <td>-</td>
+                                                    <td>@Html.TextBox("Denomination_Value_AmountForeign_" + transaction.ID + "_" + denomination.ID, denomination.AmountForeign.ToString(sgdDp), new { @class = "form-control denomination-coins-foreign", @onchange = "CoinsChange(" + transaction.ID + "," + denomination.ID + ")" }) @Html.ValidationMessage("Denomination_Value_AmountForeign_" + transaction.ID + "_" + denomination.ID)</td>
+                                                </tr>
+                                            }
+                                            else
+                                            {
+                                                <tr class="tr-transaction-denomination">
+                                                    <td>@denomination.Denomination @Html.ValidationMessage("Denomination_Value_Denomination_" + transaction.ID + "_" + denomination.ID) @Html.Hidden("Denomination_Value_Denomination_" + transaction.ID + "_" + denomination.ID, denomination.Denomination)</td>
+                                                    <td>@Html.TextBox("Denomination_Value_Pieces_" + transaction.ID + "_" + denomination.ID, denomination.Pieces.ToString("#,##0"), new { @class = "form-control", @onchange = "PiecesChange(" + transaction.ID + "," + denomination.ID + ")" }) @Html.ValidationMessage("Denomination_Value_Pieces_" + transaction.ID + "_" + denomination.ID)</td>
+                                                    <td><div id="denomination-amount-foreign-@transaction.ID-@denomination.ID">@denomination.AmountForeign.ToString(sgdDp)</div>@Html.ValidationMessage("Denomination_Value_AmountForeign_" + transaction.ID + "_" + denomination.ID) @Html.Hidden("Denomination_Value_AmountForeign_" + transaction.ID + "_" + denomination.ID, denomination.AmountForeign, new { @class = "denomination-amount-foreign" })</td>
+                                                </tr>
+                                            }
+                                        }
+                                    }
+                                    <tr>
+                                        <td colspan="2" class="text-right">Total Calculated</td>
+                                        <td><div id="denomination-total-calculated-foreign-symbol-@transaction.ID" style="float:left;">@transaction.Products.Symbol</div><div id="denomination-total-calculated-foreign-@transaction.ID">@totalCalculatedForeign.ToString(sgdDp)</div>@Html.ValidationMessage("Denomination_Total_Calculated_Foreign_" + transaction.ID) @Html.Hidden("Denomination_Total_Calculated_Foreign_" + transaction.ID, totalCalculatedForeign)</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-right">Remaining</td>
+                                        <td><div id="denomination-remaining-foreign-symbol-@transaction.ID" style="float:left;">@transaction.Products.Symbol</div><div id="denomination-remaining-foreign-@transaction.ID">@((transaction.AmountForeign - totalCalculatedForeign).ToString(sgdDp))</div>@Html.Hidden("Denomination_Remaining_Foreign_" + transaction.ID, (transaction.AmountForeign - totalCalculatedForeign))</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-right">Total Order</td>
+                                        <td><div id="denomination-total-order-foreign-symbol-@transaction.ID" style="float:left;">@transaction.Products.Symbol</div><div id="denomination-total-order-foreign-@transaction.ID">@transaction.AmountForeign.ToString(sgdDp)</div>@Html.Hidden("Denomination_Total_Order_Foreign_" + transaction.ID, transaction.AmountForeign)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+    <div class="col-sm-12" style="text-align: center;">
+        <button class="btn btn-primary btn-outline" type="button" onclick="SubmitForm('form-pending-packing')">Approve</button>
+    </div>
+</div>
+
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#update-sale-memoid").html("Update Sales Record - " + "@ViewData["MemoID"].ToString()");
+
+        $("button[data-toggle=tooltip]").tooltip();
+
+        $("#CollectionDate").datepicker({
+            autoclose: true,
+            format: "dd/mm/yyyy DD"
+        });
+    })
+
+    function CoinsChange(transactionId, denominationId) {
+        var amount = $("#Denomination_Value_AmountForeign_" + transactionId + "_" + denominationId).val().replace(/,/g, "");
+        var url = "@Url.Action("ValidateAmount")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { amount: amount, transactionId: transactionId },
+            success: function (data) {
+                data = JSON.parse(data);
+                if (data.result == "true") {
+                    $("#Denomination_Value_AmountForeign_" + transactionId + "_" + denominationId).val(data.msg);
+                    CalculateDenominationForeign(transactionId);
+                }
+                else {
+                    alertify.alert(data.msg);
+                }
+            }
+        });
+    }
+
+    function PiecesChange(transactionId, denominationId) {
+        var pieces = $("#Denomination_Value_Pieces_" + transactionId + "_" + denominationId).val().replace(/,/g, "");
+        var url = "@Url.Action("ValidatePieces")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { pieces: pieces },
+            success: function (data) {
+                data = JSON.parse(data);
+                if (data.result == "true") {
+                    $("#Denomination_Value_Pieces_" + transactionId + "_" + denominationId).val(data.msg);
+
+                    pieces = $("#Denomination_Value_Pieces_" + transactionId + "_" + denominationId).val().replace(/,/g, "");
+                    url = "@Url.Action("CalculateDenominationAmountForeign")";
+                    $.ajax({
+                        type: "GET",
+                        url: url,
+                        data: { pieces: pieces, transactionId: transactionId, denominationId: denominationId },
+                        success: function (data) {
+                            data = JSON.parse(data);
+
+                            $("#denomination-amount-foreign-" + transactionId + "-" + denominationId)[0].innerHTML = data.msg;
+                            $("#Denomination_Value_AmountForeign_" + transactionId + "_" + denominationId).val(data.msg.replace(/,/g, ""));
+
+                            CoinsChange(transactionId, denominationId);
+                        }
+                    });
+                }
+                else {
+                    alertify.alert(data.msg);
+                }
+            }
+        })
+
+    }
+
+    function CalculateDenominationForeign(transactionId) {
+        var total = 0;
+        $("#denomination-table-" + transactionId + " .denomination-coins-foreign").each(function () {
+            if (this.value != "") {
+                total += parseFloat(this.value.replace(/,/g, ""));
+            }
+        });
+
+        $("#denomination-table-" + transactionId + " .denomination-amount-foreign").each(function () {
+            total += parseFloat(this.value.replace(/,/g, ""));
+        });
+
+        var url = "@Url.Action("ValidateAmount")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { amount: total, transactionId: transactionId },
+            success: function (data) {
+                data = JSON.parse(data);
+
+                $("#denomination-total-calculated-foreign-" + transactionId)[0].innerHTML = data.msg;
+                $("#Denomination_Total_Calculated_Foreign_" + transactionId).val(data.msg.replace(/,/g, ""));
+
+                CalculateDenominationRemainingForeign(transactionId);
+            }
+        });
+    }
+
+    function CalculateDenominationRemainingForeign(rowId) {
+        var totalCalculatedForeign = parseFloat($("#Denomination_Total_Calculated_Foreign_" + rowId).val().replace(/,/g, ""));
+        var totalOrderForeign = parseFloat($("#Denomination_Total_Order_Foreign_" + rowId).val().replace(/,/g, ""));
+
+        var remainingForeign = totalOrderForeign - totalCalculatedForeign;
+
+        var url = "@Url.Action("FormatAmount")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { amount: remainingForeign, dp: 2 },
+            success: function (data) {
+                data = JSON.parse(data);
+
+                $("#denomination-remaining-foreign-" + rowId)[0].innerHTML = data.Amount;
+                $("#Denomination_Remaining_Foreign_" + rowId).val(data.Amount.replace(/,/g, ""));
+            }
+        });
+    }
+
+    function AddProductDenominations(transactionId, productId) {
+        var url = "@Url.Action("AddProductDenominations")";
+
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: url,
+            data: { tid: transactionId, pid: productId },
+            success: function (data) {
+                data = JSON.parse(data);
+
+                if (data.Result) {
+                    $("#denomination-table-" + transactionId + " tbody").html(data.View);
+                }
+                else {
+                    alertify.alert(data.ErrorMessage);
+                }
+            },
+            error: function (e) {
+                console.log(e);
+                alertify.alert("An error occured while retrieving product denominations!");
+            }
+        });
+    }
+</script>

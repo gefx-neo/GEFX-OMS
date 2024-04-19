@@ -1,0 +1,263 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Sales Data";
+    ViewBag.ExportData = "active open";
+    string sgdFormat = ViewData["SGDDP"].ToString();
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportSaleExcel", new { @fromDate = ViewData["FromDate"].ToString(), @toDate = ViewData["ToDate"].ToString() })" class="btn btn-primary" style="float:left;margin-right:10px;">Download to Excel</a>
+            <a href="@Url.Action("Options")" class="btn btn-default" style="float:left;">Back</a>
+            @using (Html.BeginForm("Sale", "ExportData", FormMethod.Post, new { @id = "page-size" }))
+            {
+                <div class="col-md-3 pull-right">
+                    @Html.DropDownList("PageSize", (SelectList)ViewData["PageSizeDropdown"], new { @class = "form-control" })
+                </div>
+                @Html.Label("Page Size:", new { @class = "col-md-3 pull-right", @style = "top:6px;text-align:right;" })
+            }
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 40px;">#</th>
+                                <th style="min-width: 140px;">Memo ID</th>
+                                <th style="min-width: 200px;">Customer/Company Name</th>
+                                <th style="min-width: 200px;">Address</th>
+                                <th style="min-width: 120px;">Postal Code</th>
+                                <th style="min-width: 120px;">Contact No.</th>
+                                <th style="min-width: 120px;">Customer Appointment</th>
+                                <th style="min-width: 120px;">Registration No. (Place of Registration) /<br />IC/Passport No. (Nationality)</th>
+                                <th style="min-width: 100px;">Issue Date</th>
+                                <th style="min-width: 200px;">Collection Date/Time</th>
+                                <th style="min-width: 150px;">Created By</th>
+                                <th style="min-width: 100px;">Urgent</th>
+                                <th style="min-width: 150px;">Bag No</th>
+                                <th style="min-width: 120px;">Transaction Type</th>
+                                <th style="min-width: 300px;">Local Payment Mode</th>
+                                <th style="min-width: 300px;">Remarks</th>
+                                <th style="min-width: 120px;">Total Amount Local</th>
+                                <th style="min-width: 120px;">Total Amount Foreign</th>
+                                <th style="min-width: 150px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<Sale> sales = (IPagedList<Sale>)ViewData["Sale"];
+
+                                if (sales.Count > 0)
+                                {
+                                    int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                    int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                    int i = 1;
+
+                                    foreach (Sale sale in sales)
+                                    {
+                                        string hightlightCls = "";
+                                        if (sale.Urgent == "Urgent")
+                                        {
+                                            hightlightCls = "bg-red-100";
+                                        }
+                                        <tr class="@hightlightCls">
+                                            <td>@(i + page * pageSize)</td>
+                                            <td>@sale.MemoID <a href="javascript:void(0)" onclick="ViewTransactions(@sale.ID)" style="text-decoration: none;" data-toggle="tooltip" data-original-title="View Transactions">[+]</a></td>
+                                            <td>
+                                                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                {
+                                                    @sale.CustomerParticulars.Company_RegisteredName
+                                                }
+                                                else
+                                                {
+                                                    @sale.CustomerParticulars.Natural_Name
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                {
+                                                    @sale.CustomerParticulars.Company_BusinessAddress1 <br />@sale.CustomerParticulars.Company_BusinessAddress2
+                                                }
+                                                else
+                                                {
+                                                    @sale.CustomerParticulars.Natural_PermanentAddress
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                {
+                                                    @sale.CustomerParticulars.Company_PostalCode
+                                                }
+                                                else
+                                                {
+                                                    @("-")
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                {
+                                                    @sale.CustomerParticulars.Company_TelNo
+                                                }
+                                                else
+                                                {
+                                                    @sale.CustomerParticulars.Natural_ContactNoM
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (sale.CustomerParticulars.AppointmentOfStaffs.Count > 0)
+                                                {
+                                                    @sale.CustomerParticulars.AppointmentOfStaffs.FirstOrDefault().FullName
+                                                }
+                                                else
+                                                {
+                                                    @("-")
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                {
+                                                    @(sale.CustomerParticulars.Company_RegistrationNo + " (" + sale.CustomerParticulars.Company_PlaceOfRegistration + ")")
+                                                }
+                                                else
+                                                {
+                                                    @(sale.CustomerParticulars.Natural_ICPassportNo + " (" + sale.CustomerParticulars.Natural_Nationality + ")")
+                                                }
+                                            </td>
+                                            <td>@sale.IssueDate.ToString("dd/MM/yyyy")</td>
+                                            <td>@Convert.ToDateTime(sale.CollectionDate).ToString("dd/MM/yyyy") - @sale.CollectionTime</td>
+                                            <td>@sale.Users.Name</td>
+                                            <td>@sale.Urgent</td>
+                                            <td>@sale.BagNo</td>
+                                            <td>@sale.TransactionType</td>
+                                            <td>
+                                                @{
+                                                    if (!string.IsNullOrEmpty(sale.LocalPaymentMode))
+                                                    {
+                                                        string[] paymentMode = sale.LocalPaymentMode.Split(',');
+
+                                                        foreach (string mode in paymentMode)
+                                                        {
+                                                            string pm = "";
+
+                                                            if (mode == "Cash")
+                                                            {
+                                                                pm = mode + " [Amount: SGD$" + Convert.ToDecimal(sale.CashAmount).ToString(sgdFormat) + "]";
+                                                            }
+                                                            else if(mode == "Cheque 1")
+                                                            {
+                                                                if (!string.IsNullOrEmpty(sale.Cheque1No))
+                                                                {
+                                                                    pm = mode + " [Cheque 1 No.:" + sale.Cheque1No + ", Cheque 1 Amount: SGD$" + Convert.ToDecimal(sale.Cheque1Amount).ToString(sgdFormat) + "]";
+                                                                }
+                                                                else
+                                                                {
+                                                                    pm = mode + " [Cheque 1 No.: - , Cheque 1 Amount: SGD$" + Convert.ToDecimal(sale.Cheque1Amount).ToString(sgdFormat) + "]";
+                                                                }
+                                                            }
+                                                            else if (mode == "Cheque 2")
+                                                            {
+                                                                if (!string.IsNullOrEmpty(sale.Cheque2No))
+                                                                {
+                                                                    pm = mode + " [Cheque 2 No.:" + sale.Cheque2No + ", Cheque 2 Amount: SGD$" + Convert.ToDecimal(sale.Cheque2Amount).ToString(sgdFormat) + "]";
+                                                                }
+                                                                else
+                                                                {
+                                                                    pm = mode + " [Cheque 2 No.: - , Cheque 2 Amount: SGD$" + Convert.ToDecimal(sale.Cheque2Amount).ToString(sgdFormat) + "]";
+                                                                }
+                                                            }
+                                                            else if (mode == "Cheque 3")
+                                                            {
+                                                                if (!string.IsNullOrEmpty(sale.Cheque3No))
+                                                                {
+                                                                    pm = mode + " [Cheque 3 No.:" + sale.Cheque3No + ", Cheque 3 Amount: SGD$" + Convert.ToDecimal(sale.Cheque3Amount).ToString(sgdFormat) + "]";
+                                                                }
+                                                                else
+                                                                {
+                                                                    pm = mode + " [Cheque 3 No.: - , Cheque 3 Amount: SGD$" + Convert.ToDecimal(sale.Cheque3Amount).ToString(sgdFormat) + "]";
+                                                                }
+                                                            }
+                                                            else if (mode == "Bank Transfer")
+                                                            {
+                                                                if (!string.IsNullOrEmpty(sale.BankTransferNo))
+                                                                {
+                                                                    pm = mode + " [Bank Transfer No.:" + sale.BankTransferNo + ", Bank Transfer Amount: SGD$" + Convert.ToDecimal(sale.BankTransferAmount).ToString(sgdFormat) + "]";
+                                                                }
+                                                                else
+                                                                {
+                                                                    pm = mode + " [Bank Transfer No.: - , Bank Transfer Amount: SGD$" + Convert.ToDecimal(sale.BankTransferAmount).ToString(sgdFormat) + "]";
+                                                                }
+                                                            }
+                                                            @pm<br />
+                                                        }
+                                                    }
+                                                }
+                                            </td>
+                                            <td>@sale.Remarks</td>
+                                            <td>@sale.TotalAmountLocal.ToString(sgdFormat)</td>
+                                            <td>@sale.TotalAmountForeign.ToString(sgdFormat)</td>
+                                            <td>@sale.Status</td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="14" class="no-records-found">--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["Sale"], page => Url.Action("/Sale", "ExportData", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sale-transaction-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label"></h4>
+            </div>
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#PageSize").on("change", function () {
+        $("#page-size").submit();
+    });
+
+    function ViewTransactions(id) {
+        var url = "@Url.Action("ViewTransactions", "Sale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+    }
+</script>

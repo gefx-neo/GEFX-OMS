@@ -1,0 +1,75 @@
+﻿@using DataAccess.POCO
+
+@{
+	Layout = null;
+	ViewBag.Title = ViewData["SiteName"].ToString();
+}
+<div class="panel">
+	<div class="panel-body container-fluid">
+		<div class="row margin-top-15">
+			<div><h2>Approval History</h2></div>
+			<div class="col-xlg-12 col-md-12">
+				
+				<div class="table-responsive">
+					<table class="table table-hover table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th style="min-width: 120px;">Approval Username</th>
+								<th style="min-width: 120px;">Status</th>
+								<th style="min-width: 120px;">Action DateTime</th>
+								<th style="min-width: 120px;">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							@{
+								IList<ApprovalHistorys> approvalHistory = (IList<ApprovalHistorys>)ViewData["ApprovalHistory"];
+
+								if (approvalHistory != null)
+								{
+									if (approvalHistory.Count > 0)
+									{
+										int i = 1;
+
+										foreach (ApprovalHistorys log in approvalHistory)
+										{
+											<tr>
+												<td>@i</td>
+												<td>@log.ApprovalUserName</td>
+												<td>@log.Action</td>
+												<td>@log.DateTimeAction.ToString("dd/MM/yyyy HH:mm:ss")</td>
+												<td>@log.Description</td>
+											</tr>
+											i++;
+										}
+									}
+									else
+									{
+										<tr>
+											<td class="no-records-found" colspan="4">No record to display</td>
+										</tr>
+									}
+								}
+								else
+								{
+									<tr>
+										<td class="no-records-found" colspan="4">No record to display</td>
+									</tr>
+								}
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@if (TempData["Result"] != null)
+{
+	<script>
+        $(document).ready(function () {
+            alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+	</script>
+}

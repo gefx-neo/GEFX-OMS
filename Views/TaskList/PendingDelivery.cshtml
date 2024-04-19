@@ -1,0 +1,102 @@
+﻿@{
+    Layout = null;
+}
+<div class="row">
+    <h5 class="col-sm-offset-3">Ops Exec View</h5>
+    @using (Html.BeginForm("PendingDelivery", "TaskList", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-pending-delivery" }))
+    {
+        <div class="form-group">
+            @Html.Label("Upload Confirmation:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                <div class="input-group input-group-file">
+                    <input type="text" class="form-control" readonly>
+                    <span class="input-group-btn">
+                        <span class="btn btn-primary btn-file">
+                            <i class="icon wb-upload" aria-hidden="true"></i>
+                            <input id="upload-confirmation-uploader" type="file" multiple>
+                            @Html.Hidden("DeliveryConfirmation")
+                        </span>
+                    </span>
+                </div>
+                @Html.ValidationMessage("DeliveryConfirmation")
+                <div id="upload-confirmation-files">
+                </div>
+            </div>
+        </div>
+    }
+    <div class="col-sm-12" style="text-align: center;">
+        <button class="btn btn-primary btn-outline" type="button" onclick="SubmitForm('form-pending-delivery')">Approve</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#update-sale-memoid").html("Update Sales Record - " + "@ViewData["MemoID"].ToString()");
+    })
+
+    $("#upload-confirmation-uploader").on("change", function (e) {
+        var $file = this,
+        $formData = new FormData();
+        if ($file.files.length > 0) {
+            for (var i = 0; i < $file.files.length; i++) {
+                $formData.append("file-" + i, $file.files[i]);
+            }
+        }
+        $.ajax({
+            url: "@Url.Action("FileUploader")",
+            type: "POST",
+            data: $formData,
+            dataType: "json",
+            contentType: false,
+            processData: false,
+            success: function ($data) {
+                if ($data.result == "success") {
+                    AppendUploadConfirmationFiles($data.msg);
+                }
+                else {
+                    alertify.alert($data.msg);
+                }
+            },
+            error: function (e) {
+                alertify.alert("An error occured while uploading files!");
+            }
+        });
+    });
+
+    function AppendUploadConfirmationFiles(data) {
+        var files = data.split(",");
+        for (var i = 0; i < files.length; i++) {
+            var $div = $("<div class='margin-top-10 small'></div>");
+            //var $a = $("<a href='@Url.Content("~/FileUploads/Temp/")" + files[i] + "' target='_blank'>" + files[i] + "</a>");
+            var $button = $("<button type='button' class='btn btn-pure btn-xs btn-danger icon wb-close' onclick='RemoveUploadConfirmationFile(this)'></button>");
+
+			var $a = document.createElement('a');
+			var linkText = document.createTextNode(files[i]);
+			$a.appendChild(linkText);
+			$a.title = files[i];
+			$a.href = "@Url.Content("~/FileUploads/Temp/")" + files[i];
+			$a.target = "_blank";
+			document.body.appendChild($a);
+
+            $("#upload-confirmation-files").append($div.append($a).append($button));
+        }
+        var uploadedFiles = $("#DeliveryConfirmation").val();
+        if (uploadedFiles != "") {
+            uploadedFiles += ",";
+        }
+        $("#DeliveryConfirmation").val(uploadedFiles + data);
+    }
+
+    function RemoveUploadConfirmationFile($this) {
+        var files = $("#DeliveryConfirmation").val().split(",");
+        var newFiles = "";
+        for (var i = 0; i < files.length; i++) {
+            if (files[i] != $this.previousSibling.innerHTML) {
+                newFiles += files[i] + ",";
+            }
+        }
+        newFiles = newFiles.slice(0, newFiles.length - 1);
+        $("#DeliveryConfirmation").val(newFiles);
+        $this.parentNode.remove();
+    }
+</script>

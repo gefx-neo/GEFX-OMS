@@ -1,0 +1,30 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+    int rowId = (int)ViewData["RowId"];
+    int rowId2 = 1;
+    IList<ProductDenomination> denominations = (IList<ProductDenomination>)ViewData["ProductDenomination"];
+
+    foreach (ProductDenomination denomination in denominations)
+    {
+        if (denomination.DenominationValue == 0)
+        {
+            <tr>
+                <td>coins @Html.ValidationMessage("Denomination_Value_" + rowId + "_" + rowId2) @Html.Hidden("Denomination_Value_" + rowId + "_" + rowId2, denomination.DenominationValue)</td>
+                <td>-</td>
+                <td>@Html.TextBox("Denomination_Value_AmountForeign_" + rowId + "_" + rowId2, null, new { @class = "form-control denomination-amount-foreign", @onchange = "CoinsChange(" + rowId + ", " + rowId2 + ")" }) @Html.ValidationMessage("Denomination_Value_AmountForeign_" + rowId + "_" + rowId2)</td>
+            </tr>
+        }
+        else
+        {
+            <tr>
+                <td>@denomination.DenominationValue @Html.ValidationMessage("Denomination_Value_" + rowId + "_" + rowId2) @Html.Hidden("Denomination_Value_" + rowId + "_" + rowId2, denomination.DenominationValue)</td>
+                <td>@Html.TextBox("Denomination_Value_Pieces_" + rowId + "_" + rowId2, null, new { @class = "form-control", @onchange = "PiecesChange(" + rowId + ", " + rowId2 + ")" }) @Html.ValidationMessage("Denomination_Value_Pieces_" + rowId + "_" + rowId2)</td>
+                <td><div id="denomination-amount-foreign-@rowId-@rowId2">0.00</div>@Html.ValidationMessage("Denomination_Value_AmountForeign_" + rowId + "_" + rowId2) @Html.Hidden("Denomination_Value_AmountForeign_" + rowId + "_" + rowId2, "0.00", new { @class = "denomination-amount-foreign" })</td>
+            </tr>
+        }
+
+        rowId2++;
+    }
+}

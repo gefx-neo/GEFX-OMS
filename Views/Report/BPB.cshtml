@@ -1,0 +1,100 @@
+﻿@using DataAccess.Report
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Inventory Balance, Average Purchase and Last Buying Rate";
+    ViewBag.Reports = "active open";
+    string rateFormat = ViewData["RateFormat"].ToString();
+    string sgdFormat = ViewData["SGDFormat"].ToString();
+}
+
+<style type="text/css">
+    .text-amount {
+        text-align: right;
+    }
+
+    .no-border {
+        border: 0px !important;
+    }
+</style>
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportBPB")" class="btn btn-primary">Download to excel</a>
+        </div>
+        <div class="row margin-top-15">
+            <strong class="pull-left text-uppercase">@ViewData["CompanyName"].ToString()</strong>
+            <strong class="pull-right text-uppercase">@DateTime.Now.ToString("dd-MM-yyyy")</strong>
+        </div>
+        <div class="row text-uppercase text-center">
+            <strong>
+                Currency Closing Balance At Average Purchase Or Last Buying Rate<br />
+                On @ViewData["ReportDate"].ToString()
+            </strong>
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-no-bordered text-uppercase">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Currency</th>
+                                <th class="text-amount">Forex Closing Bal</th>
+                                <th class="text-amount">Weighted Purchase Rate</th>
+                                <th class="text-amount">SGD Equivalent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<CurrencyClosingBalance> balances = (IPagedList<CurrencyClosingBalance>)ViewData["CurrencyClosingBalance"];
+
+                                if (balances.Count > 0)
+                                {
+                                    foreach (CurrencyClosingBalance bal in balances)
+                                    {
+                                        <tr>
+                                            <td>@bal.Code</td>
+                                            <td>@bal.Currency</td>
+                                            <td class="text-amount">@bal.ForeignCurrencyClosingBal.ToString(bal.AmountForeignFormat)</td>
+                                            <td class="text-amount">@bal.AveragePurchaseCostOrLastBuyingRate.ToString(rateFormat)</td>
+                                            <td class="text-amount">@bal.ClosingBalAtAveragePurchaseOrLastBuying.ToString(sgdFormat)</td>
+                                        </tr>
+                                    }
+                                    
+                                    if (ViewData["TotalStock"] != null)
+                                    {
+                                        <tr>
+                                            <td colspan="3"></td>
+                                            <td class="text-right"><strong>Total Stock In S$</strong></td>
+                                            <td class="text-amount"><div style="border-top: 1px solid;border-bottom: 1px solid;"><strong>@ViewData["TotalStock"].ToString()</strong></div></td>
+                                        </tr>
+                                    }
+
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="no-records-found">No record to display</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["CurrencyClosingBalance"], page => Url.Action("/BPB", "Report", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+        <div class="row">
+            <a href="@Url.Action("ExportBPB")" class="btn btn-primary">Download to excel</a>
+            <a href="@Url.Action("Select")" class="btn btn-default">Back</a>
+        </div>
+    </div>
+</div>

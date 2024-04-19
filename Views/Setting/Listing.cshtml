@@ -1,0 +1,115 @@
+﻿@using DataAccess.POCO
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "System Settings";
+	ViewBag.Settings = "active open";
+	ViewBag.SystemSettings = "active";
+}
+
+<div class="panel">
+	<div class="panel-body container-fluid">
+		<div class="row row-lg">
+			<div class="col-xlg-12 col-md-12">
+				<div class="form-horizontal">
+					@{
+						IList<Setting> settings = (IList<Setting>)ViewData["Setting"];
+
+						foreach (Setting setting in settings)
+						{
+							if (setting.Code == "LOCAL_PAYMENT_BANK")
+							{
+								string[] banks = setting.Value.Split('|');
+								int rowCount = 1;
+
+								<div class="form-group">
+									@Html.Label(setting.Code + ":", new { @class = "col-sm-3 control-label" })
+									<div class="col-sm-9 table-responsive">
+										<table class="table table-hover table-striped table-bordered">
+											<thead>
+												<tr>
+													<th>Bank Name</th>
+												</tr>
+											</thead>
+											<tbody>
+												@foreach (string bank in banks)
+												{
+													<tr>
+														<td>
+															@Html.TextBox("BankName_" + rowCount, bank, new { @class = "form-control", @disabled = "disabled" })
+														</td>
+													</tr>
+												}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							}
+							else if (setting.Code == "CUSTOMER_PORTAL_CREATED_BY")
+							{
+								<div class="form-group">
+									@Html.Label(setting.Code + ":", new { @class = "col-sm-3 control-label" })
+									<div class="col-sm-9">
+										@Html.DropDownListFor(s => setting.Value, (SelectList)ViewData["CustomerPortalCreatedByDropdown"], new { @class = "form-control", @disabled = "disabled" })
+									</div>
+								</div>
+							}
+							else
+							{
+								<div class="form-group">
+									@Html.Label(setting.Code + ":", new { @class = "col-sm-3 control-label" })
+									<div class="col-sm-9">
+										@Html.TextBoxFor(s => setting.Value, new { @class = "form-control", @disabled = "disabled" })
+									</div>
+								</div>
+							}
+						}
+
+						IList<SearchTags> searchTags = (IList<SearchTags>)ViewData["SearchTags"];
+
+						<div class="form-group">
+							@Html.Label("Search Tags:", new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9 table-responsive">
+								<table class="table table-hover table-striped table-bordered">
+									<thead>
+										<tr>
+											<th>Tag Name</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (SearchTags _searchTags in searchTags)
+										{
+											int Search_rowCount = 1;
+											<tr>
+												<td>
+													@Html.TextBox("SearchTags_" + Search_rowCount, _searchTags.TagName, new { @class = "form-control", @disabled = "disabled" })
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+					}
+
+					<div class="form-group">
+						<div class="col-sm-9 col-sm-offset-3">
+							<a href="@Url.Action("Edit")" class="btn btn-primary">Edit </a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	@if (TempData["Result"] != null)
+	{
+		<script>
+        $(document).ready(function () {
+            alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+		</script>
+	}

@@ -1,0 +1,132 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Manage Products/Inventory";
+    ViewBag.ManageProducts = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        @if (Session["UserRole"].ToString().Contains("Super Admin") || Session["UserRole"].ToString().Contains("General Manager"))
+        {
+            <div class="row">
+                <div class="col-xlg-12 col-md-12">
+                    <a class="btn btn-success" href="@Url.Action("Create")" type="button"><i aria-hidden="true" class="icon wb-plus"></i> New Product</a>
+                </div>
+            </div>
+        }
+
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                @using (Html.BeginForm("Listing", "Product", FormMethod.Post, new { @class = "page-search-form", @role = "search" }))
+                {
+                    <div class="input-search input-search-dark">
+                        <button id="search-icon" type="submit" class="input-search-icon icon wb-search" aria-label="Close"></button>
+                        @Html.TextBox("SearchKeyword", ViewData["SearchKeyword"].ToString(), new { @class = "form-control", @placeholder = "Search by Product Code or Product Name" })
+                        <button id="search-close" type="button" class="input-search-close icon wb-close" aria-label="Close"></button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product Code</th>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<Product> products = (IPagedList<Product>)ViewData["Product"];
+
+                                if (products.Count > 0)
+                                {
+                                    int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                    int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                    int i = 1;
+
+                                    foreach (Product product in products)
+                                    {
+                                        string negativeInventory = "";
+                                        if (product.ProductInventories[0].TotalInAccount < 0)
+                                        {
+                                            negativeInventory = "bg-red-100";
+                                        }
+                                        <tr class="@negativeInventory">
+                                            <td>@(i + page * pageSize)</td>
+                                            <td>@product.CurrencyCode</td>
+                                            <td>@product.CurrencyName</td>
+                                            <td>
+                                                @if (product.Decimal == 0)
+                                                {
+                                                    @(product.Symbol + product.ProductInventories[0].TotalInAccount.ToString("#,##0"))
+                                                }
+                                                else if (product.Decimal == 1)
+                                                {
+                                                    @(product.Symbol + product.ProductInventories[0].TotalInAccount.ToString("#,##0.0"))
+                                                }
+                                                else if (product.Decimal == 2)
+                                                {
+                                                    @(product.Symbol + product.ProductInventories[0].TotalInAccount.ToString("#,##0.00"))
+                                                }
+                                                else if (product.Decimal == 3)
+                                                {
+                                                    @(product.Symbol + product.ProductInventories[0].TotalInAccount.ToString("#,##0.000"))
+                                                }
+
+                                                else if (product.Decimal == 4)
+                                                {
+                                                    @(product.Symbol + product.ProductInventories[0].TotalInAccount.ToString("#,##0.0000"))
+                                                }
+                                            </td>
+                                            <td>@product.Status</td>
+                                            <td class="text-nowrap">
+                                                <a href="@Url.Action("Edit", new { @id = product.ID })" class="btn btn-sm btn-icon btn-round btn-default" data-toggle="tooltip" data-original-title="Edit"><i class="icon wb-edit" aria-hidden="true"></i></a>
+                                                @if ((Session["UserRole"].ToString().Contains("Super Admin") || Session["UserRole"].ToString().Contains("General Manager")) && product.CurrencyCode != "SGD")
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Delete" onclick="DeleteThisRecord(@product.ID)"><i class="icon wb-close" aria-hidden="true"></i></button>
+                                                }
+                                            </td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="no-records-found">No record to display</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["Product"], page => Url.Action("/Listing", "Product", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Result"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+    </script>
+}

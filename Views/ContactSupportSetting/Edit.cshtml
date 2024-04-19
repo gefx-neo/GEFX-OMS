@@ -1,0 +1,188 @@
+﻿@using DataAccess.POCO
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "Contact Support Settings";
+	ViewBag.ContactSupportSettings = "active";
+	ViewBag.Settings = "active open";
+}
+
+<div class="panel">
+	<div class="panel-body container-fluid">
+		<div class="row row-lg">
+			<div class="col-xlg-12 col-md-12">
+				@if (TempData["Result"] != null)
+				{
+					string[] result = TempData["Result"].ToString().Split('|');
+
+					<div class="alert alert-@result[0]">
+						<button type="button" class="close" data-dismiss="alert">&times;</button>
+						@result[1]
+					</div>
+				}
+				@{
+
+					CustomerPortal_SupportContactSetting settings = (CustomerPortal_SupportContactSetting)ViewData["ContactSupportSetting"];
+
+					if (settings != null)
+					{
+						using (Html.BeginForm("Edit", "ContactSupportSetting", FormMethod.Post, new { @class = "form-horizontal", @id = "form-edit" }))
+						{
+							<div class="form-group">
+								@Html.LabelFor(u => settings.Description, new { @class = "col-sm-2 control-label" })
+								<div class="col-sm-10">
+									@Html.TextBoxFor(u => settings.Description, new { @class = "form-control", @placeholder = "Description" })
+									@Html.ValidationMessageFor(u => settings.Description)
+								</div>
+							</div>
+
+							<div class="form-group">
+								@Html.LabelFor(u => settings.Image, new { @class = "col-sm-2 control-label" })
+								<div class="col-sm-10">
+									<div class="input-group input-group-file">
+										<input type="text" class="form-control" readonly>
+										<span class="input-group-btn">
+											<span class="btn btn-primary btn-file">
+												<i class="icon wb-upload" aria-hidden="true"></i>
+												<input id="image-uploader" type="file">
+											</span>
+										</span>
+									</div>
+									@Html.ValidationMessageFor(u => settings.Image)
+									<div id="image-files">
+										@if (settings.Image != null)
+										{
+											<br />
+											<img src="data:image/png;base64,@Convert.ToBase64String(settings.Image)" alt="Image" id="UploadedImage" style="max-width:200px;">
+											<button onclick="ResetImage()" style="display:none;" id="ResetImageButton" class="btn btn-danger" type="button">Reset Image</button>
+											<input type="hidden" value="@Convert.ToBase64String(settings.Image)" id="Hidden_Image" name="Hidden_Image" />
+										}
+									</div>
+									<span id="MessageUploading" style="display:none;color:red;">Image is uploading...Please wait...</span>
+									<span id="MessageResetting" style="display:none;color:red;">Image is resetting...Please wait...</span>
+								</div>
+							</div>
+
+							<div class="form-group">
+								@Html.LabelFor(u => settings.Name, new { @class = "col-sm-2 control-label" })
+								<div class="col-sm-10">
+									@Html.TextBoxFor(u => settings.Name, new { @class = "form-control", @placeholder = "Name" })
+									@Html.ValidationMessageFor(u => settings.Name)
+								</div>
+							</div>
+
+							<div class="form-group">
+								@Html.LabelFor(u => settings.Email, new { @class = "col-sm-2 control-label" })
+								<div class="col-sm-10">
+									@Html.TextBoxFor(u => settings.Email, new { @class = "form-control", @placeholder = "Email" })
+									@Html.ValidationMessageFor(u => settings.Email)
+								</div>
+							</div>
+
+							<div class="form-group">
+								@Html.LabelFor(u => settings.PhoneNo, new { @class = "col-sm-2 control-label" })
+								<div class="col-sm-10">
+									@Html.TextBoxFor(u => settings.PhoneNo, new { @class = "form-control", @placeholder = "Phone No." })
+									@Html.ValidationMessageFor(u => settings.PhoneNo)
+								</div>
+							</div>
+
+							<div class="form-group">
+								<div class="col-sm-9 col-sm-offset-2">
+									<button type="submit" class="btn btn-primary" id="disable_button">Save</button>
+								</div>
+							</div>
+						}
+					}
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	//Basis of Authority Uploads
+    $("#image-uploader").on("change", function (e) {
+        var $file = this,
+        $formData = new FormData();
+        if ($file.files.length > 0) {
+            for (var i = 0; i < $file.files.length; i++) {
+                $formData.append("file-" + i, $file.files[i]);
+            }
+		}
+
+        $.ajax({
+            url: "@Url.Action("FileUploader")",
+            type: "POST",
+            data: $formData,
+            dataType: "json",
+            contentType: false,
+			processData: false,
+			beforeSend: function ()
+			{
+				// setting a timeout
+				$("#MessageUploading").show();
+			},
+			success: function ($data)
+			{
+				if ($data.result == "success")
+				{
+					var folder = '@System.Configuration.ConfigurationManager.AppSettings["TempFolder"].ToString()';
+					$("#UploadedImage").css("maxWidth", "200px");
+					$("#UploadedImage").attr("src", $data.msg);
+					$("#ResetImageButton").show();
+
+					//convert the image to 64base
+					$("#Hidden_Image").val($data.msg);
+                }
+				else
+				{
+                    alertify.alert($data.msg);
+				}
+
+				$("#MessageUploading").hide();
+            },
+            error: function (e) {
+                alertify.alert("An error occured while uploading files!");
+            }
+        });
+	});
+
+	function ResetImage()
+	{
+		event.preventDefault();
+
+		$.ajax({
+			url: "@Url.Action("GetPreviousImage")",
+			type: "GET",
+			beforeSend: function ()
+			{
+				// setting a timeout
+				$("#ResetImageButton").hide();
+				$("#MessageResetting").show();
+			},
+			success: function ($data)
+			{
+				$("#image-files").html($data);
+				$("#image-uploader").val(null);//reset and allow to upload the same image again.
+				$("#MessageResetting").hide();
+			},
+			error: function (e) {
+				alertify.alert("An error occured while resetting image!");
+			}
+		});
+	}
+</script>
+
+@{
+	if (ViewBag.UploadImageBefore == "Yes")
+	{
+		<script>
+			// A $( document ).ready() block.
+			$(document).ready(function () {
+				$("#ResetImageButton").show();
+			});
+		</script>
+	}
+}

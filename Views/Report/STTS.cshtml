@@ -1,0 +1,393 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+@using DataAccess
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Sales With Transaction Type Summary";
+    ViewBag.Reports = "active open";
+    string sgdFormat = ViewData["SGDFormat"].ToString();
+}
+
+<style type="text/css">
+    .text-amount {
+        text-align: right;
+    }
+
+    .no-border {
+        border: 0px !important;
+    }
+</style>
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportCustomerSummary")" class="btn btn-primary">Download to excel</a>
+        </div>
+        <div class="row margin-top-15">
+            <strong class="pull-left text-uppercase">@ViewData["CompanyName"].ToString()</strong>
+            <strong class="pull-right text-uppercase">@DateTime.Now.ToString("dd-MM-yyyy")</strong>
+        </div>
+        <div class="row text-uppercase text-center">
+            <strong>
+                Sales With Transaction Type Summary<br />
+                From @ViewData["ReportFromDate"].ToString() to @ViewData["ReportToDate"].ToString()
+            </strong>
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered" style="min-width: 1200px;">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Transaction Type</th>
+                                <th>Memo ID</th>
+                                <th>Date</th>
+                                <th>Foreign Amount / Get Amount</th>
+                                <th>Local Amount(SGD) / Pay Amount</th>
+                                <th>Payment Mode</th>
+                                @*<th>Total</th>*@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<int> customerPage = (IPagedList<int>)ViewData["CustomerPage"];
+                                IList<Sale> saleList = (IList<Sale>)ViewData["SaleList"];
+                                IList<Remittances> remittanceList = (IList<Remittances>)ViewData["RemittanceList"];
+                                if (customerPage.Count > 0)
+                                {
+                                    int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                    int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                    int i = 1;
+
+                                    foreach (int customer in customerPage)
+                                    {
+
+                                        var count = 0;
+                                        decimal buyTotal = 0;
+                                        decimal sellTotal = 0;
+                                        decimal remittanceTotal = 0;
+                                        decimal encashmentTotal = 0;
+                                        decimal grantTotal = 0;
+                                        var customerSales = saleList.Where(e => e.CustomerParticularId == customer).ToList();
+                                        var customerRemittance = remittanceList.Where(e => e.CustomerParticularId == customer).ToList();
+                                        var totalSales = customerSales.Count + customerRemittance.Count;
+                                        int firstrow = 1;
+                                        var name = "";
+
+
+                                        if (customerSales.Count > 0)
+                                        {
+                                            var getCustomerDetails = customerSales.FirstOrDefault();
+                                            name = getCustomerDetails.CustomerParticulars.CustomerCode;
+                                            if (!string.IsNullOrEmpty(getCustomerDetails.CustomerParticulars.Company_RegisteredName))
+                                            {
+                                                name = name + " - " + getCustomerDetails.CustomerParticulars.Company_RegisteredName;
+                                            }
+                                            else
+                                            {
+                                                name = name + " - " + getCustomerDetails.CustomerParticulars.Natural_Name;
+                                            }
+                                            foreach (var sale in customerSales)
+                                            {
+                                                <tr>
+                                                    @if (firstrow == 1)
+                                                    {
+                                                        <td rowspan="@totalSales" style="text-align: center;vertical-align: top;">@name</td>
+                                                        firstrow++;
+                                                    }
+                                                    <td>@sale.TransactionType</td>
+                                                    <td>@sale.MemoID</td>
+                                                    <td>@sale.CreatedOn.ToString("dd/MMMM/yyyy")</td>
+                                                    <td>
+                                                        @foreach (var transaction in sale.SaleTransactions)
+                                                        {
+                                                            string amountForeignFormat = "#,##0";
+
+                                                            switch (transaction.Products.Decimal)
+                                                            {
+                                                                case 1:
+                                                                    amountForeignFormat += ".0";
+                                                                    break;
+                                                                case 2:
+                                                                    amountForeignFormat += ".00";
+                                                                    break;
+                                                                case 3:
+                                                                    amountForeignFormat += ".000";
+                                                                    break;
+                                                                case 4:
+                                                                    amountForeignFormat += ".0000";
+                                                                    break;
+                                                                case 5:
+                                                                    amountForeignFormat += ".00000";
+                                                                    break;
+                                                                case 6:
+                                                                    amountForeignFormat += ".000000";
+                                                                    break;
+                                                                case 7:
+                                                                    amountForeignFormat += ".0000000";
+                                                                    break;
+                                                                case 8:
+                                                                    amountForeignFormat += ".00000000";
+                                                                    break;
+                                                                default:
+                                                                    break;
+                                                            }
+                                                            <p>@transaction.TransactionType @transaction.AmountForeign.ToString(amountForeignFormat) (@transaction.Products.CurrencyCode)</p>
+
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @foreach (var transaction in sale.SaleTransactions)
+                                                        {
+                                                            <p>@transaction.AmountLocal.ToString(sgdFormat)</p>
+
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @foreach (var transaction in sale.SaleTransactions)
+                                                        {
+                                                            string payslip = "";
+                                                            if (transaction.PaymentMode == "Cheque")
+                                                            {
+                                                                payslip = "(" + transaction.ChequeNo + ")";
+                                                            }
+                                                            else if (transaction.PaymentMode == "Bank Transfer")
+                                                            {
+                                                                payslip = "(" + transaction.BankTransferNo + ")";
+                                                            }
+                                                            <p>@transaction.PaymentMode @payslip</p>
+
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+
+
+                                        if (customerRemittance.Count > 0)
+                                        {
+                                            var getCustomerDetails = remittanceList.FirstOrDefault();
+                                            name = getCustomerDetails.CustomerParticulars.CustomerCode;
+                                            if (!string.IsNullOrEmpty(getCustomerDetails.CustomerParticulars.Company_RegisteredName))
+                                            {
+                                                name = name + " - " + getCustomerDetails.CustomerParticulars.Company_RegisteredName;
+                                            }
+                                            else
+                                            {
+                                                name = name + " - " + getCustomerDetails.CustomerParticulars.Natural_Name;
+                                            }
+                                            foreach (var remittance in customerRemittance)
+                                            {
+                                                <tr>
+                                                    @if (firstrow == 1)
+                                                    {
+                                                        <td rowspan="@totalSales" style="text-align: center;vertical-align: top;">@name</td>
+                                                        firstrow++;
+                                                    }
+                                                    <td>Remittance</td>
+                                                    <td>@remittance.MemoID</td>
+                                                    <td>@remittance.CreatedOn.ToString("dd/MMMM/yyyy")</td>
+                                                    <td>
+                                                        @foreach (var transaction in remittance.RemittanceOders)
+                                                        {
+                                                            string amountGetFormat = "#,##0";
+
+                                                            switch (transaction.GetCurrencyDecimal.ProductDecimal)
+                                                            {
+                                                                case 1:
+                                                                    amountGetFormat += ".0";
+                                                                    break;
+                                                                case 2:
+                                                                    amountGetFormat += ".00";
+                                                                    break;
+                                                                case 3:
+                                                                    amountGetFormat += ".000";
+                                                                    break;
+                                                                case 4:
+                                                                    amountGetFormat += ".0000";
+                                                                    break;
+                                                                case 5:
+                                                                    amountGetFormat += ".00000";
+                                                                    break;
+                                                                case 6:
+                                                                    amountGetFormat += ".000000";
+                                                                    break;
+                                                                case 7:
+                                                                    amountGetFormat += ".0000000";
+                                                                    break;
+                                                                case 8:
+                                                                    amountGetFormat += ".00000000";
+                                                                    break;
+                                                                default:
+                                                                    break;
+                                                            }
+                                                            var getAmount = transaction.GetAmount;
+                                                            decimal getRate = 0;
+                                                            if (transaction.Fee > 0)
+                                                            {
+                                                                getRate = 2 / transaction.Fee;
+                                                            }
+                                                            getRate = Math.Round(getRate, 8);
+                                                            decimal payRate = 0;
+                                                            if (getRate > 0)
+                                                            {
+                                                                payRate = transaction.Rate * getRate;
+                                                            }
+                                                            decimal convertToSGD = 0;
+                                                            if (payRate > 0 && getRate > 0)
+                                                            {
+                                                                convertToSGD = getAmount * getRate;
+                                                                convertToSGD = convertToSGD / 1;
+                                                            }
+                                                            string GetAmountSGD = "";
+                                                            if (convertToSGD > 0)
+                                                            {
+                                                                GetAmountSGD = "to " + convertToSGD.ToString(sgdFormat);
+                                                            }
+                                                            <p>@transaction.GetAmount.ToString(amountGetFormat) (@transaction.GetCurrencyDecimal.CurrencyCode) @GetAmountSGD</p>
+
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @foreach (var transaction in remittance.RemittanceOders)
+                                                        {
+                                                            string amountForeignFormat = "#,##0";
+
+                                                            switch (transaction.PayCurrencyDecimal.ProductDecimal)
+                                                            {
+                                                                case 1:
+                                                                    amountForeignFormat += ".0";
+                                                                    break;
+                                                                case 2:
+                                                                    amountForeignFormat += ".00";
+                                                                    break;
+                                                                case 3:
+                                                                    amountForeignFormat += ".000";
+                                                                    break;
+                                                                case 4:
+                                                                    amountForeignFormat += ".0000";
+                                                                    break;
+                                                                case 5:
+                                                                    amountForeignFormat += ".00000";
+                                                                    break;
+                                                                case 6:
+                                                                    amountForeignFormat += ".000000";
+                                                                    break;
+                                                                case 7:
+                                                                    amountForeignFormat += ".0000000";
+                                                                    break;
+                                                                case 8:
+                                                                    amountForeignFormat += ".00000000";
+                                                                    break;
+                                                                default:
+                                                                    break;
+                                                            }
+                                                            var payAmount = transaction.PayAmount;
+                                                            decimal getRate = 0;
+                                                            if (transaction.Fee > 0)
+                                                            {
+                                                                getRate = 2 / transaction.Fee;
+                                                            }
+                                                            decimal payRate = 0;
+                                                            if (getRate > 0)
+                                                            {
+                                                                payRate = transaction.Rate * getRate;
+                                                            }
+                                                            decimal convertToSGD = 0;
+                                                            if (payRate > 0)
+                                                            {
+                                                                convertToSGD = payAmount * payRate;
+                                                                convertToSGD = convertToSGD / 1;
+                                                            }
+                                                            string PayAmountSGD = "";
+                                                            if (convertToSGD > 0)
+                                                            {
+                                                                PayAmountSGD = "to " + convertToSGD.ToString(sgdFormat);
+                                                            }
+                                                            <p>@payAmount.ToString(amountForeignFormat) (@transaction.PayCurrencyDecimal.CurrencyCode) @PayAmountSGD</p>
+
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @foreach (var transaction in remittance.RemittanceOders)
+                                                        {
+                                                            string mode = "Cash";
+                                                            string payslip = "";
+                                                            if (transaction.PayPaymentType == "2")
+                                                            {
+                                                                mode = "Cheque";
+                                                                payslip = "(" + transaction.ChequeNo + ")";
+                                                            }
+                                                            else if (transaction.PayPaymentType == "3")
+                                                            {
+                                                                mode = "Bank Transfer";
+                                                                payslip = "(" + transaction.BankTransferNo + ")";
+                                                            }
+                                                            <p>@mode @payslip</p>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        count++;
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="no-records-found">No sale from @ViewData["ReportFromDate"].ToString() to @ViewData["ReportToDate"].ToString()</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["CustomerPage"], page => Url.Action("/STTS", "Report", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+        <div class="row">
+            <a href="@Url.Action("ExportSWCD")" class="btn btn-primary">Download to excel</a>
+            <a href="@Url.Action("Select")" class="btn btn-default">Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sale-transaction-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label"></h4>
+            </div>
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function ViewTransactions(id) {
+        var url = "@Url.Action("ViewTransactions", "Sale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+    }
+</script>

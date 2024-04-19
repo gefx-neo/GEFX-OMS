@@ -1,0 +1,214 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Scan Incoming Delivery";
+    ViewBag.ScanIncoming = "active open";
+    string sgdFormat = ViewData["SGDDP"].ToString();
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <div class="col-xlg-12 col-md-12">
+                <div class="example-well padding-30">
+                    @using (Html.BeginForm("Listing", "ScanIncoming", FormMethod.Post, new { @class = "form-horizontal", @id = "form-scan-incoming" }))
+                    {
+                        <div class="form-group">
+                            @Html.Label("Memo ID Input:", new { @class = "col-sm-3 control-label" })
+                            <div class="col-sm-9">
+                                @Html.TextBox("MemoID", ViewData["MemoID"].ToString(), new { @class = "form-control", @maxlength = "15", @onkeyup = "MemoIDChange()" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-4 col-sm-offset-3">
+                                <button type="submit" class="btn btn-primary">Add Memo </button>
+                            </div>
+                        </div>
+
+                        if (TempData["Result"] != null)
+                        {
+                            string result = TempData["Result"].ToString().Split('|')[0];
+
+                            if (result == "danger")
+                            {
+                                <div class="alert dark alert-danger alert-dismissible" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <i class="icon wb-alert" aria-hidden="true"></i>@TempData["Result"].ToString().Split('|')[1]
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+
+                <div class="form-group">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered table-striped" data-selectable="selectable" data-row-selectable="true">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Memo ID</th>
+                                    <th>Customer/Company</th>
+                                    <th>Collection Date/Time</th>
+                                    <th>Type</th>
+                                    <th>Amount (Foreign)</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    IList<ScanIncoming> incoming = (IList<ScanIncoming>)ViewData["Incoming"];
+
+                                    if (incoming.Count > 0)
+                                    {
+                                        int i = 1;
+
+                                        foreach (ScanIncoming data in incoming)
+                                        {
+                                            string highlight = "";
+
+                                            if (data.Sales.Urgent == "Urgent")
+                                            {
+                                                highlight = "bg-red-100";
+                                            }
+
+                                            <tr class="@highlight">
+                                                <td>@i</td>
+                                                <td>@data.Sales.MemoID</td>
+                                                <td>
+                                                    @if (data.Sales.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                    {
+                                                        @data.Sales.CustomerParticulars.Company_RegisteredName
+                                                    }
+                                                    else
+                                                    {
+                                                        @data.Sales.CustomerParticulars.Natural_Name
+                                                    }
+                                                </td>
+                                                <td>@(Convert.ToDateTime(data.Sales.CollectionDate).ToString("dd/MM/yyyy") + " " + data.Sales.CollectionTime)</td>
+                                                <td>@data.Sales.SaleTransactions[0].Products.CurrencyCode</td>
+                                                <td>@(data.Sales.SaleTransactions[0].Products.Symbol + data.Sales.SaleTransactions[0].AmountForeign.ToString(sgdFormat)) <a href="javascript:void(0)" onclick="ViewTransactions(@data.SaleId)" style="text-decoration: none;" data-toggle="tooltip" data-original-title="View Transactions">[+]</a></td>
+                                                <td>@data.Sales.Status</td>
+                                                <td class="text-nowrap"><button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Remove" onclick="DeleteThisRecord(@data.ID)"><i class="icon wb-close" aria-hidden="true"></i></button></td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td class="no-records-found" colspan="8">No record to display</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- End Table -->
+
+                <div class="form-group">
+                    <div class="col-sm-9">
+                        <a href="@Url.Action("ConfirmIncomingDelivery")" class="btn btn-primary">Confirm Incoming Delivery</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sale-transaction-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label"></h4>
+            </div>
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Result"] != null)
+{
+    string result = TempData["Result"].ToString().Split('|')[0];
+
+    if (result == "success")
+    {
+        <script>
+            $(document).ready(function () {
+                alertify.alert("@TempData["Result"].ToString().Split('|')[1]", function () {
+                    FocusMemoID();
+                });
+
+            });
+        </script>
+    }
+}
+
+<script src="@Url.Content("~/Content/vendor/jquery-scanner-detection/jquery-scanner-detection.js")"></script>
+
+<script>
+    var prefix_barcode = "@ViewData["BarcodePrefix"].ToString()";
+    var prefix_memoId = "@ViewData["MemoIDPrefix"].ToString()";
+
+    $(document).ready(function () {
+        FocusMemoID();
+    })
+
+    $(document).scannerDetection({
+        timeBeforeScanTest: 200, // wait for the next character for upto 200ms
+        startChar: [120], // Prefix character for the cabled scanner (OPL6845R)
+        endChar: [13], // be sure the scan is complete if key 13 (enter) is detected
+        avgTimeByChar: 40, // it's not a barcode if a character takes longer than 40ms
+        onComplete: function (barcode, qty) {
+            console.log("barcode Scanneed!");
+            var input = $("#MemoID").val();
+            var barcode_prefix = input.substring(0, 4);
+            var memoId = input.substring(4, input.length);
+            var memoId_prefix = memoId.substring(0, 2);
+            if (barcode_prefix == prefix_barcode && memoId_prefix == prefix_memoId && memoId.length == 11) {
+                $("#form-scan-outgoing").submit();
+            }
+        } // main callback function
+    });
+
+    function FocusMemoID() {
+        $("#MemoID").focus();
+        $("#MemoID").select();
+    }
+    function MemoIDChange() {
+        var input = $("#MemoID").val();
+        var barcode_prefix = input.substring(0, 4);
+        var memoId = input.substring(4, input.length);
+        var memoId_prefix = memoId.substring(0, 2);
+        if (barcode_prefix == prefix_barcode && memoId_prefix == prefix_memoId && memoId.length == 11) {
+            $("#MemoID").val(memoId);
+            $("#form-scan-incoming").submit();
+        }
+    }
+
+
+    function ViewTransactions(id) {
+        var url = "@Url.Action("ViewTransactions", "Sale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+    }
+</script>

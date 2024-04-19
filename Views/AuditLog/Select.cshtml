@@ -1,0 +1,84 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Audit Log";
+    ViewBag.AuditLog = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row row-lg">
+            <div class="col-xlg-12 col-md-10">
+                @if (TempData["Result"] != null)
+                {
+                    string[] result = TempData["Result"].ToString().Split('|');
+
+                    <div class="alert alert-@result[0]">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @result[1]
+                    </div>
+                }
+
+                @using (Html.BeginForm("Select", "AuditLog", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    <div class="form-group">
+                        @Html.Label("Log Table:", new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.DropDownList("LogTable", (SelectList)ViewData["LogTableDropdown"], new { @class = "form-control" })
+                            @Html.ValidationMessage("LogTable")
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("From Date:", new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.TextBox("FromDate", ViewData["FromDate"].ToString(), new { @class = "form-control" })
+                            @Html.ValidationMessage("FromDate")
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.Label("To Date:", new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.TextBox("ToDate", ViewData["ToDate"].ToString(), new { @class = "form-control" })
+                            @Html.ValidationMessage("ToDate")
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-9 col-sm-offset-3">
+                            <button type="submit" class="btn btn-primary">Generate </button>
+                            <button type="button" class="btn btn-primary" onclick="DownloadToExcel()">Download to excel</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+<script>
+    $("#FromDate").datepicker({
+        endDate: new Date(),
+        autoclose: true,
+        format: 'dd/mm/yyyy'
+    }).on("changeDate", function () {
+        $("#ToDate").datepicker("setStartDate", new Date($("#FromDate").datepicker("getDate")));
+    });
+
+    $("#ToDate").datepicker({
+        startDate: new Date($("#FromDate").datepicker("getDate")),
+        endDate: new Date(),
+        autoclose: true,
+        format: 'dd/mm/yyyy'
+    });
+
+    function DownloadToExcel() {
+        var logTable = $("#LogTable").val();
+        var fromDate = $("#FromDate").val();
+        var toDate = $("#ToDate").val();
+        var url = "@Url.Action("ExportExcel")?logTable=" + logTable + "&fromDate=" + fromDate; + "&toDate=" + toDate;
+        window.location.href = url;
+    }
+</script>

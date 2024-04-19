@@ -1,0 +1,161 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Export DAT";
+    ViewBag.ExportDAT = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row row-lg">
+            <div class="col-xlg-10 col-md-10">
+                @using (Html.BeginForm("Select", "ExportDAT", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    <div class="form-group">
+                        @Html.Label("Report Name:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportName", (SelectList)ViewData["ReportNameDropdown"], new { @class = "form-control", @onchange = "ReportNameChange()" })
+                            @Html.ValidationMessage("ReportName")
+                        </div>
+                    </div>
+                    <div class="form-group date-range">
+                        @Html.Label("From Date:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="icon wb-calendar"></i></span>
+                                @Html.TextBox("FromDate", ViewData["FromDate"].ToString(), new { @class = "form-control" })
+                            </div>
+                            @Html.ValidationMessage("FromDate")
+                        </div>
+                    </div>
+                    <div class="form-group date-range">
+                        @Html.Label("To Date:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="icon wb-calendar"></i></span>
+                                @Html.TextBox("ToDate", ViewData["ToDate"].ToString(), new { @class = "form-control" })
+                            </div>
+                            @Html.ValidationMessage("ToDate")
+                        </div>
+                    </div>
+                    <div class="form-group date">
+                        @Html.Label("Date:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="icon wb-calendar"></i></span>
+                                @Html.TextBox("Date", ViewData["Date"].ToString(), new { @class = "form-control" })
+                            </div>
+                            @Html.ValidationMessage("Date")
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-9 col-sm-offset-3">
+                            <button type="button" class="btn btn-primary" onclick="DownloadDAT()" id="disable_button">Download DAT file</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+@if (TempData["Result"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+    </script>
+}
+
+<script>
+    $(document).ready(function () {
+        ReportNameChange();
+    })
+
+    $("#FromDate, #ToDate, #Date").datepicker({
+        autoclose: true,
+        format: "dd/mm/yyyy"
+    });
+
+    function ReportNameChange() {
+        var reportName = $("#ReportName").val();
+
+        if (reportName == "STR" || reportName == "BTR" || reportName == "MJ") {
+            $(".date-range").show();
+            $(".date").hide();
+        }
+        else if (reportName == "CBR") {
+            $(".date-range").hide();
+            $(".date").show();
+        }
+        else {
+            $(".date-range").hide();
+            $(".date").hide();
+        }
+    }
+
+    function DownloadDAT() {
+        //$("#disable_button").attr("disabled", true);
+        var reportName = $("#ReportName").val();
+        var fromDate = $("#FromDate").val();
+        var toDate = $("#ToDate").val();
+        var date = $("#Date").val();
+
+        if (reportName == "STR" || reportName == "BTR") {
+            if (fromDate != "" && toDate != "") {
+                var _fromDate = fromDate.split("/");
+                var from = new Date(_fromDate[2], parseInt(_fromDate[1]) - 1, _fromDate[0]);
+                var _toDate = toDate.split("/");
+                var to = new Date(_toDate[2], parseInt(_toDate[1]) - 1, _toDate[0]);
+
+                if (from > to) {
+                    alertify.alert("From Date is later than To Date!");
+                    //$("#disable_button").attr("disabled", false);
+                }
+                else {
+                    window.location.href = "@Url.Action("DownloadDAT", "ExportDAT")?report=" + reportName + "&fromDate=" + fromDate + "&toDate=" + toDate + "&date=" + date;
+                }
+            }
+            else {
+                alertify.alert("From Date and To Date are required!");
+                //$("#disable_button").attr("disabled", false);
+            }
+        }
+        else if (reportName == "CBR") {
+            if (date != "") {
+                window.location.href = "@Url.Action("DownloadDAT", "ExportDAT")?report=" + reportName + "&fromDate=" + fromDate + "&toDate=" + toDate + "&date=" + date;
+            }
+            else {
+                alertify.alert("Date is required!");
+                //$("#disable_button").attr("disabled", false);
+            }
+        }
+        else if (reportName == "MJ") {
+            if (fromDate != "" && toDate != "") {
+                var _fromDate = fromDate.split("/");
+                var from = new Date(_fromDate[2], parseInt(_fromDate[1]) - 1, _fromDate[0]);
+                var _toDate = toDate.split("/");
+                var to = new Date(_toDate[2], parseInt(_toDate[1]) - 1, _toDate[0]);
+
+                if (from > to) {
+                    alertify.alert("From Date is later than To Date!");
+                    //$("#disable_button").attr("disabled", false);
+                }
+                else {
+                    window.location.href = "@Url.Action("DownloadDAT", "ExportDAT")?report=" + reportName + "&fromDate=" + fromDate + "&toDate=" + toDate + "&date=" + date;
+                }
+            }
+            else {
+                alertify.alert("From Date and To Date are required!");
+                //$("#disable_button").attr("disabled", false);
+            }
+        }
+                
+    }
+</script>

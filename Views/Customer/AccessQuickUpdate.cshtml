@@ -1,0 +1,235 @@
+﻿@using DataAccess.POCO
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "Access Quick Update";
+	ViewBag.ManageCustomers = "active open";
+}
+
+<style>
+	.site-navbar {
+		z-index: 999999 !important;
+	}
+</style>
+
+@using (Html.BeginForm("AccessQuickUpdate", "Customer", FormMethod.Post, new { @class = "form-horizontal", @id = "form-edit" }))
+{
+	CustomerParticular customerParticulars = (CustomerParticular)ViewData["CustomerRecord"];
+	CustomerOther customerOthers = (CustomerOther)ViewData["CustomerOther"];
+
+	<div class="page-content">
+		<!--Customer Particular-->
+		<div class="panel">
+			<div class="panel-body container-fluid">
+				<div class="row row-lg">
+					<div class="col-xlg-10 col-md-10">
+						@if (TempData["Result"] != null)
+						{
+							string[] result = TempData["Result"].ToString().Split('|');
+
+							<div class="alert alert-@result[0]">
+								<button type="button" class="close" data-dismiss="alert">&times;</button>
+								@result[1]
+							</div>
+						}
+						<h2>Access Quick Update Field</h2>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Customer Title</label>
+							<div class="col-sm-9">
+								@Html.DropDownListFor(cp => customerParticulars.Customer_Title, (SelectList)ViewData["CustomerTitleDropdown"], new { @class = "form-control" })
+								@Html.ValidationMessageFor(cp => customerParticulars.Customer_Title)
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Customer Surname</label>
+							<div class="col-sm-9">
+								@Html.TextBoxFor(cp => customerParticulars.Surname, new { @class = "form-control" })
+								@Html.ValidationMessageFor(cp => customerParticulars.Surname)
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Customer Given Name</label>
+							<div class="col-sm-9">
+								@Html.TextBoxFor(cp => customerParticulars.GivenName, new { @class = "form-control" })
+								@Html.ValidationMessageFor(cp => customerParticulars.GivenName)
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.LabelFor(cp => customerParticulars.CustomerType, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.DropDownListFor(cp => customerParticulars.CustomerType, (SelectList)ViewData["CustomerTypeDropdown"], new { @class = "form-control", @onchange = "CustomerTypeForm()" })
+							</div>
+						</div>
+
+						<div class="form-group" id="Company_Email_Div">
+							@Html.LabelFor(cp => customerParticulars.Company_Email, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.TextBoxFor(cp => customerParticulars.Company_Email, new { @class = "form-control" })
+								@Html.ValidationMessageFor(cp => customerParticulars.Company_Email)
+							</div>
+						</div>
+
+						<div class="form-group" id="Natural_Email_Div">
+							@Html.LabelFor(cp => customerParticulars.Natural_Email, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.TextBoxFor(cp => customerParticulars.Natural_Email, new { @class = "form-control" })
+								@Html.ValidationMessageFor(cp => customerParticulars.Natural_Email)
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Password</label>
+							<div class="col-sm-9">
+								@Html.Password("Password", null, new { @class = "form-control", @id = "inputPassword", @placeholder = "Password" })
+								@Html.ValidationMessage("Password")
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Confirm Password</label>
+							<div class="col-sm-9">
+								@Html.Password("ConfirmPassword", null, new { @class = "form-control", @id = "inputPassword", @placeholder = "Confirm Password" })
+								@Html.ValidationMessage("ConfirmPassword")
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.LabelFor(co => customerOthers.Status, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@if (ViewData["StatusQuickUpdateDropdown"] != null)
+								{
+									@Html.DropDownListFor(co => customerOthers.Status, (SelectList)ViewData["StatusQuickUpdateDropdown"], new { @class = "form-control" })
+									@Html.ValidationMessageFor(co => customerOthers.Status)
+								}
+								else
+								{
+									@Html.TextBoxFor(co => customerOthers.Status, new { @class = "form-control", @disabled = "disabled" })
+								}
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Customer Account Validated</label>
+							<div class="col-sm-9">
+								@Html.DropDownListFor(cp => customerParticulars.isVerify, (SelectList)ViewData["CustomerEmailVerifyDropdown"], new { @class = "form-control" })
+							</div>
+							<div class="col-sm-3"></div>
+							<div class="col-sm-9" style="padding-top: 10px;">
+								<span class="btn btn-xs btn-primary" id="SendVerifyEmailText" style="display:none; pointer-events: none; opacity: .65;">Sending Verify Email...</span>
+								<button class="btn btn-xs btn-success" onclick="SendVerifyEmail(@customerParticulars.ID)" id="SendVerifyEmailButton">Send Verify Email</button>
+							</div>
+						</div>
+
+						<div class="form-group" id="page-buttons">
+							<div class="col-sm-9">
+								<button type="submit" class="btn btn-primary" id="disable_button" onclick="disableButton()">Save</button>
+								@{
+									int page = 1;
+
+									if (ViewData["Page"] != null)
+									{
+										page = Convert.ToInt32(ViewData["Page"]);
+									}
+								}
+								<a href="@Url.Action("Listing", new { @page = page })" class="btn btn-default" onclick="disableButton4();" id="disable_button4">Back</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+<script>
+	$(document).ready(function ()
+	{
+		CustomerTypeForm();
+    });
+
+	function CustomerTypeForm()
+	{
+        var type = $("#customerParticulars_CustomerType").val();
+
+		if (type == "Corporate & Trading Company")
+		{
+			$("#Company_Email_Div").show();
+			$("#Natural_Email_Div").hide();
+		}
+		else {
+			$("#Company_Email_Div").hide();
+			$("#Natural_Email_Div").show();
+		}
+    }
+
+    function disableButton()
+    {
+        $("#disable_button").attr("disabled", true);
+        $("#disable_button4").attr("disabled", true);
+
+        $("#disable_button4").attr("href", "javascript:void(0)");
+        $('#disable_button4').prop('onclick',null).off('click');
+
+        $("#form-edit").submit();
+    }
+
+    function disableButton4()
+    {
+        $("#disable_button").attr("disabled", true);
+        $("#disable_button4").attr("disabled", true);
+
+        $("#disable_button4").attr("href", "javascript:void(0)");
+        $('#disable_button4').prop('onclick',null).off('click');
+
+        @{
+			int page1 = 1;
+
+			if (ViewData["Page"] != null)
+			{
+				page1 = Convert.ToInt32(ViewData["Page"]);
+			}
+        }
+
+        window.location.href = '@Url.Action("Listing", new { @page = page1 })';
+	}
+
+	function SendVerifyEmail(id)
+	{
+		document.getElementById("SendVerifyEmailButton").disabled = true;
+		$("#SendVerifyEmailButton").html('Sending Verify Email...');
+		$.ajax({
+			url: "@Url.Action("SendVerifyEmail")",
+			type: "POST",
+			data: {id : id},
+			success: function (res)
+			{
+				console.log(res);
+
+				if (res.res.success)
+				{
+					alertify.success("Verify Email has been sent!");
+				}
+				else
+				{
+					alertify.alert(res.res.error);
+				}
+
+				document.getElementById("SendVerifyEmailButton").disabled = false;
+				$("#SendVerifyEmailButton").html('Send Verify Email');
+            },
+			error: function (e) {
+				alertify.alert("An error occured while sending verify email!");
+				document.getElementById("SendVerifyEmailButton").disabled = false;
+				$("#SendVerifyEmailButton").html('Send Verify Email');
+			}
+        });
+	}
+</script>

@@ -1,0 +1,509 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+}
+
+@{
+    CustomerParticular customerParticulars = (CustomerParticular)ViewData["CustomerParticular"];
+    CustomerSourceOfFund customerSourceOfFunds = customerParticulars.SourceOfFunds[0];
+}
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/bootstrap.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/bootstrap-extend.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/site.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/examples/css/dashboard/v1.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/fonts/web-icons/web-icons.min.css")">
+    <style type="text/css">
+        body {
+            letter-spacing: 0.5px;
+            padding-top: 20px;
+            color: black !important;
+        }
+
+        table, tr, td, th {
+            font-size: 14px !important;
+            font-family: Calibri, sans-serif;
+            color: black !important;
+            border-color: black !important;
+            vertical-align: top;
+        }
+
+        table tr td {
+            padding: 0 5px 5px 5px !important;
+        }
+
+        table tr th {
+            background-color: #c3c3c3;
+            font-weight: 800;
+            padding: 0 5px 0 5px !important;
+        }
+
+        label, input[type=checkbox] {
+            margin-right: 5px;
+        }
+
+        input[type=checkbox] {
+            border: 1px solid black !important;
+        }
+        .row{
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+        }
+        .width-25{
+            width: 25%;
+        }
+        .width-33{
+            width: 33%;
+        }
+        .width-50{
+            width: 50%;
+        }
+        .width-66{
+            width: 66%;
+        }
+        .width-75{
+            width: 75%;
+        }
+        .page-break {
+            clear: both;
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+    <table class="table table-bordered">
+        <tr>
+            <th class="text-uppercase" colspan="12">Customer's Particulars</th>
+        </tr>
+        <tr>
+            <td colspan="12">
+                <label class="text-uppercase">Name:</label>@customerParticulars.Natural_Name
+            </td>
+        </tr>
+        <tr>
+            <td colspan="12">
+                <label class="text-uppercase">Permanent Address:</label>@customerParticulars.Natural_PermanentAddress
+            </td>
+        </tr>
+        <tr>
+            <td colspan="12">
+                <label class="text-uppercase">Mailing Address:</label>@customerParticulars.Natural_MailingAddress
+                <div class="pull-right">
+                    <input type="checkbox" /><label class="text-uppercase">Same as Permanent Address</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="width-33" colspan="4">
+                <label class="text-uppercase">Nationality:</label>@customerParticulars.Natural_Nationality
+            </td>
+            <td class="width-33" colspan="4">
+                <label class="text-uppercase">IC/Passport No.:</label>@customerParticulars.Natural_ICPassportNo
+            </td>
+            <td colspan="4">
+                <label class="text-uppercase">Date of Birth:</label>@(Convert.ToDateTime(customerParticulars.Natural_DOB).ToString("dd/MM/yyyy"))
+            </td>
+        </tr>
+        <tr>
+            <td class="width-25" colspan="3">
+                <label class="text-uppercase">Contact No: (H)</label>@customerParticulars.Natural_ContactNoH
+            </td>
+            <td class="width-25" colspan="3">
+                <label class="text-uppercase">(O)</label>@customerParticulars.Natural_ContactNoO
+            </td>
+            <td class="width-25" colspan="3">
+                <label class="text-uppercase">(M)</label>@customerParticulars.Natural_ContactNoM
+            </td>
+            <td colspan="3">
+                <label class="text-uppercase">Email Address:</label>@customerParticulars.Natural_Email
+            </td>
+        </tr>
+        <tr>
+            <th class="text-uppercase" colspan="12">Employment Profile</th>
+        </tr>
+        <tr>
+            <th colspan="12"><i>If Employed</i></th>
+        </tr>
+        <tr>
+            <td class="width-50" colspan="6">
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Name Of Employer:</label>@customerParticulars.Natural_EmployedEmployerName
+                </div>
+            </td>
+            <td class="width-50" colspan="6">
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Job Title:</label>@customerParticulars.Natural_EmployedJobTitle
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="width-50" colspan="6">
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Name of Employer:</label>@customerParticulars.Natural_EmployedEmployerName
+                </div>
+            </td>
+            <td class="width-50" colspan="6">
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Registered Address of Employer:</label>@customerParticulars.Natural_EmployedRegisteredAddress
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="12"><i>If Self Employed</i></th>
+        </tr>
+        <tr>
+            <td class="width-50" colspan="6">
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Name Of Business:</label>@customerParticulars.Natural_SelfEmployedBusinessName
+                </div>
+            </td>
+            <td class="width-50" colspan="6">
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Business Registration No.:</label>@customerParticulars.Natural_SelfEmployedRegistrationNo
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="width-50" colspan="6">
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Registered Business Address:</label>@customerParticulars.Natural_SelfEmployedBusinessAddress
+                </div>
+            </td>
+            <td class="width-50" colspan="6">
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Principal Place of Business:</label> (If different from registered address)<br />@customerParticulars.Natural_SelfEmployedBusinessPrincipalPlace
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th class="text-uppercase" colspan="12">Source of Funds</th>
+        </tr>
+        <tr>
+            <td colspan="12">
+                @{
+                    string sof_Salary = "";
+                    string sof_BusinessProfit = "";
+                    string sof_Savings = "";
+                    string sof_SaleRealEstate = "";
+                    string sof_Gift = "";
+                    string sof_Investment = "";
+                    string sof_Others = "";
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_SourceOfFund.Contains("Salary"))
+                    {
+                        sof_Salary = "checked";
+                    }
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_SourceOfFund.Contains("Business Profits"))
+                    {
+                        sof_BusinessProfit = "checked";
+                    }
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_SourceOfFund.Contains("Savings"))
+                    {
+                        sof_Savings = "checked";
+                    }
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_SourceOfFund.Contains("Sale of Real Estate"))
+                    {
+                        sof_SaleRealEstate = "checked";
+                    }
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_SourceOfFund.Contains("Gift/Inheritance"))
+                    {
+                        sof_Gift = "checked";
+                    }
+                    if (customerParticulars.SourceOfFunds[0].Natural_SourceOfFund.Contains("Investment Earnings"))
+                    {
+                        sof_Investment = "checked";
+                    }
+                    
+                    if (customerParticulars.SourceOfFunds[0].Natural_SourceOfFund.Contains("Others"))
+                    {
+                        sof_Others = "checked";
+                    }
+                }
+                <div class="row">
+                    <div class="col-sm-3">
+                        <input type="checkbox" @sof_Salary/><label class="text-uppercase">Salary</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="checkbox" @sof_BusinessProfit/><label class="text-uppercase">Business Profit</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="checkbox" @sof_Savings/><label class="text-uppercase">Savings</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <input type="checkbox" @sof_SaleRealEstate/><label class="text-uppercase">Sale of Real Estate</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="checkbox" @sof_Gift/><label class="text-uppercase">Gift / Inheritance</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="checkbox" @sof_Investment/><label class="text-uppercase">Investment Earnings</label>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <input type="checkbox" @sof_Others/><label class="text-uppercase">Others</label> (Please Specify): &nbsp;&nbsp;
+                    @if (!string.IsNullOrEmpty(customerParticulars.SourceOfFunds[0].Natural_SourceOfFundIfOthers))
+                    {
+                        <u>&nbsp;&nbsp;&nbsp;&nbsp;@customerParticulars.SourceOfFunds[0].Natural_SourceOfFundIfOthers&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                    }
+                    else
+                    {
+                        <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                    }
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="12">
+                @{
+                    string income1 = "";
+                    string income2 = "";
+                    string income3 = "";
+                    string income4 = "";
+                    string income5 = "";
+                    string income6 = "";
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_AnnualIncome == "$10K TO $25K")
+                    {
+                        income1 = "checked";
+                    }
+                    else if (customerParticulars.SourceOfFunds[0].Natural_AnnualIncome == "$25K TO $50K")
+                    {
+                        income2 = "checked";
+                    }
+                    else if (customerParticulars.SourceOfFunds[0].Natural_AnnualIncome == "$50K TO $100K")
+                    {
+                        income3 = "checked";
+                    }
+                    else if (customerParticulars.SourceOfFunds[0].Natural_AnnualIncome == "$100K TO $200K")
+                    {
+                        income4 = "checked";
+                    }
+                    else if (customerParticulars.SourceOfFunds[0].Natural_AnnualIncome == "$200K TO $500K")
+                    {
+                        income5 = "checked";
+                    }
+                    else
+                    {
+                        income6 = "checked";
+                    }
+                }
+                <label class="text-uppercase">Annual Income (SGD):</label><br />
+                <div class="row">
+                    <div class="col-sm-3">
+                        <input type="checkbox" @income1 /><label class="text-uppercase">$10K to $25K</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="checkbox" @income2 /><label class="text-uppercase">$25K to $50K</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <input type="checkbox" @income3 /><label class="text-uppercase">$50K to $100K</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="checkbox" @income4 /><label class="text-uppercase">$100K to $200K</label>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <input type="checkbox" @income5 /><label class="text-uppercase">$200K to $500K</label>
+                </div>
+                <div class="col-sm-3">
+                    <input type="checkbox" @income6 /><label class="text-uppercase">Above $500K</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="12">
+                @{
+                    string q1yes = "";
+                    string q1no = "";
+                    string q2yes = "";
+                    string q2no = "";
+                    string q3yes = "";
+                    string q3no = "";
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_PoliticallyExposedIndividuals_1 == "Yes")
+                    {
+                        q1yes = "checked";
+                    }
+                    else
+                    {
+                        q1no = "checked";
+                    }
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_PoliticallyExposedIndividuals_2 == "Yes")
+                    {
+                        q2yes = "checked";
+                    }
+                    else
+                    {
+                        q2no = "checked";
+                    }
+
+                    if (customerParticulars.SourceOfFunds[0].Natural_PoliticallyExposedIndividuals_3 == "Yes")
+                    {
+                        q3yes = "checked";
+                    }
+                    else
+                    {
+                        q3no = "checked";
+                    }
+                }
+                <label class="text-uppercase">Politically Exposed Individuals:</label><br /><br />
+                <div style="float:left;margin-left:25px;width:15px;">1.</div>
+                <div class="col-sm-11">Are you or have you ever been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?</div><br />
+                <div style="float:left;margin-left:25px;width:15px;height:1px;"></div>
+                <div class="col-sm-11"><input type="checkbox" @q1yes/><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" @q1no/><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No</label></div><br /><br />
+                <div style="float:left;margin-left:25px;width:15px;">2.</div>
+                <div class="col-sm-11">Are you or have you ever been a parent/ step-parent/ step-child, adopted child/ spouse/ sibling/ step-sibling/ adopted sibling of anyone who is or has been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?</div><br />
+                <div style="float:left;margin-left:25px;width:15px;height:1px;"></div>
+                <div class="col-sm-11"><input type="checkbox" @q2yes/><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" @q2no/><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No</label></div><br /><br />
+                <div style="float:left;margin-left:25px;width:15px;">3.</div>
+                <div class="col-sm-11">Are you or have you ever been closely connected, either socially or professionally with anyone who is or has been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?</div><br />
+                <div style="float:left;margin-left:25px;width:15px;height:1px;"></div>
+                <div class="col-sm-11"><input type="checkbox" @q3yes/><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" @q3no/><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No</label></div>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="12"><i>Are you an agent acting on behalf of the customer? If yes, please complete the following:</i></th>
+        </tr>
+        <tr>
+            <td colspan="12">
+                <label class="text-uppercase">Name:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Natural_Name
+                }
+            </td>
+        </tr>
+        <tr>
+            <td colspan="12">
+                <label class="text-uppercase">Permanent Address:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Natural_PermanentAddress
+                }
+            </td>
+        </tr>
+    </table>
+    <div class="page-break"></div><br />
+    <table class="table table-bordered">
+        <tr>
+            <td class="width-33" colspan="4">
+                <label class="text-uppercase">Nationality:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Natural_Nationality
+                }
+            </td>
+            <td class="width-33" colspan="4">
+                <label class="text-uppercase">IC/Passport No.:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Natural_ICPassportNo
+                }
+            </td>
+            <td colspan="4">
+                <label class="text-uppercase">Date of Birth:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @(Convert.ToDateTime(customerParticulars.ActingAgents[0].Natural_DOB).ToString("dd/MM/yyyy"))
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="width-50" colspan="6">
+                <label class="text-uppercase">Relationship between Agent(s) and Client:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Relationship
+                }
+            </td>
+            <td class="width-50" colspan="6">
+                <label class="text-uppercase">Basis of Authority</label>(E.g Letter of authorisation or Board resolution, please attach):<br />
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    string[] files = customerParticulars.ActingAgents[0].BasisOfAuthority.Split(',');
+
+                    foreach (string file in files)
+                    {
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;@file<br /></div>
+                    }
+                }
+            </td>
+        </tr>
+    </table>
+
+    <table class="table table-bordered">
+        <tr>
+            <td colspan="2">
+                <label class="text-uppercase">Declaration:</label><br />
+                I/We have furnished the above information to the best of my knowledge, information and belief, and will duly inform Great East Forex in writing if there are any changes to be made to this form. I further confirm that the funds in relation to these transactions or account relationship are not derived from any criminal activities or intended for any criminal use. In accordance with Anti-Money Laundering requirements, I declare that we are the beneficial owner of all of our transactions with Great East Forex, and I am not an agent acting on behalf of others. I also declare that all transactions with Great East Forex have nothing to do with money laundering, terrorist financing and/or tax evasion.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <label class="text-uppercase">Documents Checklist:</label><br />
+                @if (!string.IsNullOrEmpty(customerParticulars.DocumentCheckLists[0].Natural_ICOfCustomer))
+                {
+                    <div class="col-sm-12">
+                        <i class="icon wb-check"></i> @("Photocopy of IC (or valid working pass for non-Singaporean) with photograph")
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(customerParticulars.DocumentCheckLists[0].Natural_BusinessNameCard))
+                {
+                    <div class="col-sm-12">
+                        <i class="icon wb-check"></i> @("Business / Name Card")
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(customerParticulars.DocumentCheckLists[0].Natural_KYCForm))
+                {
+                    <div class="col-sm-12">
+                        <i class="icon wb-check"></i> @("KYC Form")
+                    </div>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="width-66">
+                <div style="min-height: 80px;">
+                    <label class="text-uppercase">Signature:</label>
+                </div>
+            </td>
+            <td>
+                <label class="text-uppercase">Date:</label>
+            </td>
+        </tr>
+    </table>
+    <div style="width: 100%;margin: 30px 0 30px 0;border-bottom: 1px solid black;"></div>
+    <table class="table table-bordered">
+        <tr>
+            <td class="text-uppercase" colspan="4" style="width:60%;font-weight: 800;border-bottom-width: 2px;">For GEF Use Only:</td>
+        </tr>
+        <tr>
+            <td rowspan="2" style="width: 60%;">
+                <label class="text-uppercase">Remarks:</label>
+            </td>
+            <td>
+                <div style="min-height: 60px;">
+                    <label class="text-uppercase">Verified By:</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label class="text-uppercase">Date:</label>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

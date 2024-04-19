@@ -1,0 +1,609 @@
+﻿@using DataAccess
+@using DataAccess.POCO
+
+@{
+    Layout = null;
+    Remittances sale = (Remittances)ViewData["Sale"];
+    List<PayBankLists> despositAccountList = (List<PayBankLists>)ViewData["DepositAccountList"];
+    List<MemoRemittanceCurrencyTable> buyMemos = (List<MemoRemittanceCurrencyTable>)ViewData["BuyMemo"];
+    //List<MemoCurrencyTable> sellMemos = (List<MemoCurrencyTable>)ViewData["SellMemo"];
+    bool allCopy = (bool)ViewData["AllCopy"];
+    var name = "";
+    if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+    {
+        name = sale.CustomerParticulars.Company_RegisteredName;
+    }
+    else
+    {
+        name = sale.CustomerParticulars.Natural_Name;
+    }
+    var getRO = sale.RemittanceOders.FirstOrDefault();
+}
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: Calibri;
+            /*font-family: 'Roboto', sans-serif;*/
+            color: black !important;
+            padding-top: 5px;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .form-group {
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+            margin-bottom: 10px !important;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        .page-break {
+            clear: both;
+            page-break-after: always;
+        }
+
+        table {
+            width: 100%;
+            font-size: 18px !important;
+        }
+
+            table tr td, table th td {
+                vertical-align: top;
+            }
+
+        .table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+            .table > tbody > tr:nth-of-type(even) {
+                background-color: rgba(128, 128, 128, .5);
+            }
+
+            .table tbody tr td {
+                padding: 6px 5px 5px 5px;
+                border: 1px solid;
+            }
+
+        table tbody tr, table tfoot {
+            page-break-inside: avoid !important;
+        }
+    </style>
+</head>
+<body>
+    @if (buyMemos.Count > 0)
+    {
+        if (ViewData["MemoMode"].ToString() == "Sales" && allCopy)
+        {
+            <table style="margin-bottom: 30px;">
+                <tbody>
+                    <tr>
+                        <td colspan="3" style="text-align: center;"><strong style="font-size: 26px !important;">REMITTANCE RECEIPT</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 63%;">
+                            <strong>GREAT EAST FOREX</strong><br />
+                            <div style="font-size: 16px !important;">
+                                Business Reg No. 40238800C<br />
+                                101 Beach Road<br />
+                                #02-02 The 101<br />
+                                Singapore 189703<br />
+                                Tel: 6339 2828&nbsp;&nbsp;&nbsp;&nbsp;Fax: 6334 2013<br />
+                                Email: support@gefx.sg
+                            </div>
+                        </td>
+                        <td style="width: 17%">
+                            <div style="text-align: right; padding-right: 10px;">
+                                Receipt No.:<br />
+                                Order Date:<br />
+                                @*@if ((sale.TransactionType == "Buy" || sale.TransactionType == "Sell") && !string.IsNullOrEmpty(sale.LocalPaymentMode))
+                                    {*@
+                                @("Local Payment:")<br />
+                                @("Mode ")
+                                @*}*@
+                            </div>
+                        </td>
+                        <td style="width: 20%">
+                            <div>
+                                @sale.MemoID<br />
+                                @sale.IssueDate.ToString("dd/MM/yyyy")
+                                @*@if ((sale.TransactionType == "Buy" || sale.TransactionType == "Sell") && !string.IsNullOrEmpty(sale.LocalPaymentMode))
+                                    {
+                                        <br />
+                                        if (sale.LocalPaymentMode.Contains("Cash"))
+                                        {
+                                            @("Cash")<br />
+                                        }
+
+                                        if (sale.LocalPaymentMode.Contains("Cheque 1"))
+                                        {
+                                            @("Cheque 1 (" + sale.Cheque1No + ")")<br />
+                                        }
+
+                                        if (sale.LocalPaymentMode.Contains("Cheque 2"))
+                                        {
+                                            @("Cheque 2 (" + sale.Cheque2No + ")")<br />
+                                        }
+
+                                        if (sale.LocalPaymentMode.Contains("Cheque 3"))
+                                        {
+                                            @("Cheque 3 (" + sale.Cheque3No + ")")<br />
+                                        }
+
+                                        if (sale.LocalPaymentMode.Contains("Bank Transfer"))
+                                        {
+                                            @("Bank Transfer (" + sale.BankTransferNo + ")")<br />
+                                        }
+                                    }*@
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table style="margin-bottom: 15px;">
+                <tbody>
+                    <tr>
+                        <td style="padding-bottom: 20px;">
+                            <strong>CUSTOMER:</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 85%; padding-bottom: 10px;">
+                            @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                            {
+                                <br />
+                                <span>Name: </span>@sale.CustomerParticulars.Company_RegisteredName<br />
+                                <span>Address: </span>@sale.CustomerParticulars.Company_BusinessAddress1<br />
+                                @sale.CustomerParticulars.Company_BusinessAddress2<br />
+                                @sale.CustomerParticulars.Company_PostalCode<br />
+                                @("Tel: " + sale.CustomerParticulars.Company_TelNo + "    Fax: " + sale.CustomerParticulars.Company_FaxNo)
+                            }
+                            else
+                            {
+                                <br />
+                                <span>Name: </span>@sale.CustomerParticulars.Natural_Name<br />
+                                <span>Address: </span>@sale.CustomerParticulars.Natural_PermanentAddress<br />
+                                @("Contact: " + sale.CustomerParticulars.Natural_ContactNoO + " (O)    " + sale.CustomerParticulars.Natural_ContactNoM + " (M)")
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 10px;">
+                            <strong>Transfer Details: </strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 40%; padding-bottom: 10px;">
+                            @foreach (var data in sale.RemittanceOders)
+                            {
+                                var payDecimal = data.PayCurrencyDecimal.ProductDecimal;
+                                string format = "#,##0";
+                                switch (payDecimal)
+                                {
+                                    case 1:
+                                        format += ".0";
+                                        break;
+                                    case 2:
+                                        format += ".00";
+                                        break;
+                                    case 3:
+                                        format += ".000";
+                                        break;
+                                    case 4:
+                                        format += ".0000";
+                                        break;
+                                    case 5:
+                                        format += ".00000";
+                                        break;
+                                    case 6:
+                                        format += ".000000";
+                                        break;
+                                    case 7:
+                                        format += ".0000000";
+                                        break;
+                                    case 8:
+                                        format += ".00000000";
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                var getDecimal = data.GetCurrencyDecimal.ProductDecimal;
+                                string getformat = "#,##0";
+                                switch (payDecimal)
+                                {
+                                    case 1:
+                                        getformat += ".0";
+                                        break;
+                                    case 2:
+                                        getformat += ".00";
+                                        break;
+                                    case 3:
+                                        getformat += ".000";
+                                        break;
+                                    case 4:
+                                        getformat += ".0000";
+                                        break;
+                                    case 5:
+                                        getformat += ".00000";
+                                        break;
+                                    case 6:
+                                        getformat += ".000000";
+                                        break;
+                                    case 7:
+                                        getformat += ".0000000";
+                                        break;
+                                    case 8:
+                                        getformat += ".00000000";
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                <p>
+                                    <br /><span>Amount paid by Customer</span>
+                                    <br /> <span>@data.PayCurrencyDecimal.CurrencyCode @data.PayAmount.ToString(format)</span>
+                                    <br /><span>Amount to be Converted</span>
+                                    <br /><span>@data.PayCurrencyDecimal.CurrencyCode @((data.PayAmount - data.Fee).ToString(format))</span>
+                                    <br /><span>Converted and sent to @name</span>
+                                    <br /><span>@data.GetCurrencyDecimal.CurrencyCode @data.GetAmount.ToString(getformat)</span>
+                                </p>
+                            }
+
+                        </td>
+                        <td style="width: 60%; padding-bottom: 10px;">
+                            <p>Fee:</p>
+                            @foreach (var data in sale.RemittanceOders)
+                            {
+                                var payDecimal = data.PayCurrencyDecimal.ProductDecimal;
+                                string format = "#,##0";
+                                switch (payDecimal)
+                                {
+                                    case 1:
+                                        format += ".0";
+                                        break;
+                                    case 2:
+                                        format += ".00";
+                                        break;
+                                    case 3:
+                                        format += ".000";
+                                        break;
+                                    case 4:
+                                        format += ".0000";
+                                        break;
+                                    case 5:
+                                        format += ".00000";
+                                        break;
+                                    case 6:
+                                        format += ".000000";
+                                        break;
+                                    case 7:
+                                        format += ".0000000";
+                                        break;
+                                    case 8:
+                                        format += ".00000000";
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                <p>
+                                    <br /><span>@data.PayCurrencyDecimal.CurrencyCode @data.Fee.ToString(format)</span>
+                                    <br /><span>Exchange rate</span>
+                                    <br /><span>@data.PayCurrencyDecimal.CurrencyCode 1 = @data.Rate.ToString("#,##0.00000000")</span>
+                                </p>
+                            }
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 10px;">
+                            <strong>Sent to:</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 40%; padding-bottom: 10px;">
+                            Name: @name<br />
+                            Address:
+                            @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                            {
+                                @sale.CustomerParticulars.Company_BusinessAddress1<br />
+                                @sale.CustomerParticulars.Company_BusinessAddress2<br />
+                                @sale.CustomerParticulars.Company_PostalCode<br />
+                            }
+                            else
+                            {
+                                @sale.CustomerParticulars.Natural_PermanentAddress<br />
+                            }
+                            Remarks: @sale.Remarks
+                        </td>
+                        <td style="width: 60%; padding-bottom: 10px;">
+                            Account Details
+                            @if (getRO.PayPaymentType == "1")
+                            {
+                                <p><span>Cash</span></p>
+                            }
+                            else if (getRO.PayPaymentType == "2")
+                            {
+                                <span>@getRO.PayDepositAccount<br />@getRO.ChequeNo</span>
+                            }
+                            else
+                            {
+                                <span>@getRO.PayDepositAccount <br />@getRO.BankTransferNo</span>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="page-break"></div>
+        }
+
+        <table style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td colspan="3" style="text-align: center; padding-top: 2px;"><strong style="font-size: 26px !important;">REMITTANCE RECEIPT</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="2">
+
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 73%;">
+                        <strong>GREAT EAST FOREX</strong><br />
+                        <div style="font-size: 16px !important;">
+                            Business Reg No. 40238800C<br />
+                            101 Beach Road<br />
+                            #02-02 The 101<br />
+                            Singapore 189703<br />
+                            Tel: 6339 2828&nbsp;&nbsp;&nbsp;&nbsp;Fax: 6334 2013<br />
+                            Email: support@gefx.sg
+                        </div>
+                    </td>
+                    <td style="width: 17%">
+                        <div style="text-align: right; padding-right: 10px;">
+                            Receipt No.:<br />
+                            Order Date:
+                        </div>
+                    </td>
+                    <td style="width: 10%">
+                        <div>
+                            @sale.MemoID<br />
+                            @sale.IssueDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="margin-bottom: 15px;">
+            <tbody>
+                <tr>
+                    <td style="padding-bottom: 0px;">
+                        <strong>CUSTOMER:</strong>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 20px;">
+                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                {
+                    <span>Name: </span>@sale.CustomerParticulars.Company_RegisteredName<br />
+                    <span>Address: </span>@(sale.CustomerParticulars.Company_BusinessAddress1+", ")
+                    @(sale.CustomerParticulars.Company_BusinessAddress2+", ")
+                    @(sale.CustomerParticulars.Company_BusinessAddress3+", ")
+                    @sale.CustomerParticulars.Company_PostalCode<br />
+                    @("Tel: " + sale.CustomerParticulars.Company_TelNo + "    Fax: " + sale.CustomerParticulars.Company_FaxNo)
+                }
+                else
+                {
+                    <br />
+                    <span>Name: </span>@sale.CustomerParticulars.Natural_Name<br />
+                    <span>Address: </span>@(sale.CustomerParticulars.Natural_PermanentAddress+", ")
+                    @(sale.CustomerParticulars.Natural_PermanentAddress2+", ")
+                    @(sale.CustomerParticulars.Natural_PermanentAddress3+", ")
+                    @sale.CustomerParticulars.Natural_PermanentPostalCode<br />
+                    @("Contact: " + sale.CustomerParticulars.Natural_ContactNoO + " (O)    " + sale.CustomerParticulars.Natural_ContactNoM + " (M)")
+                }
+                    </td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+        int count = 1;
+        int countbreak = 0;
+        foreach (var data in sale.RemittanceOders)
+        {
+            int total = sale.RemittanceOders.Count();
+            var payDecimal = data.PayCurrencyDecimal.ProductDecimal;
+            string format = "#,##0";
+            switch (payDecimal)
+            {
+                case 1:
+                    format += ".0";
+                    break;
+                case 2:
+                    format += ".00";
+                    break;
+                case 3:
+                    format += ".000";
+                    break;
+                case 4:
+                    format += ".0000";
+                    break;
+                case 5:
+                    format += ".00000";
+                    break;
+                case 6:
+                    format += ".000000";
+                    break;
+                case 7:
+                    format += ".0000000";
+                    break;
+                case 8:
+                    format += ".00000000";
+                    break;
+                default:
+                    break;
+            }
+            var getDecimal = data.GetCurrencyDecimal.ProductDecimal;
+            string getformat = "#,##0";
+            switch (payDecimal)
+            {
+                case 1:
+                    getformat += ".0";
+                    break;
+                case 2:
+                    getformat += ".00";
+                    break;
+                case 3:
+                    getformat += ".000";
+                    break;
+                case 4:
+                    getformat += ".0000";
+                    break;
+                case 5:
+                    getformat += ".00000";
+                    break;
+                case 6:
+                    getformat += ".000000";
+                    break;
+                case 7:
+                    getformat += ".0000000";
+                    break;
+                case 8:
+                    getformat += ".00000000";
+                    break;
+                default:
+                    break;
+            }
+            //var marginTop = "0px";
+            //if (count % 2 != 0 && count != 0)
+            //{
+            //    marginTop = "30px";
+            //}
+
+            <table style="margin-bottom: 15px;">
+                <tbody>
+                    <tr>
+                        <td style="padding-bottom: 10px;">
+                            <strong>Transfer Details: </strong>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 67%; padding-bottom: 10px;">
+                            <p>
+                                <span>Amount paid by Customer</span>
+                                <br /><span>@data.PayCurrencyDecimal.CurrencyCode @data.PayAmount.ToString(format)</span>
+                                <br /><br /> <span>Amount to be Converted</span>
+                                <br /><span>@data.PayCurrencyDecimal.CurrencyCode @((data.PayAmount - data.Fee).ToString(format))</span>
+                                <br /><br /> <span>Amount to be Remitted</span>
+                                <br /><span>@data.GetCurrencyDecimal.CurrencyCode @data.GetAmount.ToString(getformat)</span>
+                            </p>
+
+
+                        </td>
+                        <td style="width: 33%; padding-bottom: 10px;">
+                            <p>
+                                Fee:
+                                <br /><span>@data.PayCurrencyDecimal.CurrencyCode @data.Fee.ToString(format)</span>
+                                <br /><br /><span>Exchange rate</span>
+                                <br /><span>1 @data.GetCurrencyDecimal.CurrencyCode = @data.Rate.ToString("#,##0.000000000000") @data.PayCurrencyDecimal.CurrencyCode</span>
+                                <br />
+                                <br/><span>1 @data.PayCurrencyDecimal.CurrencyCode = @((1 / data.Rate).ToString("#,##0.000000000000")) @data.GetCurrencyDecimal.CurrencyCode</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 10px;">
+                            <strong>Sent to:</strong>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 67%; padding-bottom: 10px;">
+                            Name: @data.BeneficiaryFullName<br />
+                            Address: @data.BeneficiaryAddressMain <br />
+                            @*@if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                {
+                                    @sale.CustomerParticulars.Company_BusinessAddress1<br />
+                                    @sale.CustomerParticulars.Company_BusinessAddress2<br />
+                                    @sale.CustomerParticulars.Company_PostalCode<br />
+                                }
+                                else
+                                {
+                                    @sale.CustomerParticulars.Natural_PermanentAddress<br />
+                                }*@
+                            Remarks: @data.BeneficiaryPaymentDetails
+                        </td>
+                        <td style="width: 33%; padding-bottom: 10px;">
+                            Account Details<br />
+                            <br /><span>Bank Name: @data.BeneficiaryBankName</span>
+                            <br /><span>Bank Account No. | IBAN No.: @data.BeneficiaryBankAccountNo</span>
+                            @if (!string.IsNullOrEmpty(data.BeneficiaryBankCode))
+                            {
+                                <br /><span>SWIFT Code | Bank Code: @data.BeneficiaryBankCode</span>
+                            }
+                            @if (!string.IsNullOrEmpty(@data.IBANEuropeBSBAustralia))
+                            {
+                                <br /><span>BIC / Australia BSB /USA Fed Wire / ABA / UK Sort: @data.IBANEuropeBSBAustralia</span>
+                            }
+
+                            @*@if (data.PayPaymentType == "1")
+                                {
+                                    <br /><span>Cash</span>
+                                }
+                                else if (data.PayPaymentType == "2")
+                                {
+                                    var bankName = despositAccountList.Where(e => e.ID == data.PayDepositAccount).FirstOrDefault().BankName;
+                                    <br /><span>@bankName<br />@getRO.ChequeNo</span>
+                                }
+                                else
+                                {
+                                    var bankName = despositAccountList.Where(e => e.ID == data.PayDepositAccount).FirstOrDefault().BankName;
+                                    <br /><span>@bankName <br />@getRO.BankTransferNo</span>
+                                }*@
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 10px;">
+                            <strong>Message:</strong>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Remarks: @sale.Remarks</td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr />
+            if (total > 1)
+            {
+                if (count == 1)
+                {
+                    <div class="page-break"></div>
+                }
+                else
+                {
+                    if (count % 2 != 0)
+                    {
+                        <div class="page-break"></div>
+                    }
+                }
+            }
+            count++;
+        }
+    }
+
+</body>
+</html>

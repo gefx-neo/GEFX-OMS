@@ -1,0 +1,1054 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Edit Product";
+    ViewBag.ManageProducts = "active open";
+    decimal num;
+}
+
+
+<style>
+/* This only works with JavaScript,
+if it's not present, don't show loader */
+
+.preload {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 9999;
+	background: url('@Url.Content("~/Content/images/Preloader_2.gif")') center no-repeat #fff;
+    opacity: 0.7;
+}
+</style>
+
+<div class="preload" style="display:none;"></div>
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row row-lg">
+            <div class="col-xlg-12 col-md-12">
+                @if (TempData["Result"] != null)
+                {
+                    string[] result = TempData["Result"].ToString().Split('|');
+
+                    <div class="alert alert-@result[0]">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @result[1]
+                    </div>
+                }
+
+                @using (Html.BeginForm("Edit", "Product", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    Product products = (Product)ViewData["Product"];
+                    ProductInventory productInventories = (ProductInventory)ViewData["ProductInventory"];
+
+                    if (products.CurrencyCode == "SGD")
+                    {
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.CurrencyCode, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.CurrencyCode, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.CurrencyName, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.CurrencyName, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.BuyRate, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.BuyRate, "{0:#,##0.########}", new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("AutomatedBuyRate", "Automated Buy Rate: ", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBox("AutomatedBuyRate", products.AutomatedBuyRate, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.SellRate, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.SellRate, "{0:#,##0.########}", new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("AutomatedSellRate", "Automated Sell Rate: ", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBox("AutomatedSellRate", products.AutomatedSellRate, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.Decimal, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(p => products.Decimal, (SelectList)ViewData["DecimalDropdown"], new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.Symbol, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.Symbol, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.AcceptableRange, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.AcceptableRange, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.Unit, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(p => products.Unit, (SelectList)ViewData["UnitDropdown"], new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.PaymentModeAllowed, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Pending" name="PaymentModeAllowed" value="Pending" @ViewData["PendingCheckBox"].ToString() disabled>
+                                    <label for="Pending">Pending</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Cash" name="PaymentModeAllowed" @ViewData["CashCheckBox"].ToString() disabled>
+                                    <label for="Cash">Cash</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Cheque" name="PaymentModeAllowed" @ViewData["ChequeCheckBox"].ToString() disabled>
+                                    <label for="Cheque">Cheque</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="BankTransfer" name="PaymentModeAllowed" @ViewData["BankTransferCheckBox"].ToString() disabled>
+                                    <label for="BankTransfer">Bank Transfer</label>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.TransactionTypeAllowed, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Buy" name="TransactionTypeAllowed" @ViewData["BuyCheckBox"].ToString() disabled>
+                                    <label for="Buy">Buy</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Sell" name="TransactionTypeAllowed" @ViewData["SellCheckBox"].ToString() disabled>
+                                    <label for="Sell">Sell</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Encashment" name="TransactionTypeAllowed" @ViewData["EncashmentCheckBox"].ToString() disabled>
+                                    <label for="Encashment">Encashment</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Swap" name="TransactionTypeAllowed" @ViewData["SwapCheckBox"].ToString() disabled>
+                                    <label for="Swap">Swap</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CrossCurrency" name="TransactionTypeAllowed" @ViewData["CrossCurrencyCheckBox"].ToString() disabled>
+                                    <label for="CrossCurrency">Cross Currency</label>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="div-encashment-rate" class="form-group">
+                            @Html.LabelFor(p => products.EncashmentRate, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.EncashmentRate, "{0:#,##0.########}", new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.MaxAmount, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(u => products.MaxAmount, new { @class = "form-control", @disabled = "disabled" })
+                                @Html.ValidationMessageFor(u => products.MaxAmount)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.GuaranteeRates, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(u => products.GuaranteeRates, (SelectList)ViewData["GuaranteeRateDropdown"], new { @class = "form-control", @disabled = "disabled" })
+                                @Html.ValidationMessageFor(u => products.GuaranteeRates)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.PopularCurrencies, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(u => products.PopularCurrencies, (SelectList)ViewData["PopularCurrencyDropdown"], new { @class = "form-control", @disabled = "disabled" })
+                                @Html.ValidationMessageFor(u => products.PopularCurrencies)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.BuyRateAdjustment, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(u => products.BuyRateAdjustment, new { @class = "form-control", @onkeyup = "CalculateBuyRate()", @disabled = "disabled" })
+                                @Html.ValidationMessageFor(u => products.BuyRateAdjustment)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("BuyRateAdjustmentCalculated", "Buy Rate Adjustment Calculated: ", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBox("BuyRateAdjustmentCalculated", products.BuyRateAdjustment == 0 ? "0" : Decimal.TryParse(products.BuyRateAdjustment.HasValue.ToString(), out num) ? "0" : (products.BuyRate * (1 - products.BuyRateAdjustment)).ToString(), new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.SellRateAdjustment, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(u => products.SellRateAdjustment, new { @class = "form-control", @onkeyup = "CalculateSellRate()", @disabled = "disabled" })
+                                @Html.ValidationMessageFor(u => products.SellRateAdjustment)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("SellRateAdjustmentCalculated", "Sell Rate Adjustment Calculated: ", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBox("SellRateAdjustmentCalculated", products.SellRateAdjustment == 0 ? "0" : Decimal.TryParse(products.SellRateAdjustment.HasValue.ToString(), out num) ? "0" : (products.SellRate * (1 + products.SellRateAdjustment)).ToString(), new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.TransactionTypeAllowedCustomer, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10" style="padding-bottom:10px;">
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CE_Pay" name="TransactionTypeAllowedCustomer" value="CurrencyExchangeYouPay" @ViewData["CurrencyExchangeYouPayCheckBox"].ToString() disabled>
+                                    <label for="CE_Pay">Currency Exchange – you pay</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CE_Get" name="TransactionTypeAllowedCustomer" value="CurrencyExchangeYouGet" @ViewData["CurrencyExchangeYouGetCheckBox"].ToString() disabled>
+                                    <label for="CE_Get">Currency Exchange – you get</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CW_Pay" name="TransactionTypeAllowedCustomer" value="CashWithdrawalYouPay" @ViewData["CashWithdrawalYouPayCheckBox"].ToString() disabled>
+                                    <label for="CW_Pay">Cash Withdrawal – you pay</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CW_Get" name="TransactionTypeAllowedCustomer" value="CashWithdrawalYouGet" @ViewData["CashWithdrawalYouGetCheckBox"].ToString() disabled>
+                                    <label for="CW_Get">Cash Withdrawal – you get</label>
+                                </span>
+                                @Html.ValidationMessageFor(p => products.TransactionTypeAllowedCustomer)
+                            </div>
+                            <div class="col-sm-offset-2">
+                                <span class="help-block"><i class="wb-info-circle"></i> Currency Exchange - you pay is checked, Buy type must be checked.</span>
+                                <span class="help-block"><i class="wb-info-circle"></i> Currency Exchange - you get is checked, Sell type must be checked.</span>
+                                <span class="help-block"><i class="wb-info-circle"></i> Cash Withdrawal - you get / you pay is checked, Encashment type must be checked.</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.EncashmentMapping, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(u => products.EncashmentMapping, (SelectList)ViewData["EncashmentMappingDropdown"], new { @class = "form-control", @data_plugin = "select2", @disabled = "disabled" })
+                                @Html.ValidationMessageFor(u => products.EncashmentMapping)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.Status, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(p => products.Status, (SelectList)ViewData["StatusDropdown"], new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+
+                        <div class="example-well padding-30" id="product-inventory">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <h4>Inventory</h4>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(p => productInventories.TotalInAccount, new { @class = "col-sm-2 control-label" })
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="inventory-symbol">$</span>
+                                        @Html.TextBox("TotalInAccount", productInventories.TotalInAccount, new { @class = "form-control", @disabled = "disabled" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10 col-sm-offset-2">
+                                    <button type="button" class="btn btn-default" onclick="ViewLog()"><i class="icon wb-eye" aria-hidden="true"></i> View Log</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="example-well padding-30">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <h4>Denomination</h4>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="table-product-denomination" class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+                                        <thead>
+                                            <tr>
+                                                <th>Denomination</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (ViewData["ReturnedDenomination"] != null)
+                                            {
+                                                List<string> denominationValues = (List<string>)ViewData["ReturnedDenomination"];
+
+                                                foreach (string value in denominationValues)
+                                                {
+                                                    string[] data = value.Split('|');
+
+                                                    <tr id="denominationRow_@data[0]">
+                                                        <td>
+                                                            @if (data[1] == "0")
+                                                            {
+                                                                @("coins")
+                                                            }
+                                                            else
+                                                            {
+                                                                @data[1]
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                @{
+                                    int page = 1;
+
+                                    if (ViewData["Page"] != null)
+                                    {
+                                        page = Convert.ToInt32(ViewData["Page"]);
+                                    }
+                                }
+                                <a href="@Url.Action("Listing", new { @page = page })" class="btn btn-default">Back</a>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.CurrencyCode, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.CurrencyCode, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(p => products.CurrencyCode)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.CurrencyName, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.CurrencyName, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(p => products.CurrencyName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.BuyRate, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.BuyRate, "{0:#,##0.########}", new { @class = "form-control", @onchange = "RateChange(this)" })
+                                @Html.ValidationMessageFor(p => products.BuyRate)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("AutomatedBuyRate", "Automated Buy Rate: ", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBox("AutomatedBuyRate", products.AutomatedBuyRate, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.SellRate, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.SellRate, "{0:#,##0.########}", new { @class = "form-control", @onchange = "RateChange(this)" })
+                                @Html.ValidationMessageFor(p => products.SellRate)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("AutomatedSellRate", "Automated Sell Rate: ", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBox("AutomatedSellRate", products.AutomatedSellRate, new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.Decimal, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(p => products.Decimal, (SelectList)ViewData["DecimalDropdown"], new { @class = "form-control", @onchange = "DecimalChange()" })
+                                @Html.ValidationMessageFor(p => products.Decimal)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.Symbol, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.Symbol, new { @class = "form-control", @maxlength = "4", @onchange = "SymbolChange()" })
+                                @Html.ValidationMessageFor(p => products.Symbol)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.AcceptableRange, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.AcceptableRange, new { @class = "form-control", @data_plugin = "TouchSpin", @data_min = "0", @data_max = "20", @data_step = "0.1", @data_decimals = "1", @data_boostat = "5", @data_maxboostedstep = "10", @data_postfix = "%" })
+                                @Html.ValidationMessageFor(p => products.AcceptableRange)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.Unit, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(p => products.Unit, (SelectList)ViewData["UnitDropdown"], new { @class = "form-control" })
+                                @Html.ValidationMessageFor(p => products.Unit)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.PaymentModeAllowed, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Pending" name="PaymentModeAllowed" value="Pending" @ViewData["PendingCheckBox"].ToString()>
+                                    <label for="Pending">Pending</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Cash" name="PaymentModeAllowed" value="Cash" @ViewData["CashCheckBox"].ToString()>
+                                    <label for="Cash">Cash</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Cheque" name="PaymentModeAllowed" value="Cheque" @ViewData["ChequeCheckBox"].ToString()>
+                                    <label for="Cheque">Cheque</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="BankTransfer" name="PaymentModeAllowed" value="Bank Transfer" @ViewData["BankTransferCheckBox"].ToString()>
+                                    <label for="BankTransfer">Bank Transfer</label>
+                                </span>
+                                @Html.ValidationMessageFor(p => products.PaymentModeAllowed)
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.TransactionTypeAllowed, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Buy" name="TransactionTypeAllowed" value="Buy" @ViewData["BuyCheckBox"].ToString()>
+                                    <label for="Buy">Buy</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Sell" name="TransactionTypeAllowed" value="Sell" @ViewData["SellCheckBox"].ToString()>
+                                    <label for="Sell">Sell</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Encashment" name="TransactionTypeAllowed" value="Encashment" @ViewData["EncashmentCheckBox"].ToString() onclick="TransactionTypeClick()">
+                                    <label for="Encashment">Encashment</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="Swap" name="TransactionTypeAllowed" value="Swap" @ViewData["SwapCheckBox"].ToString() onclick="TransactionTypeClick()">
+                                    <label for="Swap">Swap</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CrossCurrency" name="TransactionTypeAllowed" value="Cross Currency" @ViewData["CrossCurrencyCheckBox"].ToString()>
+                                    <label for="CrossCurrency">Cross Currency</label>
+                                </span>
+                                @Html.ValidationMessageFor(p => products.TransactionTypeAllowed)
+                            </div>
+                        </div>
+
+                        <div id="div-encashment-rate" class="form-group">
+                            @Html.LabelFor(p => products.EncashmentRate, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(p => products.EncashmentRate, "{0:#,##0.########}", new { @class = "form-control", @onchange = "RateChange(this)" })
+                                @Html.ValidationMessageFor(p => products.EncashmentRate)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.MaxAmount, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(u => products.MaxAmount, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(u => products.MaxAmount)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.GuaranteeRates, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(u => products.GuaranteeRates, (SelectList)ViewData["GuaranteeRateDropdown"], new { @class = "form-control" })
+                                @Html.ValidationMessageFor(u => products.GuaranteeRates)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.PopularCurrencies, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(u => products.PopularCurrencies, (SelectList)ViewData["PopularCurrencyDropdown"], new { @class = "form-control" })
+                                @Html.ValidationMessageFor(u => products.PopularCurrencies)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.BuyRateAdjustment, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(u => products.BuyRateAdjustment, new { @class = "form-control", @onkeyup = "CalculateBuyRate()" })
+                                @Html.ValidationMessageFor(u => products.BuyRateAdjustment)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("BuyRateAdjustmentCalculated", "Buy Rate Adjustment Calculated: ", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBox("BuyRateAdjustmentCalculated", products.BuyRateAdjustment == 0 ? "0" : Decimal.TryParse(products.BuyRateAdjustment.HasValue.ToString(), out num) ? "0" : (products.BuyRate * (1 - products.BuyRateAdjustment)).ToString(), new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.SellRateAdjustment, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBoxFor(u => products.SellRateAdjustment, new { @class = "form-control", @onkeyup = "CalculateSellRate()" })
+                                @Html.ValidationMessageFor(u => products.SellRateAdjustment)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("SellRateAdjustmentCalculated", "Sell Rate Adjustment Calculated: ", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.TextBox("SellRateAdjustmentCalculated", products.SellRateAdjustment == 0 ? "0" : Decimal.TryParse(products.SellRateAdjustment.HasValue.ToString(), out num) ? "0" : (products.SellRate * (1 + products.SellRateAdjustment)).ToString(), new { @class = "form-control", @disabled = "disabled" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.TransactionTypeAllowedCustomer, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10" style="padding-bottom:10px;">
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CE_Pay" name="TransactionTypeAllowedCustomer" value="CurrencyExchangeYouPay" @ViewData["CurrencyExchangeYouPayCheckBox"].ToString()>
+                                    <label for="CE_Pay">Currency Exchange – you pay</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CE_Get" name="TransactionTypeAllowedCustomer" value="CurrencyExchangeYouGet" @ViewData["CurrencyExchangeYouGetCheckBox"].ToString()>
+                                    <label for="CE_Get">Currency Exchange – you get</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CW_Pay" name="TransactionTypeAllowedCustomer" value="CashWithdrawalYouPay" @ViewData["CashWithdrawalYouPayCheckBox"].ToString()>
+                                    <label for="CW_Pay">Cash Withdrawal – you pay</label>
+                                </span>
+                                <span class="checkbox-custom checkbox-primary">
+                                    <input class="form-control" type="checkbox" id="CW_Get" name="TransactionTypeAllowedCustomer" value="CashWithdrawalYouGet" @ViewData["CashWithdrawalYouGetCheckBox"].ToString()>
+                                    <label for="CW_Get">Cash Withdrawal – you get</label>
+                                </span>
+                                @Html.ValidationMessageFor(p => products.TransactionTypeAllowedCustomer)
+                            </div>
+                            <div class="col-sm-offset-2">
+                                <span class="help-block"><i class="wb-info-circle"></i> Currency Exchange - you pay is checked, Buy type must be checked.</span>
+                                <span class="help-block"><i class="wb-info-circle"></i> Currency Exchange - you get is checked, Sell type must be checked.</span>
+                                <span class="help-block"><i class="wb-info-circle"></i> Cash Withdrawal - you get / you pay is checked, Encashment type must be checked.</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(u => products.EncashmentMapping, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(u => products.EncashmentMapping, (SelectList)ViewData["EncashmentMappingDropdown"], new { @class = "form-control", @data_plugin = "select2" })
+                                @Html.ValidationMessageFor(u => products.EncashmentMapping)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(p => products.Status, new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-10">
+                                @Html.DropDownListFor(p => products.Status, (SelectList)ViewData["StatusDropdown"], new { @class = "form-control" })
+                                @Html.ValidationMessageFor(p => products.Status)
+                            </div>
+                        </div>
+
+                        <div class="example-well padding-30" id="product-inventory">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <h4>Inventory</h4>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(p => productInventories.TotalInAccount, new { @class = "col-sm-2 control-label" })
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <span class="input-group-addon" id="inventory-symbol">$</span>
+                                        @Html.TextBox("TotalInAccount", productInventories.TotalInAccount, new { @class = "form-control", @disabled = "disabled" })
+                                        @Html.HiddenFor(pi => productInventories.TotalInAccount)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10 col-sm-offset-2">
+                                    @if (Session["UserRole"].ToString().Contains("Super Admin"))
+                                    {
+                                        <button type="button" class="btn btn-primary" id="btn-update-inventory"><i class="icon wb-add-file" aria-hidden="true"></i> Update Inventory</button>
+                                    }
+                                    <button type="button" class="btn btn-default" onclick="ViewLog()"><i class="icon wb-eye" aria-hidden="true"></i> View Log</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="example-well padding-30">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <h4>Denomination</h4>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Denomination Value:", new { @class = "col-sm-2 control-label" })
+                                <div class="col-sm-10">
+                                    @Html.TextBox("DenominationValue", null, new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10 col-sm-offset-2">
+                                    <button type="button" class="btn btn-primary" onclick="AddDenominationValue()">Add Denomination </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12 table-responsive">
+                                    <table id="table-product-denomination" class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+                                        <thead>
+                                            <tr>
+                                                <th>Denomination</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (ViewData["ReturnedDenomination"] != null)
+                                            {
+                                                List<string> denominationValues = (List<string>)ViewData["ReturnedDenomination"];
+
+                                                foreach (string value in denominationValues)
+                                                {
+                                                    string[] data = value.Split('|');
+
+                                                    <tr id="denominationRow_@data[0]">
+                                                        <td>
+                                                            <input type="hidden" id="DenominationValue_@data[0]" name="DenominationValue_@data[0]" value="@data[1]" />@if (data[1] == "0")
+                                                            {@("coins")}
+                                                        else
+                                                        {@data[1]}
+                                                        </td>
+                                                        <td>
+                                                            @if (data[1] != "0")
+                                                            {<button class="btn btn-danger btn-xs" type="button" onclick="DeleteDenominationValue(@data[0])"><i aria-hidden="true" class="icon wb-close"></i> Remove</button>}
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                <a href="@Url.Action("Edit", new { @id = @ViewData["ProductId"].ToString() })" class="btn btn-default btn-outline">Reset</a>
+                                @{
+                                    int page = 1;
+
+                                    if (ViewData["Page"] != null)
+                                    {
+                                        page = Convert.ToInt32(ViewData["Page"]);
+                                    }
+                                }
+                                <a href="@Url.Action("Listing", new { @page = page })" class="btn btn-default">Back</a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-product-inventory" aria-hidden="false" aria-labelledby="modal-product-inventory-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-product-inventory-label"></h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group">
+                        @Html.Label("Type *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-8">
+                            @Html.DropDownList("ProductInventoryType", (SelectList)ViewData["ProductInventoryTypeDropdown"], new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Amount *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="modal-inventory-symbol">$</span>
+                                @Html.TextBox("ProductInventoryAmount", null, new { @class = "form-control", @onchange = "ProductInventoryAmountChange()" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Description *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-8">
+                            @Html.TextArea("ProductInventoryDescription", null, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-sm-offset-3">
+                        <button class="btn btn-primary btn-outline" id="UpdateProductInventoryBtn" type="button" onclick="UpdateProductInventory()">Update</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        SymbolChange();
+        FormatTotalInAccount();
+        TransactionTypeClick();
+        if ($('#products_BuyRate').val() === "" || $('#products_BuyRate').val() === null) {
+            CalculateAutomatedBuyRate();
+        }
+        if ($('#products_SellRate').val() === "" || $('#products_SellRate').val() === null) {
+            CalculateAutomatedSellRate();
+        }
+    });
+
+    function RateChange($this) {
+        var amount = $this.value;
+        if (amount != "") {
+            var field = "Rate";
+            var url = "@Url.Action("ValidateAmount")";
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: { amount: amount, field: field },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.result == "true") {
+                        var dp = $("#products_Decimal").val();
+                        var url = "@Url.Action("FormatAmount")";
+                        $.ajax({
+                            type: "GET",
+                            url: url,
+                            data: { amount: amount, dp: dp, field: "rate" },
+                            success: function (data) {
+                                data = JSON.parse(data);
+                                $this.value = data.msg;
+                            }
+                        });
+                    }
+                    else {
+                        alertify.alert(data.msg);
+                    }
+                }
+            });
+        }
+    }
+
+    //Decimal Change
+    function DecimalChange() {
+        RateChange($("#products_BuyRate")[0]);
+        RateChange($("#products_SellRate")[0]);
+        FormatTotalInAccount();
+    }
+
+    //Symbol Change
+    function SymbolChange() {
+        var symbol = $("#products_Symbol").val();
+        $("#inventory-symbol").html(symbol);
+        $("#modal-inventory-symbol").html(symbol);
+    }
+
+    //Click Update Inventory button
+    $("#btn-update-inventory").on("click", function () {
+        var label = $("#products_CurrencyCode").val();
+
+        $("#modal-product-inventory-label").html("Update Inventory for " + label);
+        $("#modal-product-inventory").modal("show");
+    });
+
+    //Product Inventory Amount Change
+    function ProductInventoryAmountChange() {
+        var amount = $("#ProductInventoryAmount").val();
+        if (amount != "") {
+            var field = "Amount";
+            var url = "@Url.Action("ValidateAmount")";
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: { amount: amount, field: field },
+                beforeSend: function () {
+                    $(".preload").show();
+                },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.result == "true") {
+                        var dp = $("#products_Decimal").val();
+                        var url = "@Url.Action("FormatAmount")";
+                        $.ajax({
+                            type: "GET",
+                            url: url,
+                            data: { amount: amount, dp: dp },
+                            success: function (data) {
+                                data = JSON.parse(data);
+                                $("#ProductInventoryAmount").val(data.msg);
+                                $(".preload").hide();
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    //Amount Formatter with Decimal
+    function FormatTotalInAccount() {
+        var dp = $("#products_Decimal").val();
+        var totalInAccount = $("#productInventories_TotalInAccount").val().replace(/,/g, "");
+        var url = "@Url.Action("FormatAmount")";
+
+        $.ajax({
+            url: url,
+            type: "GET",
+            data: { amount: totalInAccount, dp: dp },
+            beforeSend: function () {
+                $(".preload").show();
+            },
+            success: function (data) {
+                data = JSON.parse(data);
+                $("#TotalInAccount").val(data.msg);
+                $("#productInventories_TotalInAccount").val(data.msg.replace(/,/g, ""));
+                $(".preload").hide();
+            }
+        });
+    }
+
+    //Submit Update Inventory Modal
+    function UpdateProductInventory() {
+        var type = $("#ProductInventoryType").val();
+        var amount = $("#ProductInventoryAmount").val().replace(/,/g, "");
+        var description = $("#ProductInventoryDescription").val();
+        var dp = $("#products_Decimal").val();
+
+        $("#UpdateProductInventoryBtn").attr("disabled", "disabled");
+        
+        var result = "";
+
+        if (type == "") {
+            result += "Type is required!<br/>";
+        }
+
+        if (amount == "") {
+            result += "Amount is required!<br/>";
+        }
+
+        if (description == "") {
+            result += "Description is required!<br/>";
+        }
+
+        if (result != "") {
+            alertify.alert(result);
+            $("#UpdateProductInventoryBtn").removeAttr("disabled");
+        }
+        else {
+            var field = "Amount";
+            var url = "@Url.Action("ValidateAmount")";
+
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: { amount: amount, field: field },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.result == "true") {
+                        var url = "@Url.Action("TemporarilyInventoryData")";
+                        var text = type + "|" + amount + "|" + description;
+                        var oriAmount = "@ViewData["OriTotalInAccount"].ToString()";
+
+                        $.ajax({
+                            url: url,
+                            type: "GET",
+                            data: { text: text, dp: dp, oriAmount: oriAmount },
+                            success: function (data) {
+                                $("#TotalInAccount").val(data);
+                                $("#productInventories_TotalInAccount").val(data.replace(/,/g, ""));
+
+                                //Empty Update Inventory Modal Form
+                                $("#ProductInventoryType").val("Add");
+                                $("#ProductInventoryAmount").val("");
+                                $("#ProductInventoryDescription").val("");
+
+                                $("#modal-product-inventory").modal("hide");
+                                $("#UpdateProductInventoryBtn").removeAttr("disabled");
+                            },
+                            error: function (e) {
+                                alertify.alert("An error occured while updating product inventory!");
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    //View Inventory Logs
+    function ViewLog() {
+        var id = "@ViewData["ProductId"].ToString()";
+        var dp = $("#products_Decimal").val();
+        var symbol = $("#products_Symbol").val();
+        var url = "@Url.Action("ViewLog")?symbol=" + symbol + "&id=" + id + "&dp=" + dp;
+        window.open(url, "_blank");
+    }
+
+    //Add Product Denomination
+    function AddDenominationValue() {
+        var value = $("#DenominationValue").val();
+
+        if (value != "") {
+            if ($.isNumeric(value)) {
+                if (Math.floor(value) == value) {
+                    if (value.length <= 5) {
+                        var duplicate = $("#table-product-denomination input[type='hidden'][value='" + value + "']").length;
+
+                        if (duplicate == 0) {
+                            AddDenominationRow(value);
+                        }
+                        else {
+                            alertify.alert("Denomination Value already existed!");
+                        }
+                    }
+                    else {
+                        alertify.alert("Denomination Value is too large!");
+                    }
+                }
+                else {
+                    alertify.alert("Denomination Value must be an integer or 'coins'!");
+                }
+
+            }
+            else {
+                if (value == "coins") {
+                    AddDenominationRow(value);
+                }
+                else {
+                    alertify.alert("Denomination Value is not valid!");
+                }
+            }
+        }
+        else {
+            alertify.alert("Denomination Value is required!");
+        }
+    }
+
+    //Append added row
+    function AddDenominationRow(value) {
+        var rowCount = 1;
+
+        if ($("#table-product-denomination tbody tr").length > 0) {
+            var row = $("#table-product-denomination tbody tr:last").attr("id");
+            rowCount = parseInt(row.split("_")[1]) + 1;
+        }
+
+        var tr = $("<tr id='denominationRow_" + rowCount + "'></tr>");
+        var td1 = $("<td><input type='hidden' id='DenominationValue_" + rowCount + "' name='DenominationValue_" + rowCount + "' value='" + value + "' />" + value + "</td>");
+        var td2 = $("<td><button class='btn btn-danger btn-xs' type='button' onclick='DeleteDenominationValue(" + rowCount + ")'><i aria-hidden='true' class='icon wb-close'></i> Remove</button></td>");
+
+        tr.append(td1);
+        tr.append(td2);
+
+        $("#table-product-denomination tbody").append(tr);
+
+        $("#DenominationValue").val("");
+    }
+
+    //Delete Denomination Value
+    function DeleteDenominationValue(row) {
+        alertify.confirm("Remove Denomination? Removing Denomination will remove all inventory", function (e) {
+            if (e) {
+                $("#denominationRow_" + row).remove();
+                alertify.success("Denomination and all inventory has been removed");
+            }
+        });
+    }
+
+    function TransactionTypeClick() {
+        var encashment = $("#Encashment")[0].checked;
+        var Swap = $("#Swap")[0].checked;
+
+        if (encashment || Swap) {
+            $("#div-encashment-rate").show();
+        }
+        else {
+            $("#div-encashment-rate").hide();
+            $("#products_EncashmentRate").val("1.005");
+        }
+	}
+
+	function CalculateBuyRate()
+	{
+		var OriginalValue = $("#products_BuyRate").val();
+
+		if (OriginalValue == null || OriginalValue == 0) {
+			CalculateAutomatedBuyRate();
+		}
+		else
+		{
+			var InputValue = $("#products_BuyRateAdjustment").val();
+			var CalculatedValue = Number(OriginalValue) * (Number(1) - Number(InputValue));
+			$("#BuyRateAdjustmentCalculated").val(CalculatedValue);
+		}
+	}
+
+	function CalculateSellRate()
+	{
+		var OriginalValue = $("#products_SellRate").val();
+
+		if (OriginalValue == null || OriginalValue == 0) {
+			CalculateAutomatedSellRate();
+		}
+		else
+		{
+			var InputValue = $("#products_SellRateAdjustment").val();
+			var CalculatedValue = Number(OriginalValue) * (Number(1) + Number(InputValue));
+
+			$("#SellRateAdjustmentCalculated").val(CalculatedValue);
+		}
+    }
+
+	function CalculateAutomatedBuyRate()
+	{
+		var OriginalValue = $("#AutomatedBuyRate").val();
+		var InputValue = $("#products_BuyRateAdjustment").val();
+		var CalculatedValue = Number(OriginalValue) * (Number(1) - Number(InputValue));
+		$("#BuyRateAdjustmentCalculated").val(CalculatedValue);
+	}
+
+	function CalculateAutomatedSellRate()
+	{
+		var OriginalValue = $("#AutomatedSellRate").val();
+		var InputValue = $("#products_SellRateAdjustment").val();
+		var CalculatedValue = Number(OriginalValue) * (Number(1) + Number(InputValue));
+
+		$("#SellRateAdjustmentCalculated").val(CalculatedValue);
+	}
+</script>

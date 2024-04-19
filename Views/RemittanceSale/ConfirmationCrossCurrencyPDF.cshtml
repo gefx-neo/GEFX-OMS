@@ -1,0 +1,203 @@
+﻿@using DataAccess
+@using DataAccess.POCO
+
+@{
+    Layout = null;
+    Sale sale = (Sale)ViewData["Sale"];
+    List<MemoCurrencyTable> sellMemosCurrency = (List<MemoCurrencyTable>)ViewData["SellMemoCurrency"];
+}
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: Calibri;
+            /*font-family: 'Roboto', sans-serif;*/
+            color: black !important;
+            padding-top: 5px;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .form-group {
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+            margin-bottom: 10px !important;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        .page-break {
+            clear: both;
+            page-break-after: always;
+        }
+
+        table {
+            width: 100%;
+            font-size: 18px !important;
+        }
+
+            table tr td, table th td {
+                vertical-align: top;
+            }
+
+        .table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+            .table > tbody > tr:nth-of-type(even) {
+                background-color: rgba(128, 128, 128, .5);
+            }
+
+            .table tbody tr td {
+                padding: 6px 5px 5px 5px;
+                border: 1px solid;
+            }
+
+        table tbody tr, table tfoot {
+            page-break-inside: avoid !important;
+        }
+    </style>
+</head>
+<body>
+    @if (sellMemosCurrency.Count > 0)
+    {
+        <table style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td colspan="3" style="text-align: center; padding-top: 2px;"><strong style="font-size: 26px !important;">CROSS CURRENCY CONFIRMATION</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="width: 75%;">
+                        <strong>GREAT EAST FOREX</strong><br />
+                        <div style="font-size: 16px !important;">
+                            Business Reg No. 40238800C<br />
+                            101 Beach Road<br />
+                            #02-02 The 101<br />
+                            Singapore 189703<br />
+                            Tel: 6339 2828&nbsp;&nbsp;&nbsp;&nbsp;Fax: 6334 2013<br />
+                            Email: support@gefx.sg
+                        </div>
+                    </td>
+                    <td style="width: 15%">
+                        <div style="text-align: right; padding-right: 10px;">
+                            Receipt No.:<br />
+                            Order Date:
+                        </div>
+                    </td>
+                    <td style="width: 10%">
+                        <div>
+                            @sale.MemoID<br />
+                            @sale.IssueDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="width: 75%">In accordance with your instructions we are pleased to confirm the following transaction(s):</td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="margin-bottom: 15px;">
+            <tbody>
+                <tr>
+                    <td style="padding-bottom: 20px;">
+                        <strong>CUSTOMER:</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 10px;">
+                        @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                        {
+							@sale.CustomerParticulars.Company_RegisteredName<br />
+                            @sale.CustomerParticulars.Company_BusinessAddress1<br />
+                            @sale.CustomerParticulars.Company_BusinessAddress2<br />
+                            @sale.CustomerParticulars.Company_PostalCode<br />
+                            @("Tel: " + sale.CustomerParticulars.Company_TelNo + "    Fax: " + sale.CustomerParticulars.Company_FaxNo)
+                        }
+                        else
+                        {
+							@sale.CustomerParticulars.Natural_Name<br />
+                            @sale.CustomerParticulars.Natural_PermanentAddress<br />
+                            @("Contact: " + sale.CustomerParticulars.Natural_ContactNoO + " (O)    " + sale.CustomerParticulars.Natural_ContactNoM + " (M)")
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="table" style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td style="text-align: right; width: 20px;"><strong>#</strong></td>
+                    <td><strong>CURRENCY</strong></td>
+                    <td style="text-align: right;"><strong>AMOUNT</strong></td>
+                    <td style="text-align: right;"><strong>EXCHANGE RATE</strong></td>
+                    <td style="text-align: right;"><strong>@ViewData["SellMemoCodeCurrency"].ToString()</strong></td>
+                </tr>
+                @foreach (MemoCurrencyTable currencyMemo in sellMemosCurrency)
+                {
+                    <tr>
+                        <td style="text-align: right;">@currencyMemo.RowId</td>
+                        <td>@currencyMemo.Currency</td>
+                        <td style="text-align: right;">@currencyMemo.Amount</td>
+                        <td style="text-align: right;">@currencyMemo.CrossRate</td>
+                        <td style="text-align: right;">@currencyMemo.TotalAmount</td>
+                    </tr>
+                }
+                <tr style="background-color: #ffffff !important;">
+                    <td colspan="5" style="border: none;">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #ffffff !important;">
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td colspan="2" style="padding: 5px 5px 10px 5px;border: 1px solid;">
+                        <div style="text-align: left; float: left;">
+                            <strong>TOTAL</strong>
+                        </div>
+                        <div style="text-align: right; float: right;">
+                            <strong>@ViewData["SellMemoCodeCurrency"].ToString() @ViewData["SellMemoTotalCurrency"].ToString()</strong>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="margin-bottom: 15px;">
+            <tbody>
+                <tr>
+                    <td colspan="2" class="padding-bottom: 10px;">
+                        <strong>CUSTOMER ACKNOWLEDGEMENT</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-bottom: 10px;">
+                        I confirm the above transaction(s) and agree that there will be a 1% penalty on the total amount transacted or the differences between the prevailing selling and buying rates (whichever is higher) should we cancel the above transaction(s).
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 40%; padding-top: 30px; border-bottom: 1px solid;"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="2">Name / NRIC No.</td>
+                </tr>
+                <tr>
+                    <td style="width: 40%; padding-top: 80px; border-bottom: 1px solid;"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="2">Authorised Signature with Company Stamp</td>
+                </tr>
+            </tbody>
+        </table>
+    }
+</body>
+</html>

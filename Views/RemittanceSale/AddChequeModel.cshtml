@@ -1,0 +1,17 @@
+﻿
+@{
+	Layout = null;
+}
+
+	<div class="form-group row">
+		<label for="staticCheque" class="col-sm-2 col-form-label">Cheque No:</label>
+		<div class="col-sm-10">
+			@Html.TextBox("Transaction_ChequeNoModel_" + ViewData["RowID"].ToString(), null, new { @class = "form-control" })
+			<span class="field-validation-error" id="ChequeErrorMessage_@ViewData["RowID"].ToString()"></span>
+		</div>
+		<div style="float:right; padding-top: 20px; padding-right:15px;">
+			<button class="btn btn-primary" onclick="btnChequeConfirm(@ViewData["RowID"].ToString())">Confirm</button>
+			<button class="btn btn-danger" onclick="btnChequeCancel()">Cancel</button>
+		</div>
+		
+	</div>

@@ -1,0 +1,221 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "Manage Customers";
+	ViewBag.ManageCustomers = "active open";
+
+	List<SearchTags> getSearchTag = (List<SearchTags>)ViewData["SearchTagList"];
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <div class="col-xlg-12 col-md-12">
+				@{
+					string userRole = Session["UserRole"].ToString();
+					string[] userRoleList = userRole.Split(',');
+				}
+
+                @if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0)
+				{
+                    <a class="btn btn-success" href="@Url.Action("Create")"><i aria-hidden="true" class="icon wb-plus"></i> New Customer</a>
+				}
+            </div>
+        </div>
+
+		<div class="row margin-top-15">
+			@using (Html.BeginForm("Listing", "Customer", FormMethod.Post, new { @class = "page-search-form", @role = "search" }))
+			{
+				<div class="col-xlg-7 col-md-7" style="padding-bottom: 10px;">
+					<div class="input-search input-search-dark">
+						@*<button id="search-icon" type="submit" class="input-search-icon icon wb-search" aria-label="Close"></button>*@
+						@Html.TextBox("SearchKeyword", ViewData["SearchKeyword"].ToString(), new { @class = "form-control", @placeholder = "Search by Customer ID, Company/Business Name, Email and Name." })
+						@*<button id="search-close" type="button" class="input-search-close icon wb-close" aria-label="Close"></button>*@
+					</div>
+				</div>
+				<div class="col-xlg-5 col-md-5">
+					<div class="input-search input-search-dark">
+						<select class="selectpicker" id="Search_Tag_Dropdown_Form" name="Search_Tag_Dropdown_Form">
+							@if (!string.IsNullOrEmpty(ViewData["SearchTagSelectedItem"].ToString()))
+							{
+								string[] SearchTagSelectedList = ViewData["SearchTagSelectedItem"].ToString().Split(',');
+								<option value="0">All</option>
+								foreach (SearchTags _search in getSearchTag)
+								{
+									bool exist = Array.Exists(SearchTagSelectedList, element => element == _search.ID.ToString());
+
+									if (exist)
+									{
+										<option value="@_search.ID" selected>@_search.TagName</option>
+									}
+									else
+									{
+										<option value="@_search.ID">@_search.TagName</option>
+									}
+								}
+							}
+							else
+							{
+								foreach (SearchTags _search in getSearchTag)
+								{
+									<option value="@_search.ID">@_search.TagName</option>
+								}
+							}
+						</select>
+						<span style="padding-left: 10px;"><button type="submit" class="btn btn-primary">Search</button></span>
+					</div>
+				</div>
+			}
+		</div>
+		<div class="row margin-top-15">
+			<div class="col-xlg-12 col-md-12">
+				<div>
+					<div class="table-responsive">
+						<table class="table table-hover table-bordered table-striped">
+							<thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Customer ID</th>
+                                    <th>Customer Type</th>
+                                    <th>Company/Business Name</th>
+                                    <th>Name</th>
+                                    <th>Mobile No.</th>
+                                    <th>eKYC Status</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+							</thead>
+							<tbody>
+								@{
+
+									if (ViewData["CustomerParticular"] != null)
+									{
+										IPagedList<GetAllCustomerActiveList> customerParticulars = (IPagedList<GetAllCustomerActiveList>)ViewData["CustomerParticular"];
+
+										if (customerParticulars.Count > 0)
+										{
+											int page = Convert.ToInt32(ViewData["Page"]) - 1;
+											int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+											int i = 1;
+
+											foreach (GetAllCustomerActiveList customer in customerParticulars)
+											{
+                                                                <tr>
+                                                                    <td>@(i + page * pageSize)</td>
+                                                                    <td>@customer.CustomerCode</td>
+                                                                    <td>@customer.CustomerType</td>
+                                                                    <td>
+                                                                        @if (customer.CustomerType == "Corporate & Trading Company")
+                                                                        {
+                                                                            @customer.Company_RegisteredName
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (customer.Natural_EmploymentType == "Employed")
+                                                                            {
+                                                                                @customer.Natural_EmployedEmployerName
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                @customer.Natural_SelfEmployedBusinessName
+                                                                            }
+                                                                        }
+                                                                    </td>
+
+
+
+                                                                    <td>
+                                                                        @if (customer.CustomerType == "Corporate & Trading Company")
+                                                                        {
+                                                                            @customer.Company_ContactName
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @customer.Natural_Name
+                                                                        }
+                                                                    </td>
+
+                                                                    <td>
+                                                                        @if (customer.CustomerType == "Corporate & Trading Company")
+                                                                        {
+                                                                            @customer.Company_TelNo
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @customer.Natural_ContactNoH
+                                                                        }
+                                                                    </td>
+                                                                    <td>-</td>
+                                                                    <td>@(!string.IsNullOrEmpty(customer.Status) ? customer.Status : "-")</td>
+
+                                                                    <td class="text-nowrap">
+                                                                        @if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0)
+                                                                        {
+                                                                            <a href="@Url.Action("Edit", new { @id = customer.ID })" class="btn btn-sm btn-icon btn-round btn-default" data-toggle="tooltip" data-original-title="Edit"><i class="icon wb-edit" aria-hidden="true"></i></a>
+                                                                            <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Delete" onclick="DeleteThisRecord(@customer.ID)"><i class="icon wb-close" aria-hidden="true"></i></button>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <a href="@Url.Action("Edit", new { @id = customer.ID })" class="btn btn-sm btn-icon btn-round btn-default" data-toggle="tooltip" data-original-title="View"><i class="icon wb-edit" aria-hidden="true"></i></a>
+                                                                        }
+
+                                                                        @if (customer.Status == "Pending Approval")
+                                                                        {
+                                                                            <a target="_blank" href="@Url.Action("Compare", new { @id = customer.ID })" class="btn btn-sm btn-icon btn-round btn-warning" data-toggle="tooltip" data-original-title="View"><i class="icon wb-eye" aria-hidden="true"></i></a>
+                                                                        }
+
+                                                                        @if (customer.Status != "Pending Approval")
+                                                                        {
+                                                                            <!-- Allow access quick update when the customer status is not Pending Approval -->
+                                                                            <a href="@Url.Action("AccessQuickUpdate", new { @id = customer.ID })" class="btn btn-sm btn-icon btn-round btn-primary" data-toggle="tooltip" data-original-title="Access Quick Update"><i class="icon wb-pencil" aria-hidden="true"></i></a>
+                                                                        }
+
+                                                                    </td>
+                                                                </tr>
+												i++;
+											}
+										}
+										else
+										{
+											<tr>
+												<td colspan="8" class="no-records-found">No record to display</td>
+											</tr>
+										}
+									}
+									else
+									{
+										<tr>
+											<td colspan="8" class="no-records-found">No record to display</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			@{
+				if (ViewData["CustomerParticular"] != null)
+				{
+					<div class="pagination">
+						@Html.PagedListPager((IPagedList)ViewData["CustomerParticular"], page => Url.Action("/Listing", "Customer", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+					</div>
+				}
+			}
+		</div>
+			</div>
+</div>
+
+@if (TempData["Result"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+    </script>
+}

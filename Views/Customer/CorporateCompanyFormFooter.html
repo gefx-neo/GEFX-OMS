@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body style="font-family: Calibri, sans-serif;font-size: 12px;padding-bottom: 25px;">
+    Page <strong><span id='page'></span></strong> of <strong><span id='topage'></span></strong>
+    <br /><br />
+    A subsidiary company of <strong>Great East Enterprise Pte Ltd</strong> <i>Reg No.: 40238800C</i><br />
+    101 Beach Road, #02-02 The 101, Singapore 189703 &nbsp;&nbsp;&nbsp;&nbsp;Tel: +65 6339 2828 &nbsp;&nbsp;&nbsp;&nbsp;Fax: +65 63342013<br /><br />
+    <div style="color:grey;">GEF/AML/CFT/02/2016/KYC FORM A</div>
+    <script>
+        var vars = {};
+        var x = window.location.search.substring(1).split('&');
+        for (var i in x) {
+            var z = x[i].split('=', 2);
+            vars[z[0]] = unescape(z[1]);
+        }
+        document.getElementById('page').innerHTML = vars.page;
+        document.getElementById('topage').innerHTML = vars.topage;
+    </script>
+</body>
+</html>
+

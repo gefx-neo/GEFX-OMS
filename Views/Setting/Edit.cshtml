@@ -1,0 +1,300 @@
+﻿@using DataAccess.POCO
+@using DataAccess
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "Edit System Settings";
+	ViewBag.Settings = "active open";
+	ViewBag.SystemSettings = "active";
+}
+
+<div class="panel">
+	<div class="panel-body container-fluid">
+		<div class="row row-lg">
+			<div class="col-xlg-12 col-md-12">
+				@using (Html.BeginForm("Edit", "Setting", FormMethod.Post, new { @class = "form-horizontal" }))
+				{
+					IList<Setting> settings = (IList<Setting>)ViewData["Setting"];
+
+					foreach (Setting setting in settings)
+					{
+						if (setting.Code == "LOCAL_PAYMENT_BANK")
+						{
+							string[] banks = setting.Value.Split('|');
+							int rowCount = 1;
+
+							<div class="form-group">
+								@Html.Label(setting.Code + ":", new { @class = "col-sm-3 control-label" })
+								@Html.Hidden("SettingID_" + setting.ID, setting.ID)
+								@Html.Hidden("Code_" + setting.ID, setting.Code)
+								<div class="col-sm-9 table-responsive">
+									<table id="table-local-payment-bank" class="table table-hover table-striped table-bordered">
+										<thead>
+											<tr>
+												<th>Bank Name</th>
+												<th>Action</th>
+											</tr>
+										</thead>
+										<tbody>
+											@foreach (string bank in banks)
+											{
+												<tr id="tr-local-payment-bank-@rowCount">
+													<td>
+														@if (bank == "CASH")
+														{
+															@Html.TextBox("Value_" + setting.ID + "_" + rowCount, bank, new { @class = "form-control", @disabled = "disabled" })
+															@Html.Hidden("Value_" + setting.ID + "_" + rowCount, bank)
+														}
+														else
+														{
+															@Html.TextBox("Value_" + setting.ID + "_" + rowCount, bank, new { @class = "form-control" })
+														}
+														@Html.ValidationMessage("Value_" + setting.ID + "_" + rowCount)
+													</td>
+													<td>
+														@if (bank != "CASH")
+														{
+															<button type="button" class="btn btn-danger btn-round btn-xs btn-icon" data-toggle="tooltip" data-original-title="Remove Bank" onclick="RemoveBankName(@rowCount)"><i class="icon wb-close"></i></button>
+														}
+													</td>
+												</tr>
+												rowCount++;
+											}
+										</tbody>
+										<tfoot>
+											<tr>
+												<td colspan="2" class="text-center">
+													<button type="button" class="btn btn-success btn-round btn-xs btn-icon" data-toggle="tooltip" data-original-title="Add Bank" onclick="AddBankName(@setting.ID)"><i class="icon wb-plus"></i></button>
+												</td>
+											</tr>
+										</tfoot>
+									</table>
+									@Html.ValidationMessage("Code_" + setting.ID)
+								</div>
+							</div>
+						}
+						else if (setting.Code == "CUSTOMER_PORTAL_CREATED_BY")
+						{
+							<div class="form-group">
+								@Html.Label(setting.Code + ":", new { @class = "col-sm-3 control-label" })
+								<div class="col-sm-9">
+									@Html.Hidden("SettingID_" + setting.ID, setting.ID)
+									@Html.Hidden("Code_" + setting.ID, setting.Code)
+									@Html.DropDownList("Value_" + setting.ID, (SelectList)ViewData["CustomerPortalCreatedByDropdown"], new { @class = "form-control" })
+									@Html.ValidationMessage("Code_" + setting.ID)
+								</div>
+							</div>
+						}
+						else
+						{
+							<div class="form-group">
+								@Html.Label(setting.Code + ":", new { @class = "col-sm-3 control-label" })
+								<div class="col-sm-9">
+									@Html.Hidden("SettingID_" + setting.ID, setting.ID)
+									@Html.Hidden("Code_" + setting.ID, setting.Code)
+									@if (setting.Code == "BASE_CURRENCY")
+									{
+										@Html.DropDownList("Value_" + setting.ID, (SelectList)ViewData["BaseCurrencyDropdown"], new { @class = "form-control" })
+									}
+									else
+									{
+										@Html.TextBox("Value_" + setting.ID, setting.Value, new { @class = "form-control" })
+									}
+									@Html.ValidationMessage("SettingID_" + setting.ID)
+								</div>
+							</div>
+						}
+					}
+
+					List<SystemSettingSearchTagList> taglist = (List<SystemSettingSearchTagList>)ViewData["SearchTagList"];
+
+					//Search Tag List Start
+					if (taglist != null)
+					{
+						<div class="form-group">
+							@Html.Label("Search Tag:", new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.ValidationMessage("GeneralTagListError", new { @class = "red-800" })
+								<div class="table-responsive">
+									<table id="table-taglist-values" class="table table-hover table-bordered">
+										<thead>
+											<tr>
+												<th>#</th>
+												<th>Tag Name</th>
+												<th class="action">Action</th>
+											</tr>
+										</thead>
+										<tbody>
+											@{
+
+												if (taglist.Count > 0)
+												{
+													int tagCount = 1;
+
+													foreach (SystemSettingSearchTagList _taglist in taglist)
+													{
+														//no bind can delete
+														if (_taglist.isNewTag)
+														{
+															<tr id="row-taglist-values-@tagCount">
+																<td>
+																	@tagCount
+																</td>
+																<td>
+																	@Html.TextBox("TagList_Value_NewTagList_" + _taglist.ID, _taglist.TagName, new { @class = "form-control" })
+																	@Html.ValidationMessage("TagList_Value_NewTagList_" + _taglist.ID)
+																</td>
+
+																<td class="action">
+																	<button type="button" class="btn btn-xs btn-danger btn-icon btn-round" data-toggle="tooltip" data-original-title="Remove" onclick="RemoveTag(@tagCount)"><i class="icon wb-close"></i></button>
+																</td>
+															</tr>
+														}
+														else
+														{
+															<tr id="row-taglist-values-@tagCount">
+																<td>
+																	@tagCount
+																</td>
+																<td>
+																	@Html.TextBox("TagList_Value_TagList_" + _taglist.SearchTagId + "_" + _taglist.ID, _taglist.TagName, new { @class = "form-control" })
+																	@Html.ValidationMessage("TagList_Value_TagList_" + _taglist.SearchTagId + "_" + _taglist.ID)
+																</td>
+																<td class="action">
+																	<button type="button" class="btn btn-xs btn-danger btn-icon btn-round" data-toggle="tooltip" data-original-title="Remove" onclick="RemoveTag(@tagCount)"><i class="icon wb-close"></i></button>
+																</td>
+															</tr>
+														}
+														tagCount++;
+													}
+												}
+											}
+										</tbody>
+										<tfoot>
+											<tr>
+												<td colspan="4" class="action" style="text-align:center;">
+													<button type="button" class="btn btn-xs btn-success btn-icon btn-round" data-toggle="tooltip" data-original-title="Add Tag" onclick="AddTag()"><i class="icon wb-plus"></i></button>
+												</td>
+											</tr>
+										</tfoot>
+									</table>
+								</div>
+							</div>
+						</div>
+					}
+					else
+					{
+						<div class="form-group">
+							@Html.Label("Search Tag:", new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.ValidationMessage("GeneralTagListError", new { @class = "red-800" })
+								<div class="table-responsive">
+									<table id="table-taglist-values" class="table table-hover table-bordered">
+										<thead>
+											<tr>
+												<th>#</th>
+												<th>Tag Name</th>
+												<th class="action">Action</th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+										<tfoot>
+											<tr>
+												<td colspan="4" class="action" style="text-align:center;">
+													<button type="button" class="btn btn-xs btn-success btn-icon btn-round" data-toggle="tooltip" data-original-title="Add Tag" onclick="AddTag()"><i class="icon wb-plus"></i></button>
+												</td>
+											</tr>
+										</tfoot>
+									</table>
+								</div>
+							</div>
+						</div>
+					}
+
+					<div class="form-group">
+						<div class="col-sm-9 col-sm-offset-3">
+							<button type="submit" class="btn btn-primary">Save </button>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function AddBankName(id) {
+		var rowId = $("#table-local-payment-bank tbody tr:last")[0].id.split("-")[4];
+		rowId = parseInt(rowId) + 1;
+
+		var $tr = $("<tr></tr>");
+		$tr.attr("id", "tr-local-payment-bank-" + rowId);
+
+		var $td1 = $("<td></td>");
+		var $input1 = $("<input type='text' class='form-control' />");
+		$input1.attr("id", "Value_" + id + "_" + rowId);
+		$input1.attr("name", "Value_" + id + "_" + rowId);
+		$td1.append($input1);
+
+		var $td2 = $("<td></td>")
+		var $btn1 = $("<button type='button' class='btn btn-danger btn-round btn-xs btn-icon' data-toggle='tooltip' data-original-title='Remove Bank' onclick='RemoveBankName(" + rowId + ")'></button>");
+		var $i1 = $("<i class='icon wb-close'></i>");
+		$btn1.append($i1);
+		$td2.append($btn1);
+		$btn1.tooltip();
+
+		$tr.append($td1).append($td2);
+
+		$("#table-local-payment-bank tbody").append($tr);
+	}
+
+	function RemoveBankName(rowId) {
+		$("#tr-local-payment-bank-" + rowId).remove();
+	}
+
+	//Add Tag
+	//Add Tag
+	function AddTag() {
+		var rowId = 1;
+		var lastRow = $("#table-taglist-values tbody tr:last");
+		if (lastRow.length > 0) {
+			rowId = parseInt(lastRow[0].id.split("-")[3]) + 1;
+		}
+
+		var $tr = $("<tr></tr>");
+		$tr.attr("id", "row-taglist-values-" + rowId);
+
+		var $td1 = $("<td></td>");
+		var $textbox1 = "" + rowId;
+		$td1.append($textbox1);
+
+		var $td2 = $("<td></td>");
+		var $textbox2 = $("<input type='text' />");
+		$textbox2.attr("id", "TagList_Value_NewTagList_" + rowId);
+		$textbox2.attr("name", "TagList_Value_NewTagList_" + rowId);
+		$textbox2.addClass("form-control");
+		$td2.append($textbox2);
+
+		var $td4 = $("<td class='action'></td>");
+		var $button4 = $("<button type='button' class='btn btn-danger btn-xs btn-icon btn-round' data-toggle='tooltip' data-original-title='Remove'></button>");
+		$button4.attr("onclick", "RemoveTag(" + rowId + ")");
+		var $i4 = $("<i class='icon wb-close'></i>");
+		$td4.append($button4.append($i4));
+
+		$tr.append($td1).append($td2).append($td4);
+
+		$("#table-taglist-values tbody").append($tr);
+
+		//$button3.tooltip();
+	}
+
+	function RemoveTag(rowId) {
+		alertify.confirm("Deleting this might lead to system corruption, do you want to proceed?", function (e) {
+			if (e) {
+				$("#row-taglist-values-" + rowId).remove();
+				alertify.success("Search Tag has been removed!");
+			}
+		});
+	}
+</script>

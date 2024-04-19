@@ -1,0 +1,246 @@
+﻿@using DataAccess
+@using DataAccess.POCO
+
+@{
+    Layout = null;
+    Remittances sale = (Remittances)ViewData["Sale"];
+    List<PayBankLists> despositAccountList = (List<PayBankLists>)ViewData["DepositAccountList"];
+    List<MemoRemittanceCurrencyTable> buyMemos = (List<MemoRemittanceCurrencyTable>)ViewData["BuyMemo"];
+    //List<MemoCurrencyTable> sellMemos = (List<MemoCurrencyTable>)ViewData["SellMemo"];
+    bool allCopy = (bool)ViewData["AllCopy"];
+    var name = "";
+    var REGNOorID = "";
+    var REGDateorDOB = "";
+    var REGcountry = "";
+    var REGaddress = "";
+    var REGcontactorfax = "";
+    var REGemail = "";
+    if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+    {
+        name = sale.CustomerParticulars.Company_RegisteredName;
+        REGNOorID = sale.CustomerParticulars.Company_RegistrationNo;
+        REGDateorDOB = sale.CustomerParticulars.Company_DateOfRegistration.HasValue ? sale.CustomerParticulars.Company_DateOfRegistration.Value.ToString("dd-MM-yyyy") : "";
+        REGcountry = sale.CustomerParticulars.Company_Nationality;
+        REGaddress = sale.CustomerParticulars.Company_RegisteredAddress;
+        REGcontactorfax = "Contact: " + sale.CustomerParticulars.Company_ContactNoM + " Fax: " + sale.CustomerParticulars.Company_FaxNo;
+        REGemail = sale.CustomerParticulars.Company_Email;
+    }
+    else
+    {
+        name = sale.CustomerParticulars.Natural_Name;
+        REGNOorID = sale.CustomerParticulars.Natural_ICPassportNo;
+        REGDateorDOB = sale.CustomerParticulars.Natural_DOB.HasValue ? sale.CustomerParticulars.Natural_DOB.Value.ToString("dd-MM-yyyy") : "";
+        REGcountry = sale.CustomerParticulars.Natural_Nationality;
+        REGaddress = sale.CustomerParticulars.Natural_PermanentAddress;
+        REGcontactorfax = "Contact: " + sale.CustomerParticulars.Natural_ContactNoM;
+        REGemail = sale.CustomerParticulars.Natural_Email;
+    }
+    var getRO = sale.RemittanceOders.FirstOrDefault();
+    var countries = (List<Countries>)ViewData["Countries"];
+    var purposeList = (List<PaymentLists>)ViewData["PurposeList"];
+    var sourceFundLists = (List<FundLists>)ViewData["SourceFundList"];
+}
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: Calibri;
+            /*font-family: 'Roboto', sans-serif;*/
+            color: black !important;
+            padding-top: 5px;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .form-group {
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+            margin-bottom: 10px !important;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        .page-break {
+            clear: both;
+            page-break-after: always;
+        }
+
+        table {
+            width: 100%;
+            font-size: 18px !important;
+        }
+
+            table tr td, table th td {
+                vertical-align: top;
+            }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background-color: rgba(128, 128, 128, .5);
+        }
+
+        table tbody tr td {
+            padding: 6px 5px 5px 5px;
+            border: 1px solid black;
+        }
+
+        table tbody tr, table tfoot {
+            page-break-inside: avoid !important;
+        }
+    </style>
+</head>
+<body>
+    @if (buyMemos.Count > 0)
+    {
+        foreach (var ro in sale.RemittanceOders)
+        {
+            var getSourceFund = sourceFundLists.Where(e => e.ID == ro.BeneficiarySourceOfPayment).FirstOrDefault().Name;
+            var getPurposePayment = purposeList.Where(e => e.ID == ro.BeneficiaryPurposeOfPayment).FirstOrDefault().Name;
+            var getIBAN = ro.IBANEuropeBSBAustralia;
+            var getSWIFTCode = ro.BeneficiaryBankCode;
+            var IBANorSWIFT = "";
+            var convertToSGD = ro.PayAmount / ro.currentPayRate;
+            if (!string.IsNullOrEmpty(getSWIFTCode) && string.IsNullOrEmpty(getIBAN))
+            {
+                IBANorSWIFT = getSWIFTCode + " (SWIFT/CODE)";
+            }
+            else if (!string.IsNullOrEmpty(getIBAN) && string.IsNullOrEmpty(getSWIFTCode))
+            {
+                IBANorSWIFT = getIBAN + " (IBAN/SORT/BSB)";
+            }
+            else if (!string.IsNullOrEmpty(getIBAN) && !string.IsNullOrEmpty(getSWIFTCode))
+            {
+                IBANorSWIFT = getIBAN + " (IBAN/SORT/BSB) ";
+            }
+            <table style="padding-top:10px;">
+                <tbody>
+                    <tr>
+                        <td style="border:none!important;text-align:right" colspan="6"><h2><i>APPLICATION FOR TELEGRAPHIC TRANSFER</i></h2></td>
+                    </tr>
+                    <tr>
+                        <td style="border:none!important" colspan="4">
+                            Please tick the relevant box:
+                            <span class="glyphicon glyphicon-unchecked"><input type="checkbox">INCOMING T.T </span>
+                            <span class="glyphicon glyphicon-check"><input type="checkbox" checked="checked">OUTGOING T.T </span>
+                            
+                        </td>
+                        <td style="border:none!important;text-align:right" colspan="2"><span>Date: @sale.IssueDate.ToString("dd-MM-yyyy")</span></td>
+                    </tr>
+                    <tr>
+                        <td style="border:none!important" colspan="6"><i>Please complete form clearly in BLOCK letters. Care should be taken as illegibility will result in processing delays</i></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table style="margin-bottom: 15px;">
+                <tbody>
+                    <tr>
+                        <td style="" colspan="3">
+                            <p>Name of Application: <b>KO SAY GAK</b></p>
+                            <p>Nationality: <b>SINGAPOREAN</b></p>
+                            <p>Company Name: <b>GREAT EAST FOREX</b></p>
+                            <p>Co. Reg. No.: <b>40238800C</b></p>
+                        </td>
+                        <td style="" colspan="3">
+                            <p>NRIC / Passport No: <b>*****41F</b></p>
+                            <p>Tel No. & Fax No.: <b>63392828</b></p>
+                            <p>Address: <b>101 BEACH ROAD #02-02 <br /><span style="padding-left:66px">THE 101, SINGAPORE 456223</span></b></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="6">
+                            <strong>PARTICULARS OF WIRE TRANSFER ORIGINATOR (IF APPLICATE)</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="3">
+                            <p>Name: @*@name*@</p>
+                            <p>Nationality: @*@REGNOorID*@</p>
+                            <p>P.P No. / IC / ROC No.: @*@REGDateorDOB*@</p>
+                            <p>Country of Regn: @*@REGcountry*@</p>
+                        </td>
+                        <td style="" colspan="3">
+                            <p>Date Of Birth: @*@REGaddress*@</p>
+                            <p>Place Of Birth: @*@REGaddress*@</p>
+                            <p>Address: @*@REGcontactorfax*@</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="3">
+                            <p><strong>Beneficiary's Name: @ro.BeneficiaryFullName</strong></p>
+                            <p><strong>Beneficiary's A/c No.: @ro.BeneficiaryBankAccountNo</strong><br /><small>for payment to Europe please provide IBAN number</small></p>
+                            <p><strong>Beneficiary's Address: @ro.BeneficiaryAddressMain</strong></p>
+                        </td>
+                        <td style="" colspan="3">
+                            <p><strong>Currency & Amount </strong></p>
+                            <p>Rate: @ro.Rate</p>
+                            <p>SGD Equivalent: @convertToSGD.ToString("#,##.00")</p>
+                            <p>Charges: @ro.Fee.ToString("#,##.00")</p>
+                            <p>Total Amount: @ro.PayAmount.ToString("#,##.00") @ro.PayCurrencyDecimal.CurrencyCode</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="3">
+                            <p><strong>Beneficiary's Bank: @ro.BeneficiaryBankName</strong></p>
+                            <p><strong>Address (Branch Details) </strong><br />@ro.BeneficiaryBankAddress</p>
+                        </td>
+                        <td style="" colspan="3">
+                            <p><strong>*Country: </strong></p>
+                            <p><strong>Swift Code: </strong></p>
+                            <p><strong>Chips UID # </strong></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="3">
+                            <p><strong>Corresponding Bank Details: </strong></p>
+                        </td>
+                        <td style="" colspan="3">
+                            <p><strong>Swift Code: </strong></p>
+                            <p><strong>Chips UID # </strong></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-right:none!important" colspan="3">
+                            <strong>BENEFICIARY DETAILS</strong>
+                        </td>
+                        <td style="border-left:none!important;" colspan="3">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="6">
+                            @if (ro.BeneficiaryPurposeOfPayment != 52)
+                            {
+                                <strong>Payment Details / Purpose Of Payment: @purposeList.Where(e => e.ID == ro.BeneficiaryPurposeOfPayment).FirstOrDefault().Name</strong>
+                            }
+                            else
+                            {
+                                <strong>Payment Details / Purpose Of Payment: @ro.PurposeOfPaymentIfOthers</strong>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-right:none!important;text-align:center" colspan="2">
+                            <p style="height: 80px"></p>
+                            <strong style="vertical-align: bottom;border-top: 1px solid #000;font-size:16px">Signature of Applicant</strong>
+                        </td>
+                        <td style="border-left:none!important;border-right:none!important;text-align:center" colspan="1">
+
+                        </td>
+                        <td style="border-left:none!important;text-align:center" colspan="3">
+                            <p style="height: 80px"></p>
+                            <strong style="vertical-align: bottom;border-top: 1px solid #000;font-size:16px">for INTERNATIONAL REMITTANCE PTE LTD</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+
+    }
+</body>
+</html>

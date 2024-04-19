@@ -1,0 +1,63 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+}
+
+@{
+    List<Inventory> inventoryLogs = (List<Inventory>)ViewData["InventoryLogs"];
+    string dp = ViewData["DecimalPlaces"].ToString();
+    int i = 1;
+    decimal totalAmount = 0;
+}
+<div class="row">
+    <div class="col-sm-12 table-responsive" style="margin-bottom:15px;">
+        <table class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+            <thead>
+                <tr>
+                    <th style="min-width: 50px;">#</th>
+                    <th style="min-width: 50px;">Type</th>
+                    <th style="min-width: 200px;">Amount (@ViewData["Symbol"].ToString())</th>
+                    <th style="min-width: 100px;">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Inventory inventory in inventoryLogs)
+                {
+                    if (inventory.Type == "Add")
+                    {
+                        totalAmount += inventory.Amount;
+                    }
+                    else
+                    {
+                        totalAmount -= inventory.Amount;
+                    }
+                    
+                    <tr>
+                        <th style="min-width: 50px;">@i</th>
+                        <th style="min-width: 50px;">@inventory.Type</th>
+                        <th style="min-width: 200px;">@inventory.Amount.ToString(dp)</th>
+                        <th style="min-width: 100px;">@inventory.Description</th>
+                    </tr>
+                    i++;
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2" class="text-right"><strong>Total (@ViewData["Symbol"].ToString())</strong></td>
+                    <td>@totalAmount.ToString(dp)</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="col-sm-10">
+        <button class="btn btn-primary btn-outline" data-dismiss="modal" type="button">Close</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#modal-label").html("Inventory Logs for @ViewData["CurrencyCode"].ToString()");
+    })
+</script>

@@ -1,0 +1,232 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Sales With Customer Details";
+    ViewBag.Reports = "active open";
+}
+
+<style type="text/css">
+    .text-amount {
+        text-align: right;
+    }
+
+    .no-border {
+        border: 0px !important;
+    }
+</style>
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportSWCD")" class="btn btn-primary">Download to excel</a>
+        </div>
+        <div class="row margin-top-15">
+            <strong class="pull-left text-uppercase">@ViewData["CompanyName"].ToString()</strong>
+            <strong class="pull-right text-uppercase">@DateTime.Now.ToString("dd-MM-yyyy")</strong>
+        </div>
+        <div class="row text-uppercase text-center">
+            <strong>
+                Sales With Customer Details Listing<br />
+                From @ViewData["ReportFromDate"].ToString() to @ViewData["ReportToDate"].ToString()
+            </strong>
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered" style="min-width: 1200px;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Memo ID</th>
+                                <th>Collection Date/Time</th>
+                                <th>Transaction Type</th>
+                                <th>Currency</th>
+                                <th>Amount (Foreign)</th>
+                                <th>Status</th>
+                                <th>Customer/Company</th>
+                                <th>Authorized Person Name</th>
+                                <th>Authorized Person IC/Passport</th>
+                                <th>Authorized Person Nationality</th>
+                                <th>Contact</th>
+                                <th>Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<Sale> sales = (IPagedList<Sale>)ViewData["Sale"];
+
+                                if (sales.Count > 0)
+                                {
+                                    int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                    int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                    int i = 1;
+
+                                    foreach (Sale sale in sales)
+                                    {
+                                        string highlight = "";
+                                        string authPersonName = "";
+                                        string authPersonICPassport = "";
+                                        string authPersonNationality = "";
+                                        if(sale.CustomerParticulars != null)
+                                        {
+                                            //if(sale.CustomerParticulars.AppointmentOfStaffs != null)
+                                            if(sale.CustomerParticulars.AppointmentOfStaffs.Count() > 0)
+                                            {
+                                                authPersonName = sale.CustomerParticulars.AppointmentOfStaffs[0].FullName;
+                                                authPersonICPassport = sale.CustomerParticulars.AppointmentOfStaffs[0].ICPassportNo;
+                                                authPersonNationality = sale.CustomerParticulars.AppointmentOfStaffs[0].Nationality;
+                                            }
+                                            else
+                                            {
+                                                authPersonName = "-";
+                                                authPersonICPassport = "-";
+                                                authPersonNationality = "-";
+                                            }
+                                        }
+
+                                        if (sale.Urgent == "Urgent" && (sale.Status != "Completed" && sale.Status != "Pending Delete GM Approval"))
+                                        {
+                                            highlight = "bg-red-100";
+                                        }
+
+                                        string amountForeignFormat = "#,##0";
+
+                                        switch (sale.SaleTransactions[0].Products.Decimal)
+                                        {
+                                            case 1:
+                                                amountForeignFormat += ".0";
+                                                break;
+                                            case 2:
+                                                amountForeignFormat += ".00";
+                                                break;
+                                            case 3:
+                                                amountForeignFormat += ".000";
+                                                break;
+                                            case 4:
+                                                amountForeignFormat += ".0000";
+                                                break;
+                                            case 5:
+                                                amountForeignFormat += ".00000";
+                                                break;
+                                            case 6:
+                                                amountForeignFormat += ".000000";
+                                                break;
+                                            case 7:
+                                                amountForeignFormat += ".0000000";
+                                                break;
+                                            case 8:
+                                                amountForeignFormat += ".00000000";
+                                                break;
+                                            default:
+                                                break;
+                                        }
+
+                                                        <tr class="@highlight">
+                                                            <td>@(i + page * pageSize)</td>
+                                                            <td>@sale.MemoID</td>
+                                                            <td>@(Convert.ToDateTime(sale.CollectionDate).ToString("dd/MM/yyyy dddd") + " " + sale.CollectionTime)</td>
+                                                            <td>@sale.TransactionType</td>
+                                                            <td>@sale.SaleTransactions[0].Products.CurrencyCode</td>
+                                                            <td>@(sale.SaleTransactions[0].Products.Symbol + sale.SaleTransactions[0].AmountForeign.ToString(amountForeignFormat)) <a href="javascript:void(0)" onclick="ViewTransactions(@sale.ID)" style="text-decoration: none;" data-toggle="tooltip" data-original-title="View Transactions">[+]</a></td>
+                                                            <td>@sale.Status</td>
+                                                            <td>
+                                                                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                                {
+                                                                    @sale.CustomerParticulars.Company_RegisteredName
+                                                                }
+                                                                else
+                                                                {
+                                                                    @sale.CustomerParticulars.Natural_Name
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @authPersonName
+                                                            </td>
+                                                            <td>
+                                                                @authPersonICPassport
+                                                            </td>
+                                                            <td>
+                                                                @authPersonNationality
+                                                            </td>
+                                                            <td>
+                                                                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                                {
+                                                                    @sale.CustomerParticulars.Company_TelNo
+                                                                }
+                                                                else
+                                                                {
+                                                                    @sale.CustomerParticulars.Natural_ContactNoM
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                                {
+                                                                    @sale.CustomerParticulars.Company_BusinessAddress1 <br />@sale.CustomerParticulars.Company_BusinessAddress2
+                                                                }
+                                                                else
+                                                                {
+                                                                    @sale.CustomerParticulars.Natural_PermanentAddress
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="no-records-found">No sale from @ViewData["ReportFromDate"].ToString() to @ViewData["ReportToDate"].ToString()</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["Sale"], page => Url.Action("/SWCD", "Report", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+        <div class="row">
+            <a href="@Url.Action("ExportSWCD")" class="btn btn-primary">Download to excel</a>
+            <a href="@Url.Action("Select")" class="btn btn-default">Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sale-transaction-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label"></h4>
+            </div>
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function ViewTransactions(id) {
+        var url = "@Url.Action("ViewTransactions", "Sale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+    }
+</script>

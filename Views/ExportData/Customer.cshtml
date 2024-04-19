@@ -1,0 +1,1319 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Customers Data";
+    ViewBag.ExportData = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportCustomerExcel", new { @fromDate = ViewData["FromDate"].ToString(), @toDate = ViewData["ToDate"].ToString() })" class="btn btn-primary" style="float:left;margin-right:10px;">Download to Excel</a>
+            <a href="@Url.Action("Options")" class="btn btn-default" style="float:left;">Back</a>
+            @using (Html.BeginForm("Customer", "ExportData", FormMethod.Post, new { @id = "page-size" }))
+            {
+                <div class="col-md-3 pull-right">
+                    @Html.DropDownList("PageSize", (SelectList)ViewData["PageSizeDropdown"], new { @class = "form-control" })
+                </div>
+                @Html.Label("Page Size:", new { @class = "col-md-3 pull-right", @style = "top:6px;text-align:right;" })
+            }
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <br />
+                <h5>Corporate & Trading Company</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead>
+							<tr>
+								<th style="min-width: 40px;">#</th>
+								<th style="min-width: 150px;">Customer Code</th>
+								<th style="min-width: 150px;">Customer Type</th>
+								<th style="min-width: 150px;">Registered Name</th>
+								@*<th style="min-width: 250px;">Registered Address</th>*@
+								<th style="min-width: 250px;">Business Address 1</th>
+								<th style="min-width: 250px;">Business Address 2</th>
+								<th style="min-width: 250px;">Business Address 3</th>
+								<th style="min-width: 250px;">Postal Code</th>
+								<th style="min-width: 250px;">Shipping Address 1</th>
+								<th style="min-width: 250px;">Shipping Address 2</th>
+								<th style="min-width: 250px;">Shipping Address 3</th>
+								<th style="min-width: 250px;">Shipping Postal Code</th>
+								<th style="min-width: 150px;">Contact Name</th>
+								<th style="min-width: 120px;">Tel No</th>
+								<th style="min-width: 120px;">Fax No</th>
+								<th style="min-width: 150px;">Email</th>
+								<th style="min-width: 150px;">Contact No.(H)</th>
+								<th style="min-width: 150px;">Contact No.(O)</th>
+								<th style="min-width: 150px;">Contact No.(M)</th>
+								<th style="min-width: 150px;">Company IC/Passport</th>
+								<th style="min-width: 150px;">Company Job Title</th>
+								<th style="min-width: 150px;">Company Nationality</th>
+								<th style="min-width: 150px;">Company Country</th>
+								<th style="min-width: 150px;">Company Country Code</th>
+								<th style="min-width: 150px;">Is Main Account</th>
+								<th style="min-width: 150px;">Main Account</th>
+								<th style="min-width: 150px;">Customer Title</th>
+								<th style="min-width: 150px;">Customer Surname</th>
+								<th style="min-width: 150px;">Customer Given Name</th>
+								<th style="min-width: 150px;">Customer D.O.B.</th>
+								<th style="min-width: 150px;">Customer Account Validated</th>
+								<th style="min-width: 150px;">Is KYC Verify</th>
+								<th style="min-width: 150px;">Has Customer Account</th>
+								<th style="min-width: 150px;">Enable Transaction Type</th>
+								<th style="min-width: 150px;">Search Tag</th>
+								<th style="min-width: 150px;">Place of Registration</th>
+								<th style="min-width: 120px;">Date of Registration</th>
+								<th style="min-width: 120px;">Registration No</th>
+								<th style="min-width: 150px;">Type of Entity</th>
+								<th style="min-width: 200px;">Purpose And Intended</th>
+								<th style="min-width: 150px;">Source of Funds</th>
+								<th style="min-width: 150px;">Politically Exposed Individuals 1 <a href="#" data-toggle="tooltip" data-original-title="Is the benficial owner or has the beneficial owner ever been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?" style="font-size: 12px;"><i class="icon wb-help" aria-hidden="true"></i></a></th>
+								<th style="min-width: 150px;">Politically Exposed Individuals 2 <a href="#" data-toggle="tooltip" data-original-title="Is the benficial owner or has the beneficial owner ever been a parent/ step-parent /step-child, adopted child/ spouse/ sibling/ step-sibling/ adopted sibling of anyone who is or has been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?" style="font-size: 12px;"><i class="icon wb-help" aria-hidden="true"></i></a></th>
+								<th style="min-width: 150px;">Politically Exposed Individuals 3 <a href="#" data-toggle="tooltip" data-original-title="Is the beneficial owner or has the beneficial owner ever been closely connected, either socially or professionally with anyone who is or has been entrusted with prominent public figure functions, whether in Singapore, in a foreign country, or in an international organisation?" style="font-size: 12px;"><i class="icon wb-help" aria-hidden="true"></i></a></th>
+								<th style="min-width: 100px;">Name the service(s) you are most likely to use (tick all that apply)</th>
+								<th style="min-width: 100px;">Purpose of intended transactions</th>
+								<th style="min-width: 100px;">Where did you hear about us?</th>
+								<th style="min-width: 100px;">Agent Acting</th>
+								<th style="min-width: 100px;">Customer Type</th>
+								<th style="min-width: 250px;">Address</th>
+								<th style="min-width: 150px;">Place of Registration</th>
+								<th style="min-width: 120px;">Registration No</th>
+								<th style="min-width: 120px;">Date of Registration</th>
+								<th style="min-width: 150px;">Relationship between Agent(s) and Client</th>
+								<th style="min-width: 200px;">Basis of Authority</th>
+								<th style="min-width: 200px;">Account Opening form</th>
+								<th style="min-width: 200px;">Photocopy of IC (Authorised Trading Person)</th>
+								<th style="min-width: 200px;">Photocopy of IC (Director)</th>
+								<th style="min-width: 200px;">Company business profile from ACRA</th>
+								<th style="min-width: 200px;">Company business Selfie Passport Working Pass</th>
+								<th style="min-width: 200px;">Company business Selfie Photo ID</th>
+								<th style="min-width: 150px;">Approval By</th>
+								<th style="min-width: 150px;">Screening Results</th>
+								<th style="min-width: 120px;">Grading</th>
+								<th style="min-width: 120px;">Next Review Date</th>
+								<th style="min-width: 120px;">Acra Expiry</th>
+								<th style="min-width: 120px;">GM Approval Above</th>
+								<th style="min-width: 150px;">Status</th>
+							</tr>
+                        </thead>
+                        <tbody>
+                            @{
+								IList<CustomerParticular> customerCompany = (IList<CustomerParticular>)ViewData["CustomerParticularCompany"];
+								List<CustomerParticular> AllCustomerParticulars = (List<CustomerParticular>)ViewData["AllCustomerParticular"];
+								List<SearchTags> AllSearchTags = (List<SearchTags>)ViewData["AllSearchTags"];
+
+								if (customerCompany.Count > 0)
+								{
+									int page = Convert.ToInt32(ViewData["Page"]) - 1;
+									int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+									int i = 1;
+
+									foreach (CustomerParticular customer in customerCompany)
+									{
+														<tr>
+															<td>@(i + page * pageSize)</td>
+															<td>@customer.CustomerCode</td>
+															<td>@customer.CustomerType</td>
+															<td>@customer.Company_RegisteredName</td>
+															@*<td>@customer.Company_RegisteredAddress</td>*@
+															<td>@customer.Company_BusinessAddress1</td>
+															<td>@customer.Company_BusinessAddress2</td>
+															<td>@customer.Company_BusinessAddress3</td>
+															<td>@customer.Company_PostalCode</td>
+															<td>@customer.Shipping_Address1</td>
+															<td>@customer.Shipping_Address2</td>
+															<td>@customer.Shipping_Address3</td>
+															<td>@customer.Shipping_PostalCode</td>
+															<td>@customer.Company_ContactName</td>
+															<td>@customer.Company_TelNo</td>
+															<td>@customer.Company_FaxNo</td>
+															<td>@customer.Company_Email</td>
+															<td>@customer.Company_ContactNoH</td>
+															<td>@customer.Company_ContactNoO</td>
+															<td>@customer.Company_ContactNoM</td>
+															<td>@customer.Company_ICPassport</td>
+															<td>@customer.Company_JobTitle</td>
+															<td>@customer.Company_Nationality</td>
+															<td>
+																@{
+																	if (customer.Company_Country != 0)
+																	{
+																		@Html.Raw(customer.Countries.Name)
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.Company_CountryCode != 0)
+																	{
+																		@Html.Raw(customer.CountryCode.Name + " " + customer.CountryCode.Code)
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.IsSubAccount == 0)
+																	{
+																		@Html.Raw("Yes")
+																	}
+																	else
+																	{
+																		@Html.Raw("No");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.IsSubAccount == 0)
+																	{
+																		@Html.Raw("-")
+																	}
+																	else
+																	{
+																		if (AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault() != null)
+																		{
+																			//(string.IsNullOrEmpty(AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Company_RegisteredName) ? AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Natural_Name : AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Company_RegisteredName);
+																			@Html.Raw((string.IsNullOrEmpty(AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Company_RegisteredName) ? AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Natural_Name : AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Company_RegisteredName));
+																		}
+																		else
+																		{
+																			@Html.Raw("-")
+																		}
+																	}
+																}
+															</td>
+															<td>@customer.Customer_Title</td>
+															<td>@customer.Surname</td>
+															<td>@customer.GivenName</td>
+															<td>
+																@{
+																	if (customer.DOB != null)
+																	{
+																		@Html.Raw(@Convert.ToDateTime(customer.DOB).ToString("dd/MM/yyyy"));
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.isVerify == 0)
+																	{
+																		@Html.Raw("No")
+																	}
+																	else
+																	{
+																		@Html.Raw("Yes");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.isKYCVerify == 0)
+																	{
+																		@Html.Raw("No")
+																	}
+																	else
+																	{
+																		@Html.Raw("Yes");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.hasCustomerAccount == 0)
+																	{
+																		@Html.Raw("No")
+																	}
+																	else
+																	{
+																		@Html.Raw("Yes");
+																	}
+																}
+															</td>
+															<td>@customer.EnableTransactionType</td>
+															<td>
+																@{
+																	if (!string.IsNullOrEmpty(customer.SearchTags))
+																	{
+																		string GetSearchTags = customer.SearchTags.Replace("-", "");
+																		string[] SplitSearchTags = GetSearchTags.Split(',');
+																		List<String> searchTagList = new List<String>();
+																		int SplitID = 0;
+																		foreach (var _SplitSearchTags in SplitSearchTags)
+																		{
+																			SplitID = Convert.ToInt32(_SplitSearchTags);
+
+																			if (AllSearchTags.Where(e => e.ID == SplitID).FirstOrDefault() != null)
+																			{
+																				searchTagList.Add(AllSearchTags.Where(e => e.ID == SplitID).FirstOrDefault().TagName);
+																			}
+																		}
+
+																		if (searchTagList.Count > 0)
+																		{
+																			@Html.Raw(String.Join(",", searchTagList));
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+															<td>@customer.Company_PlaceOfRegistration</td>
+															<td>@Convert.ToDateTime(customer.Company_DateOfRegistration).ToString("dd/MM/yyyy")</td>
+															<td>@customer.Company_RegistrationNo</td>
+															<td>
+																@if (customer.Company_TypeOfEntity == "Others")
+																{
+																	@(customer.Company_TypeOfEntity + ": " + customer.Company_TypeOfEntityIfOthers)
+																}
+																else
+																{
+																	@customer.Company_TypeOfEntity
+																}
+															</td>
+															<td>@customer.Company_PurposeAndIntended</td>
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Company_SourceOfFund))
+																		{
+																			string[] company_sof = customer.SourceOfFunds[0].Company_SourceOfFund.Split(',');
+
+																			foreach (string sof in company_sof)
+																			{
+																				string fund = sof;
+																				if (sof == "Others")
+																				{
+																					fund += ": " + customer.SourceOfFunds[0].Company_SourceOfFundIfOthers;
+																				}
+
+																				@fund<br />
+																			}
+																		}
+																		else
+																		{
+																			@Html.Raw("-");
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+															<td>
+																@if (customer.SourceOfFunds.Count > 0)
+																{
+																	if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Company_PoliticallyExposedIndividuals_1))
+																	{
+																		@Html.Raw(customer.SourceOfFunds[0].Company_PoliticallyExposedIndividuals_1);
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+																else
+																{
+																	@Html.Raw("-");
+																}
+															</td>
+															<td>
+																@if (customer.SourceOfFunds.Count > 0)
+																{
+																	if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Company_PoliticallyExposedIndividuals_2))
+																	{
+																		@Html.Raw(customer.SourceOfFunds[0].Company_PoliticallyExposedIndividuals_2);
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+																else
+																{
+																	@Html.Raw("-");
+																}
+															</td>
+															<td>
+																@if (customer.SourceOfFunds.Count > 0)
+																{
+																	if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Company_PoliticallyExposedIndividuals_3))
+																	{
+																		@Html.Raw(customer.SourceOfFunds[0].Company_PoliticallyExposedIndividuals_3);
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+																else
+																{
+																	@Html.Raw("-");
+																}
+															</td>
+
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Company_ServiceLikeToUse))
+																		{
+																			@Html.Raw(customer.SourceOfFunds[0].Company_ServiceLikeToUse);
+																		}
+																		else
+																		{
+																			@Html.Raw("-");
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Company_PurposeOfIntendedTransactions))
+																		{
+																			@Html.Raw(customer.SourceOfFunds[0].Company_PurposeOfIntendedTransactions);
+																		}
+																		else
+																		{
+																			@Html.Raw("-");
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Company_HearAboutUs))
+																		{
+																			@Html.Raw(customer.SourceOfFunds[0].Company_HearAboutUs);
+																		}
+																		else
+																		{
+																			@Html.Raw("-");
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+
+															<td>
+																@{
+																	if (customer.ActingAgents.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.ActingAgents[0].ActingAgent))
+																		{
+																			@Html.Raw(customer.ActingAgents[0].ActingAgent);
+																		}
+																		else
+																		{
+																			@Html.Raw("-");
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+															@{
+																string company_CustomerType = "-";
+																string company_Address = "-";
+																string company_PlaceOfRegistration = "-";
+																string company_RegistrationNo = "-";
+																string company_DateOfRegistration = "-";
+																string company_Relationship = "-";
+																string company_BasisOfAuthority = "-";
+
+																if (customer.ActingAgents.Count > 0)
+																{
+																	if (customer.ActingAgents[0].ActingAgent == "Yes")
+																	{
+																		company_CustomerType = customer.ActingAgents[0].Company_CustomerType;
+																		company_Address = customer.ActingAgents[0].Company_Address;
+																		company_PlaceOfRegistration = customer.ActingAgents[0].Company_PlaceOfRegistration;
+																		company_RegistrationNo = customer.ActingAgents[0].Company_RegistrationNo;
+																		company_DateOfRegistration = Convert.ToDateTime(customer.ActingAgents[0].Company_DateOfRegistration).ToString("dd/MM/yyyy");
+																		company_Relationship = customer.ActingAgents[0].Relationship;
+																		company_BasisOfAuthority = customer.ActingAgents[0].BasisOfAuthority;
+																	}
+																}
+															}
+															<td>@company_CustomerType</td>
+															<td>@company_Address</td>
+															<td>@company_PlaceOfRegistration</td>
+															<td>@company_RegistrationNo</td>
+															<td>@company_DateOfRegistration</td>
+															<td>@company_Relationship</td>
+															<td>
+																@{
+																	string[] company_boa = company_BasisOfAuthority.Split(',');
+
+																	foreach (string boa in company_boa)
+																	{
+																		<a href="@Url.Content("~/FileUploads/BasisOfAuthority/" + boa)" target="_blank">@boa</a><br />
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Company_AccountOpeningForm))
+																		{
+																			string[] company_AccountOpening = customer.DocumentCheckLists[0].Company_AccountOpeningForm.Split(',');
+
+																			foreach (string file in company_AccountOpening)
+																			{
+																				<a href="@Url.Content("~/FileUploads/AccountOpening/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Company_ICWithAuthorizedTradingPersons))
+																		{
+																			string[] company_IcWithTradingPerson = customer.DocumentCheckLists[0].Company_ICWithAuthorizedTradingPersons.Split(',');
+
+																			foreach (string file in company_IcWithTradingPerson)
+																			{
+																				<a href="@Url.Content("~/FileUploads/ICWithTradingPerson/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Company_ICWithDirectors))
+																		{
+																			string[] company_IcWithDirector = customer.DocumentCheckLists[0].Company_ICWithDirectors.Split(',');
+
+																			foreach (string file in company_IcWithDirector)
+																			{
+																				<a href="@Url.Content("~/FileUploads/ICWithDirector/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Company_BusinessProfileFromAcra))
+																		{
+																			string[] company_BusinessProfile = customer.DocumentCheckLists[0].Company_BusinessProfileFromAcra.Split(',');
+
+																			foreach (string file in company_BusinessProfile)
+																			{
+																				<a href="@Url.Content("~/FileUploads/BusinessAcra/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Company_SelfiePassporWorkingPass))
+																		{
+																			string[] company_SelfieWorkingPass = customer.DocumentCheckLists[0].Company_SelfiePassporWorkingPass.Split(',');
+
+																			foreach (string file in company_SelfieWorkingPass)
+																			{
+																				<a href="@Url.Content("~/FileUploads/CompanySelfieWorkingPass/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Company_SelfiePhotoID))
+																		{
+																			string[] company_SelfiePhotoID = customer.DocumentCheckLists[0].Company_SelfiePhotoID.Split(',');
+
+																			foreach (string file in company_SelfiePhotoID)
+																			{
+																				<a href="@Url.Content("~/FileUploads/CompanySelfiePhoto/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.Others.Count > 0)
+																	{
+																		if (customer.Others[0].ApprovalBy != 0)
+																		{
+																			@Html.Raw(customer.Others[0].Users.Name);
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>@customer.Others[0].ScreeningResults</td>
+															<td>@customer.Others[0].Grading</td>
+															<td>
+																@{
+																	if (customer.Others[0].NextReviewDate != null)
+																	{
+																		@Convert.ToDateTime(customer.Others[0].NextReviewDate).ToString("dd/MM/yyyy");
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.Others[0].AcraExpiry != null)
+																	{
+																		@Convert.ToDateTime(customer.Others[0].AcraExpiry).ToString("dd/MM/yyyy");
+																	}
+																	else
+																	{
+																		@("-")
+																	}
+																}
+															</td>
+															<td>@customer.Others[0].GMApprovalAbove</td>
+															<td>@customer.Others[0].Status</td>
+														</tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="39" class="no-records-found">--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <br />
+                <h5>Natural Person</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead>
+							<tr>
+								<th style="min-width: 40px;">#</th>
+								<th style="min-width: 150px;">Customer Code</th>
+								<th style="min-width: 150px;">Customer Type</th>
+								<th style="min-width: 150px;">Name</th>
+								<th style="min-width: 250px;">Permanent Address 1</th>
+								<th style="min-width: 250px;">Permanent Address 2</th>
+								<th style="min-width: 250px;">Permanent Address 3</th>
+								<th style="min-width: 250px;">Permanent Postal Code</th>
+								<th style="min-width: 250px;">Mailing Address 1</th>
+								<th style="min-width: 250px;">Mailing Address 2</th>
+								<th style="min-width: 250px;">Mailing Address 3</th>
+								<th style="min-width: 250px;">Mailing Postal Code</th>
+								<th style="min-width: 150px;">Nationality</th>
+								<th style="min-width: 120px;">IC/Passport No</th>
+								<th style="min-width: 120px;">Date of Birth</th>
+								<th style="min-width: 150px;">Contact No (H)</th>
+								<th style="min-width: 150px;">Contact No (O)</th>
+								<th style="min-width: 120px;">Contact No (M)</th>
+								<th style="min-width: 120px;">Email</th>
+								<th style="min-width: 120px;">Is Main Account</th>
+								<th style="min-width: 120px;">Main Account</th>
+								<th style="min-width: 120px;">Customer Title</th>
+								<th style="min-width: 120px;">Customer Surname</th>
+								<th style="min-width: 120px;">Customer Given Name</th>
+								<th style="min-width: 120px;">Customer Account Validated</th>
+								<th style="min-width: 120px;">Is KYC Verify</th>
+								<th style="min-width: 120px;">Has Customer Account</th>
+								<th style="min-width: 120px;">Enable Transaction Type</th>
+								<th style="min-width: 120px;">Search Tag</th>
+								<th style="min-width: 150px;">Employee Type</th>
+								<th style="min-width: 200px;">Name of Employer</th>
+								<th style="min-width: 200px;">Job Title</th>
+								<th style="min-width: 200px;">Registered Address of Employer</th>
+								<th style="min-width: 200px;">Name of Business</th>
+								<th style="min-width: 200px;">Business Registration No</th>
+								<th style="min-width: 200px;">Registered Business Address</th>
+								<th style="min-width: 200px;">Principal Place of Business</th>
+								<th style="min-width: 150px;">Source of Funds</th>
+								<th style="min-width: 200px;">Annual Income (SGD)</th>
+								<th style="min-width: 150px;">Politically Exposed Individuals 1 <a href="#" data-toggle="tooltip" data-original-title="Are you or have you ever been entrusted with prominent figure functions, whether in Singapore, in a foreign country, or in an international organisation?" style="font-size: 12px;"><i class="icon wb-help" aria-hidden="true"></i></a></th>
+								<th style="min-width: 150px;">Politically Exposed Individuals 2 <a href="#" data-toggle="tooltip" data-original-title="Are you or have you ever been a parent/ step-parent /step-child, adopted child/ spouse/ sibling/ step-sibling/ adopted sibling of anyone who is or has been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?" style="font-size: 12px;"><i class="icon wb-help" aria-hidden="true"></i></a></th>
+								<th style="min-width: 150px;">Politically Exposed Individuals 3 <a href="#" data-toggle="tooltip" data-original-title="Are you closely connected, either socially or professionally with anyone who is or has been entrusted with prominent public figure functions, whether in Singapore, in a foreign country, or in an international organisation? the beneficial owner or has the beneficial owner ever been closely connected, either socially or professionally with anyone who is or has been entrusted with prominent public figure functions, whether in Singapore, in a foreign country, or in an international organisation?" style="font-size: 12px;"><i class="icon wb-help" aria-hidden="true"></i></a></th>
+								<th style="min-width: 100px;">Name the service(s) you are most likely to use (tick all that apply)</th>
+								<th style="min-width: 100px;">Purpose of intended transactions</th>
+								<th style="min-width: 100px;">Where did you hear about us?</th>
+								<th style="min-width: 100px;">Agent Acting</th>
+								<th style="min-width: 100px;">Name</th>
+								<th style="min-width: 250px;">Permanent Address</th>
+								<th style="min-width: 150px;">Nationality</th>
+								<th style="min-width: 120px;">IC/Passport No</th>
+								<th style="min-width: 120px;">Date of Birth</th>
+								<th style="min-width: 150px;">Relationship between Agent(s) and Client</th>
+								<th style="min-width: 200px;">Basis of Authority</th>
+								<th style="min-width: 200px;">Photocopy of IC</th>
+								<th style="min-width: 200px;">Business/Name Card</th>
+								<th style="min-width: 200px;">Signed KYC Form</th>
+								<th style="min-width: 200px;">Selfie Photo ID</th>
+								<th style="min-width: 150px;">Approval By</th>
+								<th style="min-width: 150px;">Screening Results</th>
+								<th style="min-width: 120px;">Grading</th>
+								<th style="min-width: 120px;">Next Review Date</th>
+								<th style="min-width: 120px;">Acra Expiry</th>
+								<th style="min-width: 120px;">GM Approval Above</th>
+								<th style="min-width: 150px;">Status</th>
+							</tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IList<CustomerParticular> customerNatural = (IList<CustomerParticular>)ViewData["CustomerParticularNatural"];
+
+                                if (customerNatural.Count > 0)
+                                {
+                                    int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                    int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                    int j = 1;
+
+                                    foreach (CustomerParticular customer in customerNatural)
+                                    {
+														<tr>
+															<td>@(j + page * pageSize)</td>
+															<td>@customer.CustomerCode</td>
+															<td>@customer.CustomerType</td>
+															<td>@customer.Natural_Name</td>
+															<td>@customer.Natural_PermanentAddress</td>
+															<td>@customer.Natural_PermanentAddress2</td>
+															<td>@customer.Natural_PermanentAddress3</td>
+															<td>@customer.Natural_PermanentPostalCode</td>
+															<td>@customer.Natural_MailingAddress</td>
+															<td>@customer.Natural_MailingAddress2</td>
+															<td>@customer.Natural_MailingAddress3</td>
+															<td>@customer.Mailing_PostalCode</td>
+															<td>@customer.Natural_Nationality</td>
+															<td>@customer.Natural_ICPassportNo</td>
+															<td>@Convert.ToDateTime(customer.Natural_DOB).ToString("dd/MM/yyyy")</td>
+															<td>@customer.Natural_ContactNoH</td>
+															<td>@customer.Natural_ContactNoO</td>
+															<td>@customer.Natural_ContactNoM</td>
+															<td>@customer.Natural_Email</td>
+															<td>
+																@{
+																	if (customer.IsSubAccount == 0)
+																	{
+																		@Html.Raw("Yes")
+																	}
+																	else
+																	{
+																		@Html.Raw("No");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.IsSubAccount == 0)
+																	{
+																		@Html.Raw("-")
+																	}
+																	else
+																	{
+																		if (AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault() != null)
+																		{
+																			//(string.IsNullOrEmpty(AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Company_RegisteredName) ? AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Natural_Name : AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Company_RegisteredName);
+																			@Html.Raw((string.IsNullOrEmpty(AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Company_RegisteredName) ? AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Natural_Name : AllCustomerParticulars.Where(e => e.ID == customer.IsSubAccount).FirstOrDefault().Company_RegisteredName));
+																		}
+																		else
+																		{
+																			@Html.Raw("-")
+																		}
+																	}
+																}
+															</td>
+															<td>@customer.Customer_Title</td>
+															<td>@customer.Surname</td>
+															<td>@customer.GivenName</td>
+															<td>
+																@{
+																	if (customer.isVerify == 0)
+																	{
+																		@Html.Raw("No")
+																	}
+																	else
+																	{
+																		@Html.Raw("Yes");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.isKYCVerify == 0)
+																	{
+																		@Html.Raw("No")
+																	}
+																	else
+																	{
+																		@Html.Raw("Yes");
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.hasCustomerAccount == 0)
+																	{
+																		@Html.Raw("No")
+																	}
+																	else
+																	{
+																		@Html.Raw("Yes");
+																	}
+																}
+															</td>
+															<td>@customer.EnableTransactionType</td>
+															<td>
+																@{
+																	if (!string.IsNullOrEmpty(customer.SearchTags))
+																	{
+																		string GetSearchTags = customer.SearchTags.Replace("-", "");
+																		string[] SplitSearchTags = GetSearchTags.Split(',');
+																		List<String> searchTagList = new List<String>();
+																		int SplitID = 0;
+																		foreach (var _SplitSearchTags in SplitSearchTags)
+																		{
+																			SplitID = Convert.ToInt32(_SplitSearchTags);
+
+																			if (AllSearchTags.Where(e => e.ID == SplitID).FirstOrDefault() != null)
+																			{
+																				searchTagList.Add(AllSearchTags.Where(e => e.ID == SplitID).FirstOrDefault().TagName);
+																			}
+																		}
+
+																		if (searchTagList.Count > 0)
+																		{
+																			@Html.Raw(String.Join(",", searchTagList));
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+															<td>@customer.Natural_EmploymentType</td>
+															@{
+																string employed_NameOfEmployer = "-";
+																string employed_JobTitle = "-";
+																string employed_RegisteredAddressOfEmployer = "-";
+																string self_NameOfBusiness = "-";
+																string self_BusinessRegistrationNo = "-";
+																string self_RegisteredBusinessAddress = "-";
+																string self_PrincipalPlaceOfBusiness = "-";
+
+																if (customer.Natural_EmploymentType == "Employed")
+																{
+																	employed_NameOfEmployer = customer.Natural_EmployedEmployerName;
+																	employed_JobTitle = customer.Natural_EmployedJobTitle;
+																	employed_RegisteredAddressOfEmployer = customer.Natural_EmployedRegisteredAddress;
+																}
+																else
+																{
+																	self_NameOfBusiness = customer.Natural_SelfEmployedBusinessName;
+																	self_BusinessRegistrationNo = customer.Natural_SelfEmployedRegistrationNo;
+																	self_RegisteredBusinessAddress = customer.Natural_SelfEmployedBusinessAddress;
+																	self_PrincipalPlaceOfBusiness = customer.Natural_SelfEmployedBusinessPrincipalPlace;
+																}
+															}
+															<td>
+																@employed_NameOfEmployer
+															</td>
+															<td>@employed_JobTitle</td>
+															<td>@employed_RegisteredAddressOfEmployer</td>
+															<td>@self_NameOfBusiness</td>
+															<td>@self_BusinessRegistrationNo</td>
+															<td>@self_RegisteredBusinessAddress</td>
+															<td>@self_PrincipalPlaceOfBusiness</td>
+															<td>
+																@{
+
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Natural_SourceOfFund))
+																		{
+																			string[] natural_sof = customer.SourceOfFunds[0].Natural_SourceOfFund.Split(',');
+
+																			foreach (string sof in natural_sof)
+																			{
+																				string fund = sof;
+																				if (sof == "Others")
+																				{
+																					fund += ": " + customer.SourceOfFunds[0].Natural_SourceOfFundIfOthers;
+																				}
+
+																				@fund<br />
+																			}
+																		}
+																	}
+																}
+															</td>
+															<td>
+															@{ 
+																if (customer.SourceOfFunds.Count > 0)
+																{
+																	@Html.Raw(customer.SourceOfFunds[0].Natural_AnnualIncome)
+																}
+															}
+															</td>
+															<td>
+															@{ 
+																if (customer.SourceOfFunds.Count > 0)
+																{
+																	@Html.Raw(customer.SourceOfFunds[0].Natural_PoliticallyExposedIndividuals_1)
+																}
+															}
+															</td>
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		@Html.Raw(customer.SourceOfFunds[0].Natural_PoliticallyExposedIndividuals_2)
+																	}
+																}
+																
+															</td>
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		@Html.Raw(customer.SourceOfFunds[0].Natural_PoliticallyExposedIndividuals_3)
+																	}
+																}
+															</td>
+
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Natural_ServiceLikeToUse))
+																		{
+																			@Html.Raw(customer.SourceOfFunds[0].Natural_ServiceLikeToUse);
+																		}
+																		else
+																		{
+																			@Html.Raw("-");
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Natural_PurposeOfIntendedTransactions))
+																		{
+																			@Html.Raw(customer.SourceOfFunds[0].Natural_PurposeOfIntendedTransactions);
+																		}
+																		else
+																		{
+																			@Html.Raw("-");
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+
+															<td>
+																@{
+																	if (customer.SourceOfFunds.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.SourceOfFunds[0].Natural_HearAboutUs))
+																		{
+																			@Html.Raw(customer.SourceOfFunds[0].Natural_HearAboutUs);
+																		}
+																		else
+																		{
+																			@Html.Raw("-");
+																		}
+																	}
+																	else
+																	{
+																		@Html.Raw("-");
+																	}
+																}
+															</td>
+
+															<td>
+															@{ 
+																if (customer.ActingAgents.Count > 0)
+																{
+																	@Html.Raw(customer.ActingAgents[0].ActingAgent)
+																}
+															}
+															</td>
+															@{
+																string natural_Name = "-";
+																string natural_PermanentAddress = "-";
+																string natural_Nationality = "-";
+																string natural_ICPassport = "-";
+																string natural_DOB = "-";
+																string natural_Relation = "-";
+																string natural_BasisOfAuthority = "";
+
+																if (customer.ActingAgents.Count > 0)
+																{
+																	if (customer.ActingAgents[0].ActingAgent == "Yes")
+																	{
+																		natural_Name = customer.ActingAgents[0].Natural_Name;
+																		natural_PermanentAddress = customer.ActingAgents[0].Natural_PermanentAddress;
+																		natural_Nationality = customer.ActingAgents[0].Natural_Nationality;
+																		natural_ICPassport = customer.ActingAgents[0].Natural_ICPassportNo;
+																		natural_DOB = Convert.ToDateTime(customer.ActingAgents[0].Natural_DOB).ToString("dd/MM/yyyy");
+																		natural_Relation = customer.ActingAgents[0].Relationship;
+																		natural_BasisOfAuthority = customer.ActingAgents[0].BasisOfAuthority;
+																	}
+																}
+															}
+															<td>@natural_Name</td>
+															<td>@natural_PermanentAddress</td>
+															<td>@natural_Nationality</td>
+															<td>@natural_ICPassport</td>
+															<td>@natural_DOB</td>
+															<td>@natural_Relation</td>
+															<td>
+																@{
+																	string[] natural_boa = natural_BasisOfAuthority.Split(',');
+
+																	foreach (string boa in natural_boa)
+																	{
+																		<a href="@Url.Content("~/FileUploads/BasisOfAuthority/" + boa)" target="_blank">@boa</a><br />
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Natural_ICOfCustomer))
+																		{
+																			string[] natural_ICOfCustomer = customer.DocumentCheckLists[0].Natural_ICOfCustomer.Split(',');
+
+																			foreach (string file in natural_ICOfCustomer)
+																			{
+																				<a href="@Url.Content("~/FileUploads/ICOfCustomer/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																}
+															</td>
+															<td>
+																@{
+
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Natural_BusinessNameCard))
+																		{
+																			string[] natural_BusinessNameCard = customer.DocumentCheckLists[0].Natural_BusinessNameCard.Split(',');
+
+																			foreach (string file in natural_BusinessNameCard)
+																			{
+																				<a href="@Url.Content("~/FileUploads/BusinessNameCard/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																}
+															</td>
+															<td>
+																@{
+
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Natural_KYCForm))
+																		{
+																			string[] natural_KYCForm = customer.DocumentCheckLists[0].Natural_KYCForm.Split(',');
+
+																			foreach (string file in natural_KYCForm)
+																			{
+																				<a href="@Url.Content("~/FileUploads/KYCForm/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																}
+															</td>
+															<td>
+																@{
+
+																	if (customer.DocumentCheckLists.Count > 0)
+																	{
+																		if (!string.IsNullOrEmpty(customer.DocumentCheckLists[0].Natural_SelfiePhotoID))
+																		{
+																			string[] natural_SelfiePhotoID = customer.DocumentCheckLists[0].Natural_SelfiePhotoID.Split(',');
+
+																			foreach (string file in natural_SelfiePhotoID)
+																			{
+																				<a href="@Url.Content("~/FileUploads/NaturalSelfiePhoto/" + file)" target="_blank">@file</a><br />
+																			}
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.Others.Count > 0)
+																	{
+																		if (customer.Others[0].Users != null)
+																		{
+																			@Html.Raw(customer.Others[0].Users.Name)
+																		}
+
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.Others.Count > 0)
+																	{
+																		@Html.Raw(customer.Others[0].ScreeningResults)
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.Others.Count > 0)
+																	{
+																		@Html.Raw(customer.Others[0].Grading)
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.Others.Count > 0)
+																	{
+																		if (customer.Others[0].NextReviewDate != null)
+																		{
+																			@Convert.ToDateTime(customer.Others[0].NextReviewDate).ToString("dd/MM/yyyy")
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																}
+															</td>
+															<td>
+																@{
+																	if (customer.Others.Count > 0)
+																	{
+																		if (customer.Others[0].AcraExpiry != null)
+																		{
+																			@Convert.ToDateTime(customer.Others[0].AcraExpiry).ToString("dd/MM/yyyy");
+																		}
+																		else
+																		{
+																			@("-")
+																		}
+																	}
+																}
+															</td>
+															<td>
+															@{ 
+																if (customer.Others.Count > 0)
+																{
+																	@Html.Raw(customer.Others[0].GMApprovalAbove)
+																}
+															}
+															</td>
+															<td>
+																@{
+																	if (customer.Others.Count > 0)
+																	{
+																		@Html.Raw(customer.Others[0].Status)
+																	}
+																}
+															</td>
+														</tr>
+                                        j++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="44" class="no-records-found">--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No record to display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination">
+            @Html.PagedListPager((IPagedList)ViewData["CustomerParticular"], page => Url.Action("/Customer", "ExportData", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sale-transaction-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label"></h4>
+            </div>
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#PageSize").on("change", function () {
+        $("#page-size").submit();
+    });
+
+    function ViewTransactions(id) {
+        var url = "@Url.Action("ViewTransactions", "Sale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+    }
+</script>

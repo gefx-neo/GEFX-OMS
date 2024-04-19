@@ -1,0 +1,148 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "New User";
+    ViewBag.ManageUsers = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row row-lg">
+            <div class="col-xlg-12 col-md-12">
+                @if (TempData["Result"] != null)
+                {
+                    string[] result = TempData["Result"].ToString().Split('|');
+
+                    <div class="alert alert-@result[0]">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @result[1]
+                    </div>
+                }
+                
+                @using (Html.BeginForm("Create", "User", FormMethod.Post, new { @class = "form-horizontal", @id = "form-submit" }))
+                {
+                    User users = new User();
+                    
+                    <div class="form-group">
+                        @Html.LabelFor(u => users.NRIC, new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(u => users.NRIC, new { @class = "form-control", @placeholder = "Unique Customer Login ID" })
+                            @Html.ValidationMessageFor(u => users.NRIC)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(u => users.Name, new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(u => users.Name, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(u => users.Name)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(u => users.Email, new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(u => users.Email, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(u => users.Email)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(u => users.Role, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="customerviewer" name="Role" value="Customer Viewer" @ViewData["CustomerViewerCheckbox"].ToString()>
+								<label for="customerviewer">Customer Viewer</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="juniordealer" name="Role" value="Junior Dealer" @ViewData["JuniorDealerCheckbox"].ToString()>
+								<label for="juniordealer">Junior Dealer</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="dealer" name="Role" value="Dealer" @ViewData["DealerCheckbox"].ToString()>
+								<label for="dealer">Dealer</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="salesadmin" name="Role" value="Sales Admin" @ViewData["SalesAdminCheckbox"].ToString()>
+								<label for="salesadmin">Sales Admin</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="finance" name="Role" value="Finance" @ViewData["FinanceCheckbox"].ToString()>
+								<label for="finance">Finance</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="inventory" name="Role" value="Inventory" @ViewData["InventoryCheckbox"].ToString()>
+								<label for="inventory">Inventory</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="opsmanager" name="Role" value="Ops Manager" @ViewData["OpsManagerCheckbox"].ToString()>
+								<label for="opsmanager">Ops Manager</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="opsexec" name="Role" value="Ops Exec" @ViewData["OpsExecCheckbox"].ToString()>
+								<label for="opsexec">Ops Exec</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="cashier" name="Role" value="Cashier" @ViewData["CashierCheckbox"].ToString()>
+								<label for="cashier">Cashier</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="generalmanager" name="Role" value="General Manager" @ViewData["GeneralManagerCheckbox"].ToString()>
+								<label for="generalmanager">General Manager</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="superadmin" name="Role" value="Super Admin" @ViewData["SuperAdminCheckbox"].ToString()>
+								<label for="superadmin">Super Admin</label>
+							</span>
+							@Html.ValidationMessageFor(u => users.Role)
+						</div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(u => users.Password, new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.PasswordFor(u => users.Password, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(u => users.Password)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Repeat Password*:", new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.Password("RepeatPassword", null, new { @class = "form-control" })
+                            @Html.ValidationMessage("RepeatPassword")
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(u => users.Status, new { @class = "col-sm-2 control-label" })
+                        <div class="col-sm-10">
+                            @Html.DropDownListFor(u => users.Status, (SelectList)ViewData["StatusDropdown"], new { @class = "form-control" })
+                            @Html.ValidationMessageFor(u => users.Status)
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-10 col-sm-offset-2">
+                            <button type="button" class="btn btn-primary" onclick="disableButton()" id="disable_button">Save</button>
+                            <button type="reset" class="btn btn-default btn-outline">Reset</button>
+                            @{
+                                int page = 1;
+
+                                if (ViewData["Page"] != null)
+                                {
+                                    page = Convert.ToInt32(ViewData["Page"]);
+                                }
+                            }
+                            <a href="@Url.Action("Listing", new { @page = page })" class="btn btn-danger">Back</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function disableButton()
+    {
+        $("#disable_button").attr("disabled", true);
+        $("#form-submit").submit();
+	}
+</script>

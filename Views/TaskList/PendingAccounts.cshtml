@@ -1,0 +1,77 @@
+﻿@{
+    Layout = null;
+}
+<div class="row">
+    <h5 class="col-sm-offset-3">Finance View</h5>
+    @using (Html.BeginForm("PendingAccounts", "TaskList", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-pending-accounts" }))
+	{
+        <div class="form-group">
+            @Html.Label("Collection Date *: ", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                <div class="input-group" style="float:left;width:50%;">
+                    <span class="input-group-addon" style="border-radius:0;">
+                        <i class="icon wb-calendar" aria-hidden="true"></i>
+                    </span>
+                    @Html.TextBox("CollectionDate", ViewData["CollectionDate"].ToString(), new { @class = "form-control" })
+                </div>
+				<div class="input-group" style="float:left;width:50%;">
+					<span class="input-group-addon" style="border-radius:0;border-left-width:0px;">
+						<i class="icon wb-time" aria-hidden="true"></i>
+					</span>
+					@Html.TextBox("CollectionTime", ViewData["CollectionTime"].ToString(), new { @class = "form-control", @maxlength="40" })
+					@*@Html.DropDownList("CollectionTime", (SelectList)ViewData["CollectionTimeDropdown"], new { @class = "form-control", @data_plugin = "selectpicker" })*@
+				</div>
+            </div>
+            <div class="col-sm-8 col-sm-offset-3">
+                <div class="col-sm-6">
+                    @Html.ValidationMessage("CollectionDate")
+                </div>
+                <div class="col-sm-6">
+                    @Html.ValidationMessage("CollectionTime")
+                </div>
+            </div>
+        </div>
+
+		if (ViewData["BankTransfer"] != null)
+		{
+            <div class="form-group">
+                @Html.Label("Bank Reference Number:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-8">
+                    @Html.TextBox("Bank_Reference_Number", ViewData["BankReferenceNumber"].ToString(), new { @class = "form-control" })
+                    @Html.ValidationMessage("Bank_Reference_Number")
+                    <span class="help-block"><i class="wb-info-circle"></i> Blank field indicates that bank transfer has not been done.</span>
+                </div>
+            </div>
+		}
+
+        <div class="form-group">
+            @Html.Label("Remarks :", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextArea("Sale Remarks", ViewData["SaleRemarks"].ToString(), new { @class = "form-control", @rows = "4" })
+                @Html.ValidationMessage("Remarks")
+            </div>
+        </div>
+    }
+    <div class="form-group">
+        <div class="col-sm-12 col-sm-offset-3">
+            <a href="@Url.Action("GenerateMemo", "Sale", new { @id = ViewData["SaleId"].ToString() })" class="btn btn-success btn-outline">Print Transaction Memo</a>
+        </div>
+    </div>
+    <div class="col-sm-12" style="text-align: center;">
+        <button class="btn btn-primary btn-outline" type="button" onclick="SubmitForm('form-pending-accounts')">Approve</button>
+    </div>
+</div>
+
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#update-sale-memoid").html("Update Sales Record - " + "@ViewData["MemoID"].ToString()");
+
+        $("#CollectionDate").datepicker({
+            autoclose: true,
+            format: "dd/mm/yyyy DD"
+        });
+    })
+</script>

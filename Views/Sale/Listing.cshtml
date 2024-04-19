@@ -1,0 +1,873 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Manage Sales";
+    ViewBag.ManageSales = "active open";
+    string sgdFormat = ViewData["SGDFormat"].ToString();
+}
+
+<style>
+/* This only works with JavaScript,
+if it's not present, don't show loader */
+
+.preload {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 9999;
+	background: url('@Url.Content("~/Content/images/Preloader_2.gif")') center no-repeat #fff;
+    opacity: 0.7;
+}
+</style>
+
+<div class="preload" style="display:none;"></div>
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <div class="col-xlg-12 col-md-12">
+                @{
+                    string userRole = Session["UserRole"].ToString();
+                    string[] userRoleList = userRole.Split(',');
+
+                    if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "Finance") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0 || Array.IndexOf(userRoleList, "Junior Dealer") >= 0)
+                    {
+                        <a class="btn btn-success" href="@Url.Content("Create")" type="button"><i aria-hidden="true" class="icon wb-plus"></i> New Sale</a>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                @using (Html.BeginForm("Listing", "Sale", FormMethod.Post, new { @class = "page-search-form", @role = "search" }))
+                {
+                    <div class="input-search input-search-dark">
+                        <button id="search-icon" type="submit" class="input-search-icon icon wb-search" aria-label="Close"></button>
+                        @Html.TextBox("SearchKeyword", ViewData["SearchKeyword"].ToString(), new { @class = "form-control", @placeholder = "Search by Memo ID or Customer Name" })
+                        <button id="search-close" type="button" class="input-search-close icon wb-close" aria-label="Close"></button>
+                    </div>
+                }
+                <div class="page-user-sortlist pull-right margin-top-15">
+                    View: <a class="dropdown-toggle inline-block" data-toggle="dropdown"
+                             href="#" aria-expanded="false">@ViewData["CurrentStatus"].ToString()<span class="caret"></span></a>
+                            <ul class="dropdown-menu animation-scale-up animation-top-right animation-duration-250"
+                                role="menu">
+                                <li class="@ViewData["AllSalesActive"].ToString()" role="presentation"><a href="@Url.Action("Listing")">All Sales</a></li>
+                                <li class="@ViewData["AllCompletedActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Completed" })">All Completed</a></li>
+                                <li class="@ViewData["AllPendingActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending" })">All Pending</a></li>
+                                <li class="@ViewData["AllDeliveriesActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Deliveries" })">All Deliveries</a></li>
+
+                                <li class="@ViewData["PendingAccountActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending Accounts" })">Pending Accounts</a></li>
+                                <li class="@ViewData["PendingPackingActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending Packing" })">Pending Packing</a></li>
+                                <li class="@ViewData["PendingIncomingDeliveryActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending Incoming Delivery" })">Pending Incoming Delivery</a></li>
+                                <li class="@ViewData["PendingCashierActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending Cashier" })">Pending Cashier</a></li>
+
+                                <li class="@ViewData["PendingAssignDeliveryActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending Assign Delivery" })">Pending Assign Delivery Only</a></li>
+                                <li class="@ViewData["PendingDeliveryActive"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending Delivery" })">Pending Delivery Only</a></li>
+                                <li class="@ViewData["PendingGMApproval"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending GM Approval" })">Pending GM Approval</a></li>
+                                <li class="@ViewData["PendingGMApprovalReject"].ToString()" role="presentation"><a href="@Url.Action("Listing", new { @searchStatus = "Pending GM Approval (Rejected)" })">Pending GM Approval (Rejected)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row margin-top-15">
+                    <div class="col-xlg-12 col-md-12">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Memo ID</th>
+                                        <th>Customer/Company</th>
+                                        <th>Collection Date/Time</th>
+                                        <th>Transaction Type</th>
+                                        <th>Type</th>
+                                        <th>Amount (Foreign)</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        IEnumerable<Sale> sales = (IEnumerable<Sale>)ViewData["Sales"];
+                                        Dictionary<int, bool> deleteSales = (Dictionary<int, bool>)ViewData["DeleteSales"];
+
+                                        if (sales.Count() > 0)
+                                        {
+                                            int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                            int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                            int i = 1;
+
+                                            foreach (Sale sale in sales)
+                                            {
+                                                IEnumerable<SaleTransaction> getSales = sale.SaleTransactions.OrderBy(e => e.ID);
+
+                                                string highlight = "";
+
+                                                if (sale.Urgent == "Urgent" && (sale.Status != "Completed" && sale.Status != "Pending Delete GM Approval"))
+                                                {
+                                                    highlight = "bg-red-100";
+                                                }
+
+                                                <tr class="@highlight">
+                                                    <td>@(i + page * pageSize)</td>
+                                                    <td>@sale.MemoID</td>
+                                                    <td>
+                                                        @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                        {
+                                                            @sale.CustomerParticulars.Company_RegisteredName
+                                                        }
+                                                        else
+                                                        {
+                                                            @sale.CustomerParticulars.Natural_Name
+                                                        }
+                                                    </td>
+                                                    <td>@(Convert.ToDateTime(sale.CollectionDate).ToString("dd/MM/yyyy") + " " + sale.CollectionTime)</td>
+                                                    <td>@sale.TransactionType</td>
+                                                    <td>
+                                                        @if (getSales.Count() > 0)
+                                                        {
+                                                            @getSales.FirstOrDefault().Products.CurrencyCode
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.Raw("");
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (getSales.Count() > 0)
+                                                        {
+                                                            @(getSales.FirstOrDefault().Products.Symbol + getSales.FirstOrDefault().AmountForeign.ToString("#,##0.########")) <a href="javascript:void(0)" onclick="ViewTransactions(@sale.ID)" style="text-decoration: none;" data-toggle="tooltip" data-original-title="View Transactions">[+]</a>
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.Raw("")
+                                                        }
+                                                    </td>
+                                                    <td>@sale.Status</td>
+                                                    <td class="text-nowrap">
+
+                                                        @if (Array.IndexOf(userRoleList, "Super Admin") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0)
+                                                        {
+                                                            <a href="@Url.Action("ViewEmailLogs", new { @id = sale.ID })" class="btn btn-sm btn-icon btn-round btn-warning" data-toggle="tooltip" data-original-title="View Email Logs" target="_blank"><i class="icon wb-envelope" aria-hidden="true"></i></a>
+                                                        }
+
+                                                        <a href="@Url.Action("Edit", new { @id = sale.ID })" class="btn btn-sm btn-icon btn-round btn-default" data-toggle="tooltip" data-original-title="Edit"><i class="icon wb-edit" aria-hidden="true"></i></a>
+
+                                                        @if ((Array.IndexOf(userRoleList, "Super Admin") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0) && (sale.Status == "Pending Accounts" || sale.Status == "Pending Packing" || sale.Status == "Pending Assign Delivery"))
+                                                        {
+                                                            <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Delete" onclick="DeleteThisRecord(@sale.ID)"><i class="icon wb-close" aria-hidden="true"></i></button>
+                                                        }
+                                                        else if ((sale.Status == "Completed" && deleteSales[sale.ID]) && (Array.IndexOf(userRoleList, "Super Admin") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Finance") >= 0 || Array.IndexOf(userRoleList, "Cashier") >= 0))
+                                                        {
+                                                            <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Delete" onclick="DeleteThisRecord(@sale.ID)"><i class="icon wb-close" aria-hidden="true"></i></button>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                i++;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td class="no-records-found" colspan="9">No record to display</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- pager -->
+                    @if (Convert.ToInt32(ViewData["getPaging"]) >= 1)
+                    {
+                        <ul class="pagination">
+                            @if (Convert.ToInt32(ViewData["getPaging"]) > 1)
+                            {
+                                string getSearchStatus = ViewData["SearchStatus"].ToString();
+                                if (!string.IsNullOrEmpty(getSearchStatus))
+                                {
+                                    <li>
+                                        <a href="~/Sale/Listing?searchStatus=@getSearchStatus"><< First</a>
+                                    </li>
+                                    <li>
+                                        <a href="~/Sale/Listing?page=@(Convert.ToInt32(ViewData["getPaging"]) - 1)&searchStatus=@getSearchStatus">< Previous</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <a href="~/Sale/Listing"><< First</a>
+                                    </li>
+                                    <li>
+                                        <a href="~/Sale/Listing?page=@(Convert.ToInt32(ViewData["getPaging"]) - 1)">< Previous</a>
+                                    </li>
+                                }
+
+                            }
+                            @if (Convert.ToInt32(ViewData["getPaging"]) < Convert.ToInt32(ViewData["Paginations"]))
+                            {
+                                string getSearchStatus = ViewData["SearchStatus"].ToString();
+                                int getTotalPages = Convert.ToInt32(ViewData["Paginations"]);
+                                if (Convert.ToInt32(ViewData["getPaging"]) <= 6)
+                                {
+                                    if (Convert.ToInt32(ViewData["getPaging"]) == 1)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= Convert.ToInt32(ViewData["getPaging"]) + 9; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= Convert.ToInt32(ViewData["getPaging"]) + 9; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+                                    else if (Convert.ToInt32(ViewData["getPaging"]) == 2)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 1; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 1; page <= Convert.ToInt32(ViewData["getPaging"]) + 8; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 1; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 1; page <= Convert.ToInt32(ViewData["getPaging"]) + 8; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+                                    else if (Convert.ToInt32(ViewData["getPaging"]) == 3)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 2; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 2; page <= Convert.ToInt32(ViewData["getPaging"]) + 7; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 2; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 2; page <= Convert.ToInt32(ViewData["getPaging"]) + 7; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+                                    else if (Convert.ToInt32(ViewData["getPaging"]) == 4)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= Convert.ToInt32(ViewData["getPaging"]) + 6; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= Convert.ToInt32(ViewData["getPaging"]) + 6; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+                                    else if (Convert.ToInt32(ViewData["getPaging"]) == 5)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+                                    else if (Convert.ToInt32(ViewData["getPaging"]) == 6)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 4; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            if (getTotalPages < 10)
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= getTotalPages; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 4; page++)
+                                                {
+                                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                        <a href="~/Sale/Listing?page=@page">@page</a>
+                                                    </li>
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+                                    if (!string.IsNullOrEmpty(getSearchStatus))
+                                    {
+                                        if (getTotalPages < 10)
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            <li class="disabled PagedList-ellipses">
+                                                <a>...</a>
+                                            </li>
+                                            <li>
+                                                <a href="~/Sale/Listing?page=@(Convert.ToInt32(ViewData["Paginations"]))&searchStatus=@getSearchStatus">@Convert.ToInt32(ViewData["Paginations"])</a>
+                                            </li>
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        if (getTotalPages < 10)
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            <li class="disabled PagedList-ellipses">
+                                                <a>...</a>
+                                            </li>
+                                            <li>
+                                                <a href="~/Sale/Listing?page=@(Convert.ToInt32(ViewData["Paginations"]))">@Convert.ToInt32(ViewData["Paginations"])</a>
+                                            </li>
+                                        }
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    int getCurentPage = Convert.ToInt32(ViewData["getPaging"]);
+                                    if (getTotalPages < 10)
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        <li class="disabled PagedList-ellipses">
+                                            <a>...</a>
+                                        </li>
+                                    }
+
+
+                                    if (getCurentPage == getTotalPages - 6)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= Convert.ToInt32(ViewData["getPaging"]) + 6; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                </li>
+                                            }
+
+                                        }
+
+                                        else
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= Convert.ToInt32(ViewData["getPaging"]) + 6; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page">@page</a>
+                                                </li>
+                                            }
+                                        }
+                                    }
+                                    else if (getCurentPage == getTotalPages - 5)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                </li>
+                                            }
+
+                                        }
+
+                                        else
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page">@page</a>
+                                                </li>
+                                            }
+                                        }
+                                    }
+                                    else if (getCurentPage == getTotalPages - 4)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 4; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                </li>
+                                            }
+
+                                        }
+
+                                        else
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 4; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page">@page</a>
+                                                </li>
+                                            }
+                                        }
+                                    }
+
+                                    else if (getCurentPage == getTotalPages - 3)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 6; page <= Convert.ToInt32(ViewData["getPaging"]) + 3; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                </li>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 6; page <= Convert.ToInt32(ViewData["getPaging"]) + 3; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page">@page</a>
+                                                </li>
+                                            }
+
+                                        }
+
+                                    }
+                                    else if (getCurentPage == getTotalPages - 2)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 7; page <= Convert.ToInt32(ViewData["getPaging"]) + 2; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                </li>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 7; page <= Convert.ToInt32(ViewData["getPaging"]) + 2; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page">@page</a>
+                                                </li>
+                                            }
+
+                                        }
+
+                                    }
+                                    else if (getCurentPage == getTotalPages - 1)
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 8; page <= Convert.ToInt32(ViewData["getPaging"]) + 1; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                </li>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 8; page <= Convert.ToInt32(ViewData["getPaging"]) + 1; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page">@page</a>
+                                                </li>
+                                            }
+
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                                </li>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                                            {
+                                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                    <a href="~/Sale/Listing?page=@page">@page</a>
+                                                </li>
+                                            }
+
+                                        }
+                                        if (!string.IsNullOrEmpty(getSearchStatus))
+                                        {
+                                            <li class="disabled PagedList-ellipses">
+                                                <a>...</a>
+                                            </li>
+                                            <li>
+                                                <a href="~/Sale/Listing?page=@(Convert.ToInt32(ViewData["Paginations"]))&searchStatus=@getSearchStatus">@Convert.ToInt32(ViewData["Paginations"])</a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="disabled PagedList-ellipses">
+                                                <a>...</a>
+                                            </li>
+                                            <li>
+                                                <a href="~/Sale/Listing?page=@(Convert.ToInt32(ViewData["Paginations"]))">@Convert.ToInt32(ViewData["Paginations"])</a>
+                                            </li>
+                                        }
+
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(getSearchStatus))
+                                {
+                                    <li>
+                                        <a href="~/Sale/Listing?page=@(Convert.ToInt32(ViewData["getPaging"]) + 1)&searchStatus=@getSearchStatus">Next ></a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <a href="~/Sale/Listing?page=@(Convert.ToInt32(ViewData["getPaging"]) + 1)">Next ></a>
+                                    </li>
+                                }
+
+                            }
+                            else
+                            {
+                                string getSearchStatus = ViewData["SearchStatus"].ToString();
+                                int getTotalPages = Convert.ToInt32(ViewData["Paginations"]);
+                                if (getTotalPages < 10)
+                                {
+                                    <li></li>
+                                }
+                                else
+                                {
+                                    <li class="disabled PagedList-ellipses">
+                                        <a>...</a>
+                                    </li>
+                                }
+
+                                if (!string.IsNullOrEmpty(getSearchStatus))
+                                {
+                                    if (getTotalPages < 10)
+                                    {
+                                        for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= getTotalPages; page++)
+                                        {
+                                            <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                            </li>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]); page++)
+                                        {
+                                            <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                <a href="~/Sale/Listing?page=@page&searchStatus=@getSearchStatus">@page</a>
+                                            </li>
+                                        }
+                                    }
+
+                                }
+                                else
+                                {
+                                    if (getTotalPages < 10)
+                                    {
+                                        for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= getTotalPages; page++)
+                                        {
+                                            <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                <a href="~/Sale/Listing?page=@page">@page</a>
+                                            </li>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]); page++)
+                                        {
+                                            <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                                <a href="~/Sale/Listing?page=@page">@page</a>
+                                            </li>
+                                        }
+                                    }
+
+                                }
+
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+            <hr />
+        </div>
+
+        <div class="modal fade" id="sale-transaction-modal" aria-hidden="false" aria-labelledby="modal-label"
+             role="dialog" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content form-horizontal">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                        <h4 class="modal-title" id="modal-label"></h4>
+                    </div>
+                    <div class="modal-body">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (TempData["Result"] != null)
+        {
+            if (TempData["Result"].ToString().Split('|')[0] == "danger")
+            {
+                <script>
+                    $(document).ready(function () {
+                        alertify.alert("@TempData["Result"].ToString().Split('|')[1]", function () { alertify.error("@TempData["Result"].ToString().Split('|')[1]", 0); });
+                    });
+                </script>
+            }
+            else
+            {
+                <script>
+                    $(document).ready(function () {
+                        alertify.alert("@TempData["Result"].ToString().Split('|')[1]", function () { alertify.success("@TempData["Result"].ToString().Split('|')[1]", 0); });
+                    });
+                </script>
+            }
+        }
+
+<script>
+    function ViewTransactions(id) {
+        var url = "@Url.Action("ViewTransactions")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+	}
+        </script>

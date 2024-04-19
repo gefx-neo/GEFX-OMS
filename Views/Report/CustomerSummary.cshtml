@@ -1,0 +1,154 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+@using DataAccess
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Sales With Customer Details";
+    ViewBag.Reports = "active open";
+}
+
+<style type="text/css">
+    .text-amount {
+        text-align: right;
+    }
+
+    .no-border {
+        border: 0px !important;
+    }
+</style>
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportCustomerSummary")" class="btn btn-primary">Download to excel</a>
+        </div>
+        <div class="row margin-top-15">
+            <strong class="pull-left text-uppercase">@ViewData["CompanyName"].ToString()</strong>
+            <strong class="pull-right text-uppercase">@DateTime.Now.ToString("dd-MM-yyyy")</strong>
+        </div>
+        <div class="row text-uppercase text-center">
+            <strong>
+                Customer Summary<br />
+                From @ViewData["ReportFromDate"].ToString() to @ViewData["ReportToDate"].ToString()
+            </strong>
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered" style="min-width: 1200px;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>New Customer Account No</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<string> datePageList = (IPagedList<string>)ViewData["getDate"];
+                                List<CustomerSummary> customerSummaries = (List<CustomerSummary>)ViewData["CustomerList"];
+                                if (datePageList.Count > 0)
+                                {
+                                    int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                    int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                    int i = 1;
+
+                                    foreach (string date in datePageList)
+                                    {
+                                        var count = 0;
+                                        <tr>
+                                            <td>@date</td>
+                                            @if (customerSummaries.Count > 0)
+                                            {
+                                                var getCount = customerSummaries.Where(e => e.Date == date).ToList();
+
+                                                if (getCount.Count <= 1)
+                                                {
+                                                    foreach (var data in customerSummaries)
+                                                    {
+                                                        <td>[@data.CustomerAccount]</td>
+                                                        count++;
+                                                    }
+
+                                                }
+                                                else
+                                                {
+                                                    string customerAccountList = "";
+                                                    foreach (var data in customerSummaries)
+                                                    {
+                                                        if (count == 1)
+                                                        {
+                                                            customerAccountList = "[ "+data.CustomerAccount+" ]";
+                                                        }
+                                                        else
+                                                        {
+                                                            customerAccountList = customerAccountList + ", " + "[ "+data.CustomerAccount+" ]";
+                                                        }
+                                                        count++;
+                                                    }
+                                                    <td>@customerAccountList</td>
+                                                }
+                                            }
+                                            <td>@count</td>
+                                        </tr>
+
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="no-records-found">No sale from @ViewData["ReportFromDate"].ToString() to @ViewData["ReportToDate"].ToString()</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["getDate"], page => Url.Action("/CustomerSummary", "Report", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+        <div class="row">
+            <a href="@Url.Action("ExportSWCD")" class="btn btn-primary">Download to excel</a>
+            <a href="@Url.Action("Select")" class="btn btn-default">Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sale-transaction-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label"></h4>
+            </div>
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function ViewTransactions(id) {
+        var url = "@Url.Action("ViewTransactions", "Sale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+    }
+</script>

@@ -1,0 +1,146 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_EmailLogsLayout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = @ViewData["EmailLogsTitle"].ToString();
+}
+<div class="panel">
+    <div class="panel-body container-fluid">
+
+        <div class="row">
+            <div class="col-xlg-12 col-md-12">
+                @using (Html.BeginForm("ViewEmailLogs", "Sale", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @class = "page-search-form", @role = "search" }))
+                {
+                    <div class="input-search input-search-dark">
+                        <button id="search-icon" type="submit" class="input-search-icon icon wb-search" aria-label="Close"></button>
+                        @Html.TextBox("EmailLogsSearchKeyword", ViewData["EmailLogsSearchKeyword"].ToString(), new { @class = "form-control", @placeholder = "Search by Recipient or Subject" })
+                        <button id="search-close" type="button" class="input-search-close icon wb-close" aria-label="Close"></button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th style="min-width: 120px;">Sender</th>
+                                <th style="min-width: 120px;">Recipient</th>
+                                <th style="min-width: 120px;">CC</th>
+                                <th style="min-width: 120px;">BCC</th>
+                                <th style="min-width: 120px;">Subject</th>
+                                <th style="min-width: 450px;">Email Cotent</th>
+                                <th style="min-width: 120px;">Attachments</th>
+                                <th style="min-width: 120px;">Timestamp</th>
+                                <th>Status</th>
+                                <th style="min-width: 120px;">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<EmailLog> emailLogs = (IPagedList<EmailLog>)ViewData["EmailLog"];
+
+                                if (emailLogs != null)
+                                {
+                                    if (emailLogs.Count > 0)
+                                    {
+                                        int page = Convert.ToInt32(TempData["EmailLogsPage"]) - 1;
+                                        int pageSize = Convert.ToInt32(TempData["EmailLogsPageSize"]);
+                                        int i = 1;
+
+                                        foreach (EmailLog log in emailLogs)
+                                        {
+                                            string highlight = "";
+
+                                            if (log.Status == "Fail")
+                                            {
+                                                highlight = "bg-red-100";
+                                            }
+
+                                            <tr class="@highlight">
+                                                <td>@(i + page * pageSize)</td>
+                                                <td>@log.UserTriggering.Name <br />[@log.UserTriggering.Role]</td>
+                                                <td>@log.ReceiverEmail</td>
+                                                <td>@Html.Raw(!string.IsNullOrEmpty(log.CcEmail) ? log.CcEmail.Replace(",", "<br/>") : "-")</td>
+                                                <td>@Html.Raw(!string.IsNullOrEmpty(log.BccEmail) ? log.BccEmail.Replace(",", "<br/>") : "-")</td>
+                                                <td>@log.Subject</td>
+                                                <td>@Html.Raw(log.EmailContent)</td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(log.Attachments))
+                                                    {
+                                                        string folder = "";
+
+                                                        if (log.EmailType == "Email Receipt")
+                                                        {
+                                                            folder = ViewData["EmailReceiptFolder"].ToString();
+                                                        }
+                                                        else
+                                                        {
+                                                            folder = ViewData["EmailConfirmationFolder"].ToString();
+                                                        }
+
+                                                        string[] attachments = log.Attachments.Split(',');
+
+                                                        foreach (string attach in attachments)
+                                                        {
+                                                            <a href="@Url.Content(folder + attach)" target="_blank">@attach</a><br />
+                                                        }
+                                                    }
+                                                </td>
+                                                <td>@log.Timestamp.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                                <td>@log.Status</td>
+                                                <td>@log.Remarks</td>
+                                            </tr>
+                                                    i++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td class="no-records-found" colspan="11">No record to display</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td class="no-records-found" colspan="11">No record to display</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @if (emailLogs != null)
+            {
+                <div class="pagination">
+                    @Html.PagedListPager(emailLogs, page => Url.Action("/ViewEmailLogs", "Sale", new { id = ViewData["SaleId"].ToString(), page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (TempData["Result"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+    </script>
+}
+
+<script>
+    $(document).ready(function () {
+        $("div.site-menubar").remove();
+        $("div.page").addClass("margin-left-0");
+    })
+</script>

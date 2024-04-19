@@ -1,0 +1,140 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+    Remittances sales = (Remittances)ViewData["Sale"];
+    string encashmentRate = "display:none;";
+    string totalColSpan = "2";
+
+    //if (sales.TransactionType == "Buy" || sales.TransactionType == "Sell")
+    //{
+    //    encashmentRate = "display:none;";
+    //    totalColSpan = "2";
+    //}
+    string sgdDp = ViewData["SGDDP"].ToString();
+    string rateDp = ViewData["RATEDP"].ToString();
+    Dictionary<int, string> dictionaryAmountForeignFormat = (Dictionary<int, string>)ViewData["DictionaryAmountForeignFormat"];
+}
+<div class="row">
+    <div class="col-sm-12 table-responsive" style="margin-bottom:15px;">
+        <table class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+            <thead>
+                <tr>
+                    <th style="min-width: 50px;">ID</th>
+                    <th style="min-width: 50px;">Type</th>
+                    <th style="min-width: 150px;">Pay Currency</th>
+                    <th style="min-width: 200px;">Pay Amount</th>
+                    <th style="min-width: 200px;">Pay Payment Mode</th>
+                    @*<th class="encashment-rate" style="min-width: 150px;@encashmentRate">@String.Format("{0} Rate", sales.TransactionType == "Cross Currency" ? "Cross" : "Encashment")</th>*@
+                    <th style="min-width: 150px;">Get Currency</th>
+                    <th style="min-width: 200px;">Get Amount</th>
+                    <th style="min-width: 150px;">Rate</th>
+                    <th style="min-width: 200px;">Cheque No.</th>
+                    <th style="min-width: 200px;">Bank Transfer No.</th>
+                    <th style="min-width: 200px;">Agent Name</th>
+                    @*<th style="min-width: 550px;">Outgoing Denomination</th>*@
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (RemittanceOrders transaction in sales.RemittanceOders.OrderBy(e => e.ID))
+                {
+                    decimal totalCalculatedForeign = 0;
+                    string paymentType = "Cash";
+                    if (transaction.PayPaymentType == "1")
+                    {
+                        paymentType = "Cash";
+                    }
+                    else if (transaction.PayPaymentType == "2")
+                    {
+                        paymentType = "Cheque";
+                    }
+                    else
+                    {
+                        paymentType = "Bank Transfer";
+                    }
+                    //foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+                    //{
+                    //    totalCalculatedForeign += denomination.AmountForeign;
+                    //}
+
+                    <tr>
+                        <td>@transaction.TransactionID</td>
+                        <td>Remittance</td>
+                        <td>@transaction.PayCurrencyDecimal.CurrencyCode</td>
+                        <td>@transaction.PayAmount.ToString(dictionaryAmountForeignFormat[(transaction.PayCurrencyDecimal.ProductDecimal)])</td>
+                        <td>@paymentType </td>
+                        @*<td style="@encashmentRate">
+                                @if (sales.TransactionType == "Cross Currency")
+                                {
+                                    if (transaction.CrossRate != null)
+                                    {
+                                        @Convert.ToDecimal(transaction.CrossRate).ToString(rateDp)
+                                    }
+                                }
+                                else if (sales.TransactionType == "Encashment" || sales.TransactionType == "Deposit")
+                                {
+                                    if (transaction.EncashmentRate != null)
+                                    {
+                                        @Convert.ToDecimal(transaction.EncashmentRate).ToString(rateDp)
+                                    }
+                                }
+                            </td>*@
+                        <td>@transaction.GetCurrencyDecimal.CurrencyCode</td>
+                        <td>@transaction.GetAmount.ToString(dictionaryAmountForeignFormat[(transaction.GetCurrencyDecimal.ProductDecimal)])</td>
+                        <td>@transaction.Rate.ToString(rateDp)</td>
+                        <td>
+                            @if (string.IsNullOrEmpty(transaction.ChequeNo))
+                            {
+                                transaction.ChequeNo = "-";
+                            }
+                            @transaction.ChequeNo
+                        </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(transaction.BankTransferNo))
+                            {
+                                transaction.BankTransferNo = "-";
+                            }
+                            @transaction.BankTransferNo
+                        </td>
+                        <td>@ViewData["Agent"].ToString()</td>
+                        @*<td>
+                                @foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+                                {
+                                    string deno = "";
+
+                                    if (denomination.Denomination == 0)
+                                    {
+                                        deno = "coins [Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(dictionaryAmountForeignFormat[transaction.Products.Decimal]) + "]";
+                                    }
+                                    else
+                                    {
+                                        deno = denomination.Denomination + " [Pieces: " + denomination.Pieces.ToString("#,##0") + ", Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(dictionaryAmountForeignFormat[transaction.Products.Decimal]) + "]";
+                                    }
+
+                                    @deno <br />
+                                }
+                            </td>*@
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right">Total (Pay)</td>
+                    <td id="transaction-total-foreign">@sales.RemittanceOders.FirstOrDefault().PayCurrencyDecimal.ProductSymbol@sales.TotalPayAmount.ToString(dictionaryAmountForeignFormat[(sales.RemittanceOders.FirstOrDefault().PayCurrencyDecimal.ProductDecimal)])</td>
+                    @*<td colspan="@totalColSpan" class="text-right">Total (Get)</td>
+                    <td id="transaction-total-local">$@sales.TotalGetAmount.ToString("#,##0.########")</td>
+                    <td colspan="4"></td>*@
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="col-sm-10">
+        <button class="btn btn-primary btn-outline" data-dismiss="modal" type="button">Close</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#modal-label").html("@sales.MemoID");
+    })
+</script>

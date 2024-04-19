@@ -1,0 +1,249 @@
+﻿@{
+    Layout = null;
+    int rowIdBuy = (int)ViewData["RowIdBuy"];
+    int rowIdSell = (int)ViewData["RowIdSell"];
+}
+
+@if (rowIdBuy == 1)
+{
+    <thead>
+        <tr>
+            <th style="min-width: 50px;">ID</th>
+            <th style="min-width: 50px;">Type</th>
+            <th style="min-width: 150px;">Currency</th>
+            <th style="min-width: 200px;">Amount (Foreign)</th>
+            <th style="min-width: 150px;">Rate</th>
+            <th style="min-width: 150px;">Encashment Rate</th>
+            <th style="min-width: 150px;">Unit</th>
+            <th style="min-width: 200px;">Amount (Local)</th>
+            <th style="min-width: 150px;">Payment Mode</th>
+            <th style="min-width: 200px;">Cheque No.</th>
+            <th style="min-width: 200px;">Bank Transfer No.</th>
+            <th style="min-width: 200px;">Vessel Name</th>
+            <th style="min-width: 100px;">Outgoing Denomination</th>
+            <th style="min-width: 100px;">Action</th>
+        </tr>
+    </thead>
+}
+<tr id="transaction-row-@rowIdBuy" class="paired-row-@rowIdBuy">
+    <td>
+        @ViewData["TransactionIDBuy"].ToString()
+        @Html.Hidden("Transaction_ID_" + rowIdBuy, ViewData["TransactionIDBuy"].ToString())
+    </td>
+    <td>
+        Buy
+        @Html.Hidden("Transaction_Type_" + rowIdBuy, "Buy")
+    </td>
+    <td>
+        @Html.DropDownList("Transaction_Currency_" + rowIdBuy, (SelectList)ViewData["CurrencyDropdownBuy"], new { @class = "form-control currency-dropdown", onchange = "CurrencyChange(" + rowIdBuy + ")" })
+        @Html.ValidationMessage("Transaction_Currency_" + rowIdBuy)
+    </td>
+    <td>
+        <div class="input-group">
+            <span class="input-group-addon" id="span-amount-foreign-symbol-@rowIdBuy">@ViewData["SymbolBuy"].ToString()</span>
+            @Html.TextBox("Transaction_AmountForeign_" + rowIdBuy, null, new { @class = "form-control", @onchange = "AmountForeignChange(" + rowIdBuy + ")" })
+        </div>
+        @Html.ValidationMessage("Transaction_AmountForeign_" + rowIdBuy)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_Rate_" + rowIdBuy, ViewData["TransactionRateBuy"].ToString(), new { @class = "form-control", @onchange = "RateChange(" + rowIdBuy + ")" })
+        @Html.ValidationMessage("Transaction_Rate_" + rowIdBuy)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_EncashmentRate_" + rowIdBuy, ViewData["EncashmentRateBuy"].ToString(), new { @class = "form-control", @onchange = "EncashmentRateChange(" + rowIdBuy + ")" })
+        @Html.ValidationMessage("Transaction_EncashmentRate_" + rowIdBuy)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_Unit_" + rowIdBuy, ViewData["ProductUnitBuy"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+        @Html.Hidden("Transaction_Unit_" + rowIdBuy, ViewData["ProductUnitBuy"].ToString())
+    </td>
+    <td>
+        <div class="input-group">
+            <span class="input-group-addon">$</span>
+            @Html.TextBox("Transaction_Amount_Local_" + rowIdBuy, null, new { @class = "form-control", @disabled = "disabled" })
+            @Html.Hidden("Transaction_AmountLocal_" + rowIdBuy, null)
+        </div>
+        @Html.ValidationMessage("Transaction_AmountLocal_" + rowIdBuy)
+    </td>
+    <td>
+        @Html.DropDownList("Transaction_PaymentMode_" + rowIdBuy, (SelectList)ViewData["PaymentModeDropdownBuy"], new { @class = "form-control", @onchange = "PaymentModeChange(" + rowIdBuy + ")" })
+        @Html.ValidationMessage("Transaction_PaymentMode_" + rowIdBuy)
+    </td>
+    <td>
+        @if ((bool)ViewData["DisableChequeNoBuy"])
+        {
+            @Html.TextBox("Transaction_ChequeNo_" + rowIdBuy, null, new { @class = "form-control", @disabled = "disabled" })
+        }
+        else
+        {
+            @Html.TextBox("Transaction_ChequeNo_" + rowIdBuy, null, new { @class = "form-control" })
+        }
+        @Html.ValidationMessage("Transaction_ChequeNo_" + rowIdBuy)
+    </td>
+    <td>
+        @if ((bool)ViewData["DisableBankTransferNoBuy"])
+        {
+            @Html.TextBox("Transaction_BankTransferNo_" + rowIdBuy, null, new { @class = "form-control", @disabled = "disabled" })
+        }
+        else
+        {
+            @Html.TextBox("Transaction_BankTransferNo_" + rowIdBuy, null, new { @class = "form-control" })
+        }
+        @Html.ValidationMessage("Transaction_BankTransferNo_" + rowIdBuy)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_VesselName_" + rowIdBuy, null, new { @class = "form-control" })
+        @Html.ValidationMessage("Transaction_VesselName_" + rowIdBuy)
+    </td>
+    <td>
+        <button type="button" class="btn btn-xs btn-primary" onclick="OpenDenominationModal(@rowIdBuy)">Update</button>
+        @Html.ValidationMessage("Transaction_Denomination_" + rowIdBuy)
+        <div class="modal fade" id="modal-transaction-denomination-@rowIdBuy" aria-hidden="false" aria-labelledby="modal-label-@rowIdBuy"
+             role="dialog" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content form-horizontal">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                        <h4 class="modal-title" id="modal-label-@rowIdBuy"></h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="form-group">
+                                <div class="col-sm-10 col-sm-offset-1">
+                                    <table id="table-transaction-denomination-@rowIdBuy" class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+                                        <thead>
+                                            <tr>
+                                                <th>Denomination</th>
+                                                <th>Pieces</th>
+                                                <th id="AmtCurr-@rowIdBuy">Amt (Currency)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" class="text-right">Total Calculated</td>
+                                                <td><div id="denomination-total-calculated-foreign-symbol-@rowIdBuy" style="float:left;">@ViewData["SymbolBuy"].ToString()</div><div id="denomination-total-calculated-foreign-@rowIdBuy">0.00</div>@Html.Hidden("Denomination_Total_Calculated_Foreign_" + rowIdBuy, "0.00")</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" class="text-right">Remaining</td>
+                                                <td><div id="denomination-remaining-foreign-symbol-@rowIdBuy" style="float:left;">@ViewData["SymbolBuy"].ToString()</div><div id="denomination-remaining-foreign-@rowIdBuy">0.00</div>@Html.Hidden("Denomination_Remaining_Foreign_" + rowIdBuy, "0.00")</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" class="text-right">Total Order</td>
+                                                <td><div id="denomination-total-order-foreign-symbol-@rowIdBuy" style="float:left;">@ViewData["SymbolBuy"].ToString()</div><div id="denomination-total-order-foreign-@rowIdBuy">0.00</div>@Html.Hidden("Denomination_Total_Order_Foreign_" + rowIdBuy, "0.00")</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-sm-10 col-sm-offset-1">
+                                <button class="btn btn-primary btn-outline" data-dismiss="modal" type="button">Update</button>
+                                <button class="btn btn-danger btn-outline" type="button" onclick="RemoveDenomination(@rowIdBuy)">Remove Denomination</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </td>
+    <td>
+        <button class="btn btn-danger btn-xs" type="button" onclick="RemovePairedTransaction(@rowIdBuy)"><i aria-hidden="true" class="icon wb-close"></i> Remove</button>
+    </td>
+</tr>
+<tr id="transaction-row-@rowIdSell" class="paired-row-@rowIdBuy">
+    <td>
+        @ViewData["TransactionIDSell"].ToString()
+        @Html.Hidden("Transaction_ID_" + rowIdSell, ViewData["TransactionIDSell"].ToString())
+    </td>
+    <td>
+        Sell
+        @Html.Hidden("Transaction_Type_" + rowIdSell, "Sell")
+    </td>
+    <td>
+        @Html.DropDownList("Transaction_Currency_" + rowIdSell, (SelectList)ViewData["CurrencyDropdownSell"], new { @class = "form-control currency-dropdown", onchange = "CurrencyChange(" + rowIdSell + ")" })
+        @Html.ValidationMessage("Transaction_Currency_" + rowIdSell)
+    </td>
+    <td>
+        <div class="input-group">
+            <span class="input-group-addon" id="span-amount-foreign-symbol-@rowIdSell">@ViewData["SymbolSell"].ToString()</span>
+            @Html.TextBox("Transaction_Amount_Foreign_" + rowIdSell, null, new { @class = "form-control", @disabled = "disabled" })
+            @Html.Hidden("Transaction_AmountForeign_" + rowIdSell, null)
+        </div>
+        @Html.ValidationMessage("Transaction_AmountForeign_" + rowIdSell)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_rate_" + rowIdSell, null, new { @class = "form-control", @disabled = "disabled" })
+        @Html.Hidden("Transaction_Rate_" + rowIdSell)
+        @Html.ValidationMessage("Transaction_Rate_" + rowIdSell)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_Encashment_Rate_" + rowIdSell, null, new { @class = "form-control", @disabled = "disabled" })
+        @Html.Hidden("Transaction_EncashmentRate_" + rowIdSell)
+        @Html.ValidationMessage("Transaction_EncashmentRate_" + rowIdSell)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_Unit_" + rowIdSell, ViewData["ProductUnitSell"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+        @Html.Hidden("Transaction_Unit_" + rowIdSell, ViewData["ProductUnitSell"].ToString())
+    </td>
+    <td>
+        <div class="input-group">
+            <span class="input-group-addon">$</span>
+            @Html.TextBox("Transaction_Amount_Local_" + rowIdSell, null, new { @class = "form-control", @disabled = "disabled" })
+            @Html.Hidden("Transaction_AmountLocal_" + rowIdSell, null)
+        </div>
+        @Html.ValidationMessage("Transaction_AmountLocal_" + rowIdSell)
+    </td>
+    <td>
+        @Html.DropDownList("Transaction_PaymentMode_" + rowIdSell, (SelectList)ViewData["PaymentModeDropdownSell"], new { @class = "form-control", @onchange = "PaymentModeChange(" + rowIdSell + ")" })
+        @Html.ValidationMessage("Transaction_PaymentMode_" + rowIdSell)
+    </td>
+    <td>
+        @if ((bool)ViewData["DisableChequeNoSell"])
+        {
+            @Html.TextBox("Transaction_ChequeNo_" + rowIdSell, null, new { @class = "form-control", @disabled = "disabled" })
+        }
+        else
+        {
+            @Html.TextBox("Transaction_ChequeNo_" + rowIdSell, null, new { @class = "form-control" })
+        }
+        @Html.ValidationMessage("Transaction_ChequeNo_" + rowIdSell)
+    </td>
+    <td>
+        @if ((bool)ViewData["DisableBankTransferNoSell"])
+        {
+            @Html.TextBox("Transaction_BankTransferNo_" + rowIdSell, null, new { @class = "form-control", @disabled = "disabled" })
+        }
+        else
+        {
+            @Html.TextBox("Transaction_BankTransferNo_" + rowIdSell, null, new { @class = "form-control" })
+        }
+        @Html.ValidationMessage("Transaction_BankTransferNo_" + rowIdSell)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_VesselName_" + rowIdSell, null, new { @class = "form-control", @disabled = "disabled" })
+        @Html.ValidationMessage("Transaction_VesselName_" + rowIdSell)
+    </td>
+    <td></td>
+    <td>
+        <button class="btn btn-danger btn-xs" type="button" onclick="RemovePairedTransaction(@rowIdBuy)"><i aria-hidden="true" class="icon wb-close"></i> Remove</button>
+    </td>
+</tr>
+
+@if (rowIdBuy == 1)
+{
+    <tfoot>
+        <tr>
+            <th colspan="3" style="text-align: right;">Total (Foreign)</th>
+            <th>
+                <div id="total-amount-foreign">$0.00</div>
+            </th>
+            <th colspan="3" style="text-align: right;">Total (Local)</th>
+            <th>
+                <div id="total-amount-local">$0.00</div>
+            </th>
+            <th colspan="6"></th>
+        </tr>
+    </tfoot>
+}

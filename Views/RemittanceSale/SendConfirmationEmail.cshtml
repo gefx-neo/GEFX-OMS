@@ -1,0 +1,53 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="row">
+    @using (Html.BeginForm("SendConfirmationEmail", "RemittanceSale", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-send-confirmation-email" }))
+    {
+        <div class="form-group">
+            @Html.Label("To:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("ConfirmationTo", ViewData["To"].ToString(), new { @class = "form-control" })
+                @Html.ValidationMessage("ConfirmationTo")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Cc:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("ConfirmationCc", null, new { @class = "form-control" })
+                @Html.ValidationMessage("ConfirmationCc")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Bcc:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("ConfirmationBcc", null, new { @class = "form-control" })
+                @Html.ValidationMessage("ConfirmationBcc")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Subject:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("ConfirmationSubject", ViewData["Subject"].ToString(), new { @class = "form-control" })
+                @Html.ValidationMessage("ConfirmationSubject")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Message:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextArea("ConfirmationMessage", null, new { @class = "form-control" })
+                @Html.ValidationMessage("ConfirmationMessage")
+            </div>
+        </div>
+    }
+    <div class="col-sm-12" style="text-align: center;">
+        <button id="btn-send-email-confirmation" class="btn btn-primary btn-outline" type="button" onclick="SubmitConfirmationEmail(@ViewData["SaleId"].ToString(),'form-send-confirmation-email')">Send</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#send-confirmation-email-memoid")[0].innerHTML = "Send Confirmation Email - @ViewData["MemoID"].ToString()";
+    })
+</script>

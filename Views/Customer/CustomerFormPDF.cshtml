@@ -1,0 +1,448 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+}
+
+
+@{
+    CustomerParticular customerParticulars = (CustomerParticular)ViewData["CustomerParticular"];
+    CustomerSourceOfFund customerSourceOfFunds = customerParticulars.SourceOfFunds[0];
+}
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/bootstrap.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/bootstrap-extend.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/site.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/examples/css/dashboard/v1.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/fonts/web-icons/web-icons.min.css")">
+    <style type="text/css">
+        body{
+            letter-spacing: 0.5px;
+            padding-top: 20px;
+            color: black !important;
+        }
+        table, tr, td, th{
+            font-size: 14px !important;
+            font-family: Calibri, sans-serif;
+            color: black !important;
+            border-color: black !important;
+            vertical-align: top;
+        }
+        table tr td{
+            padding: 0 5px 5px 5px !important;
+        }
+        table tr th{
+            background-color: #c3c3c3;
+            font-weight: 800;
+            padding: 0 5px 0 5px !important;
+        }
+        label, input[type=checkbox]{
+            margin-right: 5px;
+        }
+        input[type=checkbox]{
+            border: 1px solid black !important;
+        }
+        .page-break{
+            clear: both;
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+    <table class="table table-bordered">
+        <tr>
+            <th class="text-uppercase" colspan="6">Company's Particulars</th>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <label class="text-uppercase">Registered Name:</label>@customerParticulars.Company_RegisteredName
+            </td>
+        </tr>
+        @*<tr>
+            <td colspan="6">
+                <label class="text-uppercase">Registered Address:</label>@customerParticulars.Company_RegisteredAddress
+            </td>
+        </tr>*@
+        @{
+            string businessAddress = customerParticulars.Company_BusinessAddress1 + ", ";
+
+            if (!string.IsNullOrEmpty(customerParticulars.Company_BusinessAddress2))
+            {
+                businessAddress += customerParticulars.Company_BusinessAddress2 + ", " + customerParticulars.Company_PostalCode;
+            }
+            else
+            {
+                businessAddress += customerParticulars.Company_PostalCode;
+            }
+        }
+        <tr>
+            <td colspan="6">
+                <label class="text-uppercase">Business Address:</label>@businessAddress
+                <div class="pull-right">
+                    <input type="checkbox" /><label class="text-uppercase">Same as Registered Address</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <label class="text-uppercase">Tel No.:</label>@customerParticulars.Company_TelNo
+            </td>
+            <td colspan="2">
+                <label class="text-uppercase">Fax No.:</label>@customerParticulars.Company_FaxNo
+            </td>
+            <td colspan="2">
+                <label class="text-uppercase">Email Address:</label>@customerParticulars.Company_Email
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <label class="text-uppercase">Place of Registration:</label>@customerParticulars.Company_PlaceOfRegistration
+            </td>
+            <td colspan="2">
+                <label class="text-uppercase">Date of Registration:</label>@(Convert.ToDateTime(customerParticulars.Company_DateOfRegistration).ToString("dd/MM/yyyy"))
+            </td>
+            <td colspan="2">
+                <label class="text-uppercase">Registration No.:</label>@customerParticulars.Company_RegistrationNo
+            </td>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <label class="text-uppercase">Type of Entity:</label><br /><br />
+                <div class="col-sm-3">
+                    <input type="checkbox" /><label class="text-uppercase">Company</label>
+                </div>
+                <div class="col-sm-3">
+                    <input type="checkbox" /><label class="text-uppercase">Sole Proprietorship</label>
+                </div>
+                <div class="col-sm-3">
+                    <input type="checkbox" /><label class="text-uppercase">Partnership</label>
+                </div><br />
+                <div class="col-sm-6">
+                    <input type="checkbox" /><label class="text-uppercase">Limited Liability Partnership</label>
+                </div>
+                <div class="col-sm-3">
+                    <input type="checkbox" /><label class="text-uppercase">Express Trust</label>
+                </div><br />
+                <div class="col-sm-12">
+                    <input type="checkbox" /><label class="text-uppercase">Other Legal Arrangement</label> (Please Specify): &nbsp;&nbsp;<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                </div>
+                <div class="col-sm-12">
+                    <input type="checkbox" /><label class="text-uppercase">Others</label> (Please Specify): &nbsp;&nbsp;<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="6">Purpose and Intended Nature of Account Relationship and/or Relevant Business Transaction Undertaken</th>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <div style="min-height: 50px;">@customerParticulars.Company_PurposeAndIntended</div>
+            </td>
+        </tr>
+        <tr>
+            <th class="text-uppercase" colspan="6">Source of Funds</th>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <div class="col-sm-6">
+                    <input type="checkbox" /><label class="text-uppercase">Bank Credit Line</label>
+                </div>
+                <div class="col-sm-6">
+                    <input type="checkbox" /><label class="text-uppercase">Directors' / Shareholders' / Sole Proprietor's Investment</label>
+                </div><br />
+                <div class="col-sm-12">
+                    <input type="checkbox" /><label class="text-uppercase">Others</label> (Please Specify): &nbsp;&nbsp;<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <label class="text-uppercase">Politically Exposed Individuals:</label><br /><br />
+                <div style="float:left;margin-left:25px;width:15px;">1.</div>
+                <div class="col-sm-11">Is the beneficial owner or has the beneficial owner ever been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?</div><br />
+                <div style="float:left;margin-left:25px;width:15px;height:1px;"></div>
+                <div class="col-sm-11"><input type="checkbox" /><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" /><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No</label></div><br /><br />
+                <div style="float:left;margin-left:25px;width:15px;">2.</div>
+                <div class="col-sm-11">Is the beneficial owner or has the beneficial owner ever been a parent/ step-parent/ step-child, adopted child/ spouse/ sibling/ step-sibling/ adopted sibling of anyone who is or has been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?</div><br />
+                <div style="float:left;margin-left:25px;width:15px;height:1px;"></div>
+                <div class="col-sm-11"><input type="checkbox" /><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" /><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No</label></div><br /><br />
+                <div style="float:left;margin-left:25px;width:15px;">3.</div>
+                <div class="col-sm-11">Is the beneficial owner or has the beneficial owner ever been closely connected, either socially or professionally with anyone who is or has been entrusted with prominent public functions, whether in Singapore, in a foreign country, or in an international organisation?</div><br />
+                <div style="float:left;margin-left:25px;width:15px;height:1px;"></div>
+                <div class="col-sm-11"><input type="checkbox" /><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" /><label class="text-uppercase">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No</label></div>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="6"><i>Are you an agent acting on behalf of the customer? If yes, please complete the following:</i></th>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <label class="text-uppercase">Name of Entity/Individual:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Company_CustomerType
+                }
+            </td>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <label class="text-uppercase">Address:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Company_Address
+                }
+            </td>
+        </tr>
+    </table>
+    <div class="page-break"></div><br />
+    <table class="table table-bordered">
+        <tr>
+            <td colspan="2">
+                <label class="text-uppercase">Place of Registration/Nationality:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Company_PlaceOfRegistration
+                }
+            </td>
+            <td colspan="2">
+                <label class="text-uppercase">Registration No./Identification No.:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Company_RegistrationNo
+                }
+            </td>
+            <td colspan="2">
+                <label class="text-uppercase">Date of Registration/Date of Birth:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Company_DateOfRegistration
+                }
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <label class="text-uppercase">Relationship between Agent(s) and Client:</label>
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    @customerParticulars.ActingAgents[0].Relationship
+                }
+            </td>
+            <td colspan="3">
+                <label class="text-uppercase">Basis of Authority</label>(E.g Letter of authorisation or Board resolution, please attach):<br />
+                @if (customerParticulars.ActingAgents[0].ActingAgent == "Yes")
+                {
+                    string[] files = customerParticulars.ActingAgents[0].BasisOfAuthority.Split(',');
+
+                    foreach (string file in files)
+                    {
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;@file<br /></div>
+                    }
+                }
+            </td>
+        </tr>
+    </table>
+    <div style="font-family:Calibri, sans-serif;font-size: 14px;font-style:italic;font-weight:800;margin-left:5px;">Appointment of staff acting on behalf of company to trade with Great East Forex</div>
+    <table class="table table-bordered">
+        @{
+            List<CustomerAppointmentOfStaff> appointments = customerParticulars.AppointmentOfStaffs;
+
+            if (appointments.Count > 0)
+            {
+                int count = 1;
+
+                foreach (CustomerAppointmentOfStaff appointment in appointments)
+                {
+                    <tr>
+                        <th colspan="3">
+                            @count)&nbsp;&nbsp;&nbsp;&nbsp;Authorised Trading Personnel
+                        </th>
+                    </tr>
+                    <tr>
+                        <td rowspan="2" colspan="2" style="width: 60%;">
+                            <div style="min-height: 40px;">
+                                <label class="text-uppercase">Full Name:</label>@appointment.FullName
+                            </div>
+                        </td>
+                        <td>
+                            <label class="text-uppercase">IC/Passport No.:</label>@appointment.ICPassportNo
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label class="text-uppercase">Nationality:</label>@appointment.Nationality
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="width: 60%;">
+                            <div style="min-height: 40px;">
+                                <label class="text-uppercase">Job Title:</label>@appointment.JobTitle
+                            </div>
+                        </td>
+                        <td>
+                            <div style="min-height: 40px;">
+                                <label class="text-uppercase">Specimen Signature:</label>
+                                @{
+                                    string[] files = appointment.SpecimenSignature.Split(',');
+
+                                    foreach (string file in files)
+                                    {
+                                        <div>&nbsp;&nbsp;&nbsp;&nbsp;@file</div><br />
+                                    }
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    count++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <th colspan="3">
+                        1)&nbsp;&nbsp;&nbsp;&nbsp;Authorised Trading Personnel
+                    </th>
+                </tr>
+                <tr>
+                    <td rowspan="2" colspan="2" style="width: 60%;">
+                        <div style="min-height: 40px;">
+                            <label class="text-uppercase">Full Name:</label>
+                        </div>
+                    </td>
+                    <td>
+                        <label class="text-uppercase">IC/Passport No.:</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="text-uppercase">Nationality:</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="width: 60%;">
+                        <div style="min-height: 40px;">
+                            <label class="text-uppercase">Job Title:</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="min-height: 40px;">
+                            <label class="text-uppercase">Specimen Signature:</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="3">
+                        2)&nbsp;&nbsp;&nbsp;&nbsp;Authorised Trading Personnel
+                    </th>
+                </tr>
+                <tr>
+                    <td rowspan="2" colspan="2" style="width: 60%;">
+                        <div style="min-height: 40px;">
+                            <label class="text-uppercase">Full Name:</label>
+                        </div>
+                    </td>
+                    <td>
+                        <label class="text-uppercase">IC/Passport No.:</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="text-uppercase">Nationality:</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="width: 60%;">
+                        <div style="min-height: 40px;">
+                            <label class="text-uppercase">Job Title:</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="min-height: 40px;">
+                            <label class="text-uppercase">Specimen Signature:</label>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+    </table>
+    <br /><br />
+    <div class="col-sm-12" style="margin-bottom: 15px;font-size: 14px;font-family: Calibri, sans-serif;">
+        <label class="text-uppercase"><i>Declaration:</i></label><br />
+        <i>I/We have furnished the above information to the best of my knowledge, information and belief, and will duly inform Great East Forex in writing if there are any changes to be made to this form. I further confirm that the funds in relation to these transactions or account relationship are not derived from any criminal activities or intended for any criminal use.</i>
+    </div>
+    <table class="table table-bordered" style="border: none;">
+        <tr>
+            <td style="text-align: right;border-bottom: none;border-left: none;">
+                <label class="text-uppercase"><i>Authorising Officer</i></label>
+            </td>
+            <th>
+                <div style="min-height: 50px;">
+                    <label class="text-uppercase">Name of Director</label>
+                </div>
+            </th>
+            <th style="width: 30%;">
+                <label class="text-uppercase">Nric No.:</label>
+            </th>
+        </tr>
+        <tr>
+            <td style="border: none;"></td>
+            <td>
+                <div style="min-height: 60px;"><label class="text-uppercase">Signature of Director and Company Stamp</label></div>
+            </td>
+            <td style="width: 30%;">
+                <label class="text-uppercase">Date:</label>
+            </td>
+        </tr>
+    </table>
+    <br />
+    <table class="table table-bordered">
+        <tr>
+            <th class="text-uppercase">
+                Document Checklist for Opening New Company Account
+            </th>
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" /><label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Account opening form completed and signed by Authorizing Director</label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" /><label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Photocopy of Identity Card (or valid Working Pass for non-Singaporean) with photograph of all the <u>Authorised Trading Persons</u></label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" /><label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Photocopy of Identity Card (or Passport for non-Singaporean) with photograph of <u>Directos(s)</u></label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" /><label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Company business profile from ACRA of not later than 6 months</label>
+            </td>
+        </tr>
+    </table>
+    <div style="width: 100%;margin: 10px 0 20px 0;border-bottom: 1px solid black;"></div>
+    <table class="table table-bordered">
+        <tr>
+            <td class="text-uppercase" colspan="2" style="width:60%;font-weight: 800;border-bottom-width: 2px;">For GEF Use Only:</td>
+        </tr>
+        <tr>
+            <td rowspan="2" style="width: 60%;">
+                <label class="text-uppercase">Remarks:</label>
+            </td>
+            <td>
+                <div style="min-height: 60px;">
+                    <label class="text-uppercase">Verified By:</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label class="text-uppercase">Date:</label>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

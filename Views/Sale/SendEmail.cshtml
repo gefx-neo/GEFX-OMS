@@ -1,0 +1,60 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="row">
+    @using (Html.BeginForm("SendEmail", "Sale", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-send-email" }))
+    {
+        <div class="form-group">
+            @Html.Label("To:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("To", ViewData["To"].ToString(), new { @class = "form-control" })
+                @Html.ValidationMessage("To")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Cc:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("Cc", null, new { @class = "form-control" })
+                @Html.ValidationMessage("Cc")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Bcc:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("Bcc", null, new { @class = "form-control" })
+                @Html.ValidationMessage("Bcc")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Subject:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextBox("Subject", ViewData["Subject"].ToString(), new { @class = "form-control" })
+                @Html.ValidationMessage("Subject")
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.Label("Message:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                @Html.TextArea("Message", null, new { @class = "form-control" })
+                @Html.ValidationMessage("Message")
+            </div>
+        </div>
+        @*<div class="form-group">
+            @Html.Label("Attachment:", new { @class = "col-sm-3 control-label" })
+            <div class="col-sm-8">
+                <a href="#" target="_blank" class="btn btn-success margin-top-10" style="margin-top: 0px !important;">View Memo </a>
+                @Html.Hidden("Attachment", "something.pdf")
+            </div>
+        </div>*@
+    }
+    <div class="col-sm-12" style="text-align: center;">
+        <button id="btn-send-email" class="btn btn-primary btn-outline" type="button" onclick="SubmitEmail(@ViewData["SaleId"].ToString(),'form-send-email')">Send</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#send-email-memoid")[0].innerHTML = "Send Receipt Email - @ViewData["MemoID"].ToString()";
+    })
+</script>

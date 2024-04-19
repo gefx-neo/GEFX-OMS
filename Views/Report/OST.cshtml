@@ -1,0 +1,255 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Outstanding Sales Transactions";
+    ViewBag.Reports = "active open";
+    string sgdFormat = ViewData["SGDFormat"].ToString();
+    string rateFormat = ViewData["RateFormat"].ToString();
+}
+
+<style type="text/css">
+    .text-amount {
+        text-align: right;
+    }
+
+    .no-border {
+        border: 0px !important;
+    }
+</style>
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportOST")" class="btn btn-primary">Download to excel</a>
+        </div>
+        <div class="row margin-top-15">
+            <strong class="pull-left text-uppercase">@ViewData["CompanyName"].ToString()</strong>
+            <strong class="pull-right text-uppercase">@DateTime.Now.ToString("dd-MM-yyyy")</strong>
+        </div>
+        <div class="row text-uppercase text-center">
+            <strong>
+                Outstanding Sales Transactions Listing<br />
+            </strong>
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-no-bordered text-uppercase">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 100px;">Date</th>
+                                <th>Memo ID</th>
+                                <th>A/C No</th>
+                                <th>Contact Person</th>
+                                <th class="text-amount">Local Curr</th>
+                                <th>Payment Mode</th>
+                                <th>Reference No</th>
+                                <th class="text-amount">Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<Sale> sales = (IPagedList<Sale>)ViewData["Sale"];
+
+                                if (sales.Count > 0)
+                                {
+                                    foreach (Sale sale in sales)
+                                    {
+                                        decimal totalSales = 0;
+
+                                        foreach (SaleTransaction transaction in sale.SaleTransactions)
+                                        {
+                                            totalSales += transaction.AmountLocal;
+                                        }
+
+                                        <tr>
+                                            <td>@sale.IssueDate.ToString("dd-MM-yyyy")</td>
+                                            <td>@sale.MemoID</td>
+                                            <td>@sale.CustomerParticulars.CustomerCode</td>
+                                            <td>
+                                                @{
+                                                    if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                    {
+                                                        @sale.CustomerParticulars.Company_RegisteredName
+                                                    }
+                                                    else
+                                                    {
+                                                        @sale.CustomerParticulars.Natural_Name
+                                                    }
+                                                }
+                                            </td>
+                                            <td class="text-amount">@totalSales.ToString(sgdFormat)</td>
+                                            <td>
+                                                @{
+                                                    string[] paymentModes = null;
+
+                                                    if (!string.IsNullOrEmpty(sale.LocalPaymentMode))
+                                                    {
+                                                        paymentModes = sale.LocalPaymentMode.Split(',');
+                                                    }
+
+                                                    if (paymentModes != null)
+                                                    {
+                                                        foreach (string mode in paymentModes)
+                                                        {
+                                                            @mode<br />
+                                                        }
+                                                    }
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (paymentModes != null)
+                                                {
+                                                    foreach (string mode in paymentModes)
+                                                    {
+                                                        if (mode == "Cash")
+                                                        {
+                                                            @(" ")<br />
+                                                        }
+                                                        else if (mode == "Cheque 1")
+                                                        {
+                                                            @sale.Cheque1No<br />
+                                                        }
+                                                        else if (mode == "Cheque 2")
+                                                        {
+                                                            @sale.Cheque2No<br />
+                                                        }
+                                                        else if (mode == "Cheque 3")
+                                                        {
+                                                            @sale.Cheque3No<br />
+                                                        }
+                                                        else
+                                                        {
+                                                            @sale.BankTransferNo<br />
+                                                        }
+                                                    }
+                                                }
+                                            </td>
+                                            <td class="text-amount">
+                                                @if (paymentModes != null)
+                                                {
+                                                    foreach (string mode in paymentModes)
+                                                    {
+                                                        if (mode == "Cash")
+                                                        {
+                                                            @Convert.ToDecimal(sale.CashAmount).ToString(sgdFormat)<br />
+                                                        }
+                                                        else if (mode == "Cheque 1")
+                                                        {
+                                                            @Convert.ToDecimal(sale.Cheque1Amount).ToString(sgdFormat)<br />
+                                                        }
+                                                        else if (mode == "Cheque 2")
+                                                        {
+                                                            @Convert.ToDecimal(sale.Cheque2Amount).ToString(sgdFormat)<br />
+                                                        }
+                                                        else if (mode == "Cheque 3")
+                                                        {
+                                                            @Convert.ToDecimal(sale.Cheque3Amount).ToString(sgdFormat)<br />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Convert.ToDecimal(sale.BankTransferAmount).ToString(sgdFormat)<br />
+                                                        }
+                                                    }
+                                                }
+                                            </td>
+                                            <td>@sale.Status</td>
+                                        </tr>
+                                        foreach (SaleTransaction transaction in sale.SaleTransactions)
+                                        {
+                                            string amountForeignFormat = "#,##0";
+
+                                            switch (transaction.Products.Decimal)
+                                            {
+                                                case 1:
+                                                    amountForeignFormat += ".0";
+                                                    break;
+                                                case 2:
+                                                    amountForeignFormat += ".00";
+                                                    break;
+                                                case 3:
+                                                    amountForeignFormat += ".000";
+                                                    break;
+                                                case 4:
+                                                    amountForeignFormat += ".0000";
+                                                    break;
+                                                case 5:
+                                                    amountForeignFormat += ".00000";
+                                                    break;
+                                                case 6:
+                                                    amountForeignFormat += ".000000";
+                                                    break;
+                                                case 7:
+                                                    amountForeignFormat += ".0000000";
+                                                    break;
+                                                case 8:
+                                                    amountForeignFormat += ".00000000";
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+
+                                            <tr>
+                                                <td class="no-border">
+                                                    <div class="pull-left">@transaction.Products.CurrencyCode</div>
+                                                    <div class="pull-right">N</div>
+                                                </td>
+                                                <td class="text-center no-border">1</td>
+                                                <td class="text-amount no-border">@transaction.Rate.ToString(rateFormat)</td>
+                                                <td class="text-amount no-border">@transaction.AmountForeign.ToString(amountForeignFormat)</td>
+                                                <td class="text-amount no-border">@transaction.AmountLocal.ToString(sgdFormat)</td>
+                                                <td class="no-border"></td>
+                                                <td class="no-border"></td>
+                                                <td class="no-border"></td>
+                                                <td class="no-border"></td>
+                                            </tr>
+                                        }
+                                    }
+
+                                    if (ViewData["GrandTotal"] != null)
+                                    {
+                                        decimal[] grandTotal = (decimal[])ViewData["GrandTotal"];
+                                        <tr>
+                                            <td colspan="3" class="no-border text-right"><strong>GRAND TOTAL</strong></td>
+                                            <td class="text-amount no-border">
+                                                @if (grandTotal[0] >= 0)
+                                                {
+                                                    <div style="border-top: 1px solid;border-bottom: 1px solid;">
+                                                        <strong>
+                                                            @grandTotal[0].ToString("#,##0.00######")
+                                                        </strong>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td class="text-amount no-border"><div style="border-top: 1px solid;border-bottom: 1px solid;"><strong>@grandTotal[1].ToString(sgdFormat)</strong></div></td>
+                                            <td colspan="4" class="no-border"></td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="no-records-found">No record to display</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["Sale"], page => Url.Action("/OST", "Report", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+        <div class="row">
+            <a href="@Url.Action("ExportOST")" class="btn btn-primary">Download to excel</a>
+            <a href="@Url.Action("Select")" class="btn btn-default">Back</a>
+        </div>
+    </div>
+</div>

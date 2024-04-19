@@ -1,0 +1,170 @@
+﻿@{
+    Layout = null;
+    int rowId = (int)ViewData["RowId"];
+}
+
+@if (rowId == 1)
+{
+    <thead>
+        <tr>
+            <th style="min-width: 50px;">ID</th>
+            <th style="min-width: 50px;">Type</th>
+            <th style="min-width: 150px;">Currency</th>
+            <th style="min-width: 200px;">Amount (Foreign)</th>
+            <th style="min-width: 150px;">Rate</th>
+            <th style="min-width: 150px;">Unit</th>
+            <th style="min-width: 200px;">Amount (Local)</th>
+            <th style="min-width: 150px;">Payment Mode</th>
+			<th style="min-width: 200px;">Cheque No.</th>
+			<th style="min-width: 200px;">Bank Transfer No.</th>
+            <th style="min-width: 200px;">Vessel Name</th>
+            <th style="min-width: 100px;">Outgoing Denomination</th>
+            <th style="min-width: 100px;">Action</th>
+        </tr>
+    </thead>
+}
+
+<tr id="transaction-row-@rowId">
+    <td>
+        @ViewData["TransactionID"].ToString()
+        @Html.Hidden("Transaction_ID_" + rowId, ViewData["TransactionID"].ToString())
+    </td>
+    <td>
+        Buy
+        @Html.Hidden("Transaction_Type_" + rowId, "Buy")
+    </td>
+    <td>
+        @Html.DropDownList("Transaction_Currency_" + rowId, (SelectList)ViewData["CurrencyDropdown"], new { @class = "form-control", onchange = "CurrencyChange(" + rowId + ")" })
+        @Html.ValidationMessage("Transaction_Currency_" + rowId)
+    </td>
+    <td>
+        <div class="input-group">
+            <span class="input-group-addon" id="span-amount-foreign-symbol-@rowId">@ViewData["Symbol"].ToString()</span>
+            @Html.TextBox("Transaction_AmountForeign_" + rowId, null, new { @class = "form-control", @onchange = "AmountForeignChange(" + rowId + ")" })
+        </div>
+        @Html.ValidationMessage("Transaction_AmountForeign_" + rowId)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_Rate_" + rowId, ViewData["TransactionRate"].ToString(), new { @class = "form-control", @onchange = "RateChange(" + rowId + ")" })
+        @Html.ValidationMessage("Transaction_Rate_" + rowId)
+    </td>
+    <td>
+        @Html.TextBox("Transaction_Unit_" + rowId, ViewData["ProductUnit"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+        @Html.Hidden("Transaction_Unit_" + rowId, ViewData["ProductUnit"].ToString())
+    </td>
+    <td>
+        <div class="input-group">
+            <span class="input-group-addon">$</span>
+            @Html.TextBox("Transaction_Amount_Local_" + rowId, null, new { @class = "form-control", @disabled = "disabled" })
+            @Html.Hidden("Transaction_AmountLocal_" + rowId, null)
+        </div>
+        @Html.ValidationMessage("Transaction_AmountLocal_" + rowId)
+    </td>
+    <td>
+        @Html.DropDownList("Transaction_PaymentMode_" + rowId, (SelectList)ViewData["PaymentModeDropdown"], new { @class = "form-control", @onchange = "PaymentModeChange(" + rowId + ")" })
+        @Html.ValidationMessage("Transaction_PaymentMode_" + rowId)
+    </td>
+	<td>
+		@if ((bool)ViewData["DisableChequeNo"])
+		{
+			<div class="col-sm-10" style="padding-left: 0;padding-right: 5px; width:80%;">@Html.TextBox("Transaction_ChequeNo_" + rowId, null, new { @class = "form-control", @disabled = "disabled"})</div>
+			<div><a id="update-cheque-btn-@rowId" class="btn btn-sm btn-icon btn-round btn-primary" href="javascript:void(0)" style="text-decoration: none;pointer-events: none;" data-toggle="tooltip" data-original-title="Add Cheque"><i class="icon wb-edit" aria-hidden="true"></i></a></div>
+		}
+		else
+		{
+			<div class="col-sm-10" style="padding-left: 0;padding-right: 5px; width:80%;">@Html.TextBox("Transaction_ChequeNo_" + rowId, null, new { @class = "form-control", @readonly="readonly" })</div>
+			<div><a id="update-cheque-btn-@rowId" class="btn btn-sm btn-icon btn-round btn-primary" href="javascript:void(0)" onclick="UpdateCheque(@rowId)" style="text-decoration: none;" data-toggle="tooltip" data-original-title="Add Cheque"><i class="icon wb-edit" aria-hidden="true"></i></a></div>
+		}
+		@Html.ValidationMessage("Transaction_ChequeNo_" + rowId)
+	</td>
+	<td>
+		@if ((bool)ViewData["DisableBankTransferNo"])
+		{
+			<div class="col-sm-10" style="padding-left: 0;padding-right: 5px; width:80%;">@Html.TextBox("Transaction_BankTransferNo_" + rowId, null, new { @class = "form-control", @disabled = "disabled" })</div>
+			<div><a id="update-bank-transfer-btn-@rowId" class="btn btn-sm btn-icon btn-round btn-primary" href="javascript:void(0)" style="text-decoration: none;pointer-events: none;" data-toggle="tooltip" data-original-title="Add Bank Transfer"><i class="icon wb-edit" aria-hidden="true"></i></a></div>
+		}
+		else
+		{
+			<div class="col-sm-10" style="padding-left: 0;padding-right: 5px; width:80%;">@Html.TextBox("Transaction_BankTransferNo_" + rowId, null, new { @class = "form-control", @readonly="readonly" })</div>
+			<div><a id="update-bank-transfer-btn-@rowId" class="btn btn-sm btn-icon btn-round btn-primary" href="javascript:void(0)" onclick="UpdateBankTransfer(@rowId)" style="text-decoration: none;" data-toggle="tooltip" data-original-title="Add Bank Transfer"><i class="icon wb-edit" aria-hidden="true"></i></a></div>
+		}
+		@Html.ValidationMessage("Transaction_BankTransferNo_" + rowId)
+	</td>
+    <td>
+        @Html.TextBox("Transaction_VesselName_" + rowId, null, new { @class = "form-control" })
+        @Html.ValidationMessage("Transaction_VesselName_" + rowId)
+    </td>
+    <td>
+        <button type="button" class="btn btn-xs btn-primary" onclick="OpenDenominationModal(@rowId)">Update</button>
+        @Html.ValidationMessage("Transaction_Denomination_" + rowId)
+        <div class="modal fade" id="modal-transaction-denomination-@rowId" aria-hidden="false" aria-labelledby="modal-label-@rowId"
+             role="dialog" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content form-horizontal">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                        <h4 class="modal-title" id="modal-label-@rowId"></h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="form-group">
+                                <div class="col-sm-10 col-sm-offset-1">
+                                    <table id="table-transaction-denomination-@rowId" class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+                                        <thead>
+                                            <tr>
+                                                <th>Denomination</th>
+                                                <th>Pieces</th>
+                                                <th id="AmtCurr-@rowId">Amt (Currency)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="2" class="text-right">Total Calculated</td>
+                                                <td><div id="denomination-total-calculated-foreign-symbol-@rowId" style="float:left;">@ViewData["Symbol"].ToString()</div><div id="denomination-total-calculated-foreign-@rowId">0.00</div>@Html.Hidden("Denomination_Total_Calculated_Foreign_" + rowId, "0.00")</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" class="text-right">Remaining</td>
+                                                <td><div id="denomination-remaining-foreign-symbol-@rowId" style="float:left;">@ViewData["Symbol"].ToString()</div><div id="denomination-remaining-foreign-@rowId">0.00</div>@Html.Hidden("Denomination_Remaining_Foreign_" + rowId, "0.00")</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" class="text-right">Total Order</td>
+                                                <td><div id="denomination-total-order-foreign-symbol-@rowId" style="float:left;">@ViewData["Symbol"].ToString()</div><div id="denomination-total-order-foreign-@rowId">0.00</div>@Html.Hidden("Denomination_Total_Order_Foreign_" + rowId, "0.00")</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-sm-10 col-sm-offset-1">
+                                <button class="btn btn-primary btn-outline" data-dismiss="modal" type="button">Update</button>
+                                <button class="btn btn-danger btn-outline" type="button" onclick="RemoveDenomination(@rowId)">Remove Denomination</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </td>
+    <td>
+        <button class="btn btn-danger btn-xs" type="button" onclick="RemoveTransaction(@rowId)"><i aria-hidden="true" class="icon wb-close"></i> Remove</button>
+    </td>
+</tr>
+
+@if (rowId == 1)
+{
+    <tfoot>
+        <tr>
+            <th colspan="3" style="text-align: right;">Total (Foreign)</th>
+            <th>
+                <div id="total-amount-foreign">$0.00</div>
+            </th>
+            <th colspan="2" style="text-align: right;">Total (Local)</th>
+            <th>
+                <div id="total-amount-local">$0.00</div>
+            </th>
+            <th colspan="6"></th>
+        </tr>
+    </tfoot>
+}

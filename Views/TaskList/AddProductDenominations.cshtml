@@ -1,0 +1,46 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+    SaleTransaction transaction = (SaleTransaction)ViewData["SaleTransaction"];
+    string sgdDp = ViewData["SGDDP"].ToString();
+    string rateDp = ViewData["RateDP"].ToString();
+}
+
+@{
+    decimal totalCalculatedForeign = 0;
+
+    foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+    {
+        totalCalculatedForeign += denomination.AmountForeign;
+
+        if (denomination.Denomination == 0)
+        {
+            <tr class="tr-transaction-denomination">
+                <td>coins @Html.ValidationMessage("Denomination_Value_Denomination_" + transaction.ID + "_" + denomination.ID) @Html.Hidden("Denomination_Value_Denomination_" + transaction.ID + "_" + denomination.ID, denomination.Denomination)</td>
+                <td>-</td>
+                <td>@Html.TextBox("Denomination_Value_AmountForeign_" + transaction.ID + "_" + denomination.ID, denomination.AmountForeign.ToString(sgdDp), new { @class = "form-control denomination-coins-foreign", @onchange = "CoinsChange(" + transaction.ID + "," + denomination.ID + ")" }) @Html.ValidationMessage("Denomination_Value_AmountForeign_" + transaction.ID + "_" + denomination.ID)</td>
+            </tr>
+        }
+        else
+        {
+            <tr class="tr-transaction-denomination">
+                <td>@denomination.Denomination @Html.ValidationMessage("Denomination_Value_Denomination_" + transaction.ID + "_" + denomination.ID) @Html.Hidden("Denomination_Value_Denomination_" + transaction.ID + "_" + denomination.ID, denomination.Denomination)</td>
+                <td>@Html.TextBox("Denomination_Value_Pieces_" + transaction.ID + "_" + denomination.ID, denomination.Pieces.ToString("#,##0"), new { @class = "form-control", @onchange = "PiecesChange(" + transaction.ID + "," + denomination.ID + ")" }) @Html.ValidationMessage("Denomination_Value_Pieces_" + transaction.ID + "_" + denomination.ID)</td>
+                <td><div id="denomination-amount-foreign-@transaction.ID-@denomination.ID">@denomination.AmountForeign.ToString(sgdDp)</div>@Html.ValidationMessage("Denomination_Value_AmountForeign_" + transaction.ID + "_" + denomination.ID) @Html.Hidden("Denomination_Value_AmountForeign_" + transaction.ID + "_" + denomination.ID, denomination.AmountForeign, new { @class = "denomination-amount-foreign" })</td>
+            </tr>
+        }
+    }
+}
+<tr>
+    <td colspan="2" class="text-right">Total Calculated</td>
+    <td><div id="denomination-total-calculated-foreign-symbol-@transaction.ID" style="float:left;">@transaction.Products.Symbol</div><div id="denomination-total-calculated-foreign-@transaction.ID">@totalCalculatedForeign.ToString(sgdDp)</div>@Html.ValidationMessage("Denomination_Total_Calculated_Foreign_" + transaction.ID) @Html.Hidden("Denomination_Total_Calculated_Foreign_" + transaction.ID, totalCalculatedForeign)</td>
+</tr>
+<tr>
+    <td colspan="2" class="text-right">Remaining</td>
+    <td><div id="denomination-remaining-foreign-symbol-@transaction.ID" style="float:left;">@transaction.Products.Symbol</div><div id="denomination-remaining-foreign-@transaction.ID">@((transaction.AmountForeign - totalCalculatedForeign).ToString(sgdDp))</div>@Html.Hidden("Denomination_Remaining_Foreign_" + transaction.ID, (transaction.AmountForeign - totalCalculatedForeign))</td>
+</tr>
+<tr>
+    <td colspan="2" class="text-right">Total Order</td>
+    <td><div id="denomination-total-order-foreign-symbol-@transaction.ID" style="float:left;">@transaction.Products.Symbol</div><div id="denomination-total-order-foreign-@transaction.ID">@transaction.AmountForeign.ToString(sgdDp)</div>@Html.Hidden("Denomination_Total_Order_Foreign_" + transaction.ID, transaction.AmountForeign)</td>
+</tr>

@@ -1,0 +1,776 @@
+﻿@using DataAccess
+@using DataAccess.POCO
+
+@{
+    Layout = null;
+    Sale sale = (Sale)ViewData["Sale"];
+    List<MemoCurrencyTable> buyMemos = (List<MemoCurrencyTable>)ViewData["BuyMemo"];
+    List<MemoCurrencyTable> sellMemos = (List<MemoCurrencyTable>)ViewData["SellMemo"];
+    List<MemoCurrencyTable> sellMemosEncashment = (List<MemoCurrencyTable>)ViewData["SellMemoEncashment"];
+    //List<TotalMemoItemModel> totalMemoItemBuy = (List<TotalMemoItemModel>)ViewData["TotalMemoItemListBuy"];
+    //List<TotalMemoItemModel> totalMemoItemSell = (List<TotalMemoItemModel>)ViewData["TotalMemoItemListSell"];
+    //List<TotalMemoItemModel> totalMemoItemEncashment = (List<TotalMemoItemModel>)ViewData["TotalMemoItemListEncashment"];
+    //List<TotalMemoItemModel> totalMemoItemPartialBuy = (List<TotalMemoItemModel>)ViewData["TotalMemoItemListPartialBuy"];
+    //List<TotalMemoItemModel> totalMemoItemPartialSell = (List<TotalMemoItemModel>)ViewData["TotalMemoItemListPartialSell"];
+    bool allCopy = (bool)ViewData["AllCopy"];
+}
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: Calibri;
+            /*font-family: 'Roboto', sans-serif;*/
+            color: black !important;
+            padding-top: 5px;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .form-group {
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+            margin-bottom: 10px !important;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        .page-break {
+            clear: both;
+            page-break-after: always;
+        }
+
+        table {
+            width: 100%;
+            font-size: 18px !important;
+        }
+
+            table tr td, table th td {
+                vertical-align: top;
+            }
+
+        .table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+            .table > tbody > tr:nth-of-type(even) {
+                background-color: rgba(128, 128, 128, .5);
+            }
+
+            .table tbody tr td {
+                padding: 6px 5px 5px 5px;
+                border: 1px solid;
+            }
+
+        table tbody tr, table tfoot {
+            page-break-inside: avoid !important;
+        }
+
+        /* This is the Total Inline CSS */
+        #block_container {
+            text-align: right;
+        }
+
+        #bloc1, #bloc2 {
+            display: inline;
+        }
+
+        #bloc1 {
+            text-transform: uppercase;
+            margin-right: 15%;
+        }
+    </style>
+</head>
+<body>
+
+    @if (buyMemos.Count > 0 && ViewData["MemoMode"].ToString() == "Sales" && allCopy)
+    {
+        <table style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td colspan="3" style="text-align: center;"><strong style="font-size: 26px !important;">BUYING RECEIPT</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="width: 73%;">
+                        <strong>GREAT EAST FOREX</strong><br />
+                        <div style="font-size: 16px !important;">
+                            Business Reg No. 40238800C<br />
+                            101 Beach Road<br />
+                            #02-02 The 101<br />
+                            Singapore 189703<br />
+                            Tel: 6339 2828&nbsp;&nbsp;&nbsp;&nbsp;Fax: 6334 2013<br />
+                            Email: support@gefx.sg
+                        </div>
+                    </td>
+                    <td style="width: 17%">
+                        <div style="text-align: right; padding-right: 10px;">
+                            Receipt No.:<br />
+                            Order Date:
+                        </div>
+                    </td>
+                    <td style="width: 10%">
+                        <div>
+                            @sale.MemoID<br />
+                            @sale.IssueDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="margin-bottom: 15px;">
+            <tbody>
+                <tr>
+                    <td style="width: 10%; padding-bottom: 10px;">
+                        <strong>CUSTOMER:</strong>
+                    </td>
+                    <td style="width: 90%; padding-bottom: 10px;">
+                        @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                        {
+                            <strong>@sale.CustomerParticulars.Company_RegisteredName</strong><br />
+                            @sale.CustomerParticulars.Company_BusinessAddress1<br />
+                            @sale.CustomerParticulars.Company_BusinessAddress2<br />
+                            @sale.CustomerParticulars.Company_PostalCode<br />
+                            @("Tel: " + sale.CustomerParticulars.Company_TelNo + "    Fax: " + sale.CustomerParticulars.Company_FaxNo)
+                        }
+                        else
+                        {
+                            <strong>@sale.CustomerParticulars.Natural_Name</strong><br />
+                            @sale.CustomerParticulars.Natural_PermanentAddress<br />
+                            @("Contact: " + sale.CustomerParticulars.Natural_ContactNoO + " (O)    " + sale.CustomerParticulars.Natural_ContactNoM + " (M)")
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>DELIVERY:</strong><br />
+                        <strong>TIME:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @Convert.ToDateTime(sale.CollectionDate).ToString("dddd, dd MMMM yyyy")<br />
+                        @sale.CollectionTime
+                        @if (sale.Urgent == "Urgent")
+                        {
+                            <br />@("****" + sale.Urgent)
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>CONTACT PERSON:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @if (!string.IsNullOrEmpty(sale.Sale_ContactPerson))
+                        {
+                            @sale.Sale_ContactPerson
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>DELIVERY REMARKS:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @if (!string.IsNullOrEmpty(sale.Sale_DeliveryRemarks))
+                        {
+                            @Html.Raw(HttpUtility.HtmlEncode(sale.Sale_DeliveryRemarks).Replace("\n", "<br/>"))
+                            @*@Html.Raw(sale.Remarks.Replace("\n\r", "<br />"))*@
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>REMARKS:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @if (!string.IsNullOrEmpty(sale.Remarks))
+                        {
+                            @Html.Raw(HttpUtility.HtmlEncode(sale.Remarks).Replace("\n", "<br/>"))
+                            @*@Html.Raw(sale.Remarks.Replace(" ", "&nbsp;").Replace("\n\r", "<br />"))*@
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="table" style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td style="text-align: right; width: 3%;"><strong>#</strong></td>
+                    <td style="width: 34%"><strong>CURRENCY</strong></td>
+                    <td style="text-align: right; width: 16%"><strong>AMOUNT</strong></td>
+                    <td style="text-align: right; width: 27%"><strong>RATE</strong></td>
+                    <td style="text-align: right; width: 20%"><strong>SGD</strong></td>
+                </tr>
+                @foreach (MemoCurrencyTable buyMemo in buyMemos)
+                {
+                    <tr>
+                        <td style="text-align: right;">@buyMemo.RowId</td>
+                        <td>
+                            @buyMemo.Currency<br />
+                            @if (!string.IsNullOrEmpty(buyMemo.PaymentMode))
+                            {
+                                @Html.Raw("&nbsp;&nbsp;&nbsp;&nbsp;- " + buyMemo.PaymentMode)
+                            }
+                        </td>
+                        <td style="text-align: right;">@buyMemo.Amount</td>
+                        <td style="text-align: right;">@buyMemo.Rate</td>
+                        <td style="text-align: right;">@buyMemo.TotalAmount</td>
+                    </tr>
+                }
+                <tr style="background-color: #ffffff !important;">
+                    <td colspan="5" style="border: none;">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #ffffff !important;">
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td colspan="2" style="padding: 5px 5px 10px 5px; border: 1px solid; background-color: lightgray !important;">
+                        <div style="text-align: left; float: left;">
+                            <strong>TOTAL (GEFX PAYABLE)</strong>
+                        </div>
+                        <div style="text-align: right; float: right;">
+                            <strong>@ViewData["BuyMemoTotal"].ToString()</strong>
+                        </div>
+                    </td>
+                </tr>
+                @{
+                    @*foreach (TotalMemoItemModel single in totalMemoItemBuy)
+            {
+                <tr style="background-color: #ffffff !important;">
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td colspan="2" style="padding: 5px 5px 10px 5px;border: 1px solid;">
+                        <div id="block_container">
+                            <div id="bloc1"><strong>@single.TransactionType</strong></div>
+                            <div id="bloc2"><strong>@("SGD " + single.Amount)</strong></div>
+                        </div>
+                    </td>
+                </tr>
+            }*@
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (buyMemos.Count > 0 && sellMemos.Count > 0 && ViewData["MemoMode"].ToString() == "Sales" && allCopy)
+    {
+        <div class="page-break"></div>
+    }
+
+    @if (sellMemos.Count > 0 && ViewData["MemoMode"].ToString() == "Sales" && allCopy)
+    {
+        <table style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td colspan="3" style="text-align: center; padding-top: 2px;"><strong style="font-size: 26px !important;">SELLING RECEIPT</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="width: 73%;">
+                        <strong>GREAT EAST FOREX</strong><br />
+                        <div style="font-size: 16px !important;">
+                            Business Reg No. 40238800C<br />
+                            101 Beach Road<br />
+                            #02-02 The 101<br />
+                            Singapore 189703<br />
+                            Tel: 6339 2828&nbsp;&nbsp;&nbsp;&nbsp;Fax: 6334 2013<br />
+                            Email: support@gefx.sg
+                        </div>
+                    </td>
+                    <td style="width: 17%">
+                        <div style="text-align: right; padding-right: 10px;">
+                            Receipt No.:<br />
+                            Order Date:
+                        </div>
+                    </td>
+                    <td style="width: 10%">
+                        <div>
+                            @sale.MemoID<br />
+                            @sale.IssueDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="margin-bottom: 15px;">
+            <tbody>
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>CUSTOMER:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                        {
+                            <strong>@sale.CustomerParticulars.Company_RegisteredName</strong><br />
+                            @sale.CustomerParticulars.Company_BusinessAddress1<br />
+                            @sale.CustomerParticulars.Company_BusinessAddress2<br />
+                            @sale.CustomerParticulars.Company_PostalCode<br />
+                            @("Tel: " + sale.CustomerParticulars.Company_TelNo + "    Fax: " + sale.CustomerParticulars.Company_FaxNo)
+                        }
+                        else
+                        {
+                            <strong>@sale.CustomerParticulars.Natural_Name</strong><br />
+                            @sale.CustomerParticulars.Natural_PermanentAddress<br />
+                            @("Contact: " + sale.CustomerParticulars.Natural_ContactNoO + " (O)    " + sale.CustomerParticulars.Natural_ContactNoM + " (M)")
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>DELIVERY:</strong><br />
+                        <strong>TIME:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @Convert.ToDateTime(sale.CollectionDate).ToString("dddd, dd MMMM yyyy")<br />
+                        @sale.CollectionTime
+                        @if (sale.Urgent == "Urgent")
+                        {
+                            <br />@("****" + sale.Urgent)
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>CONTACT PERSON:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @if (!string.IsNullOrEmpty(sale.Sale_ContactPerson))
+                        {
+                            @sale.Sale_ContactPerson
+                        }
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>DELIVERY REMARKS:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @if (!string.IsNullOrEmpty(sale.Sale_DeliveryRemarks))
+                        {
+                            @Html.Raw(HttpUtility.HtmlEncode(sale.Sale_DeliveryRemarks).Replace("\n", "<br/>"))
+                        }
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="width: 20%; padding-bottom: 10px;">
+                        <strong>REMARKS:</strong>
+                    </td>
+                    <td style="width: 80%; padding-bottom: 10px;">
+                        @if (!string.IsNullOrEmpty(sale.Remarks))
+                        {
+                            @Html.Raw(HttpUtility.HtmlEncode(sale.Remarks).Replace("\n", "<br/>"))
+                            @*@Html.Raw(sale.Remarks.Replace("\n\r", "<br />"))*@
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="table" style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td style="text-align: right; width: 3%;"><strong>#</strong></td>
+                    <td style="width: 34%"><strong>CURRENCY</strong></td>
+                    <td style="text-align: right; width: 16%"><strong>AMOUNT</strong></td>
+                    <td style="text-align: right; width: 27%"><strong>RATE</strong></td>
+                    <td style="text-align: right; width: 20%"><strong>SGD</strong></td>
+                </tr>
+                @foreach (MemoCurrencyTable sellMemo in sellMemos)
+                {
+                    <tr>
+                        <td style="text-align: right;">@sellMemo.RowId</td>
+                        <td>
+                            @sellMemo.Currency
+                            @if (!string.IsNullOrEmpty(sellMemo.PaymentMode))
+                            {
+                                @Html.Raw("&nbsp;- " + sellMemo.PaymentMode)
+                            }
+                            <br />
+                            @if (!string.IsNullOrEmpty(sellMemo.VesselName))
+                            {
+                                @Html.Raw("Vessel Name - " + sellMemo.VesselName)
+                            }
+                        </td>
+                        <td style="text-align: right;">@sellMemo.Amount</td>
+                        <td style="text-align: right;">@sellMemo.Rate</td>
+                        <td style="text-align: right;">@sellMemo.TotalAmount</td>
+                    </tr>
+                }
+                <tr style="background-color: #ffffff !important;">
+                    <td colspan="5" style="border: none;">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #ffffff !important;">
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td colspan="2" style="padding: 5px 5px 10px 5px; border: 1px solid; background-color: lightgray !important;">
+                        <div style="text-align: left; float: left;">
+                            <strong>TOTAL (CUSTOMER PAYABLE)</strong>
+                        </div>
+                        <div style="text-align: right; float: right;">
+                            <strong>@("SGD " + ViewData["SellMemoTotal"].ToString())</strong>
+                        </div>
+                    </td>
+                </tr>
+                @{
+                    @*foreach (TotalMemoItemModel single in totalMemoItemSell)
+                    {
+                        <tr style="background-color: #ffffff !important;">
+                            <td style="border: none;"></td>
+                            <td style="border: none;"></td>
+                            <td style="border: none;"></td>
+                            <td colspan="2" style="padding: 5px 5px 10px 5px;border: 1px solid;">
+                                <div id="block_container">
+                                    <div id="bloc1"><strong>@single.TransactionType</strong></div>
+                                    <div id="bloc2"><strong>@("SGD " + single.Amount)</strong></div>
+                                </div>
+                            </td>
+                        </tr>
+                    }*@
+                }
+            </tbody>
+        </table>
+    }
+
+    @if ((sellMemos.Count > 0 || buyMemos.Count > 0) && sellMemosEncashment.Count > 0 && ViewData["MemoMode"].ToString() == "Sales" && allCopy)
+    {
+        <div class="page-break"></div>
+    }
+
+    @if (sellMemosEncashment.Count > 0)
+    {
+        if (ViewData["MemoMode"].ToString() == "Sales" && allCopy)
+        {
+            <table style="margin-bottom: 30px;">
+                <tbody>
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding-top: 2px;"><strong style="font-size: 26px !important;">ENCASHMENT RECEIPT</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 73%;">
+                            <strong>GREAT EAST FOREX</strong><br />
+                            <div style="font-size: 16px !important;">
+                                Business Reg No. 40238800C<br />
+                                101 Beach Road<br />
+                                #02-02 The 101<br />
+                                Singapore 189703<br />
+                                Tel: 6339 2828&nbsp;&nbsp;&nbsp;&nbsp;Fax: 6334 2013<br />
+                                Email: support@gefx.sg
+                            </div>
+                        </td>
+                        <td style="width: 17%">
+                            <div style="text-align: right; padding-right: 10px;">
+                                Receipt No.:<br />
+                                Order Date:<br />
+                                Payment Mode:
+                            </div>
+                        </td>
+                        <td style="width: 10%">
+                            <div>
+                                @sale.MemoID<br />
+                                @sale.IssueDate.ToString("dd/MM/yyyy")<br />
+                                @buyMemos.FirstOrDefault().PaymentMode
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table style="margin-bottom: 15px;">
+                <tbody>
+                    <tr>
+                        <td style="width: 20%; padding-bottom: 10px;">
+                            <strong>CUSTOMER:</strong>
+                        </td>
+                        <td style="width: 80%; padding-bottom: 10px;">
+                            @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                            {
+                                <strong>@sale.CustomerParticulars.Company_RegisteredName</strong><br />
+                                @sale.CustomerParticulars.Company_BusinessAddress1<br />
+                                @sale.CustomerParticulars.Company_BusinessAddress2<br />
+                                @sale.CustomerParticulars.Company_PostalCode<br />
+                                @("Tel: " + sale.CustomerParticulars.Company_TelNo + "    Fax: " + sale.CustomerParticulars.Company_FaxNo)
+                            }
+                            else
+                            {
+                                <strong>@sale.CustomerParticulars.Natural_Name</strong><br />
+                                @sale.CustomerParticulars.Natural_PermanentAddress<br />
+                                @("Contact: " + sale.CustomerParticulars.Natural_ContactNoO + " (O)    " + sale.CustomerParticulars.Natural_ContactNoM + " (M)")
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 20%; padding-bottom: 10px;">
+                            <strong>DELIVERY:</strong><br />
+                            <strong>TIME:</strong>
+                        </td>
+                        <td style="width: 80%; padding-bottom: 10px;">
+                            @Convert.ToDateTime(sale.CollectionDate).ToString("dddd, dd MMMM yyyy")<br />
+                            @sale.CollectionTime
+                            @if (sale.Urgent == "Urgent")
+                            {
+                                <br />@("****" + sale.Urgent)
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 20%; padding-bottom: 10px;">
+                            <strong>CONTACT PERSON:</strong>
+                        </td>
+                        <td style="width: 80%; padding-bottom: 10px;">
+                            @if (!string.IsNullOrEmpty(sale.Sale_ContactPerson))
+                            {
+                                @sale.Sale_ContactPerson
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 20%; padding-bottom: 10px;">
+                            <strong>DELIVERY REMARKS:</strong>
+                        </td>
+                        <td style="width: 80%; padding-bottom: 10px;">
+                            @if (!string.IsNullOrEmpty(sale.Sale_DeliveryRemarks))
+                            {
+                                @Html.Raw(HttpUtility.HtmlEncode(sale.Sale_DeliveryRemarks).Replace("\n", "<br/>"))
+                                @*@Html.Raw(sale.Remarks.Replace("\n\r", "<br />"))*@
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 20%; padding-bottom: 10px;">
+                            <strong>REMARKS:</strong>
+                        </td>
+                        <td style="width: 80%; padding-bottom: 10px;">
+                            @if (!string.IsNullOrEmpty(sale.Remarks))
+                            {
+                                @Html.Raw(HttpUtility.HtmlEncode(sale.Remarks).Replace("\n", "<br/>"))
+                                @*@Html.Raw(sale.Remarks.Replace("\n\r", "<br />"))*@<br /><br /><br />
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table" style="margin-bottom: 30px;">
+                <tbody>
+                    <tr>
+                        <td style="text-align: right; width: 3%;"><strong>#</strong></td>
+                        <td style="width: 34%"><strong>CURRENCY</strong></td>
+                        <td style="text-align: right; width: 16%"><strong>AMOUNT</strong></td>
+                        <td style="text-align: right; width: 27%"><strong>RATE</strong></td>
+                        <td style="text-align: right; width: 20%"><strong>@ViewData["SellMemoCodeEncashment"].ToString()</strong></td>
+                    </tr>
+                    @foreach (MemoCurrencyTable encashmentMemo in sellMemosEncashment)
+                    {
+                        <tr>
+                            <td style="text-align: right;">@encashmentMemo.RowId</td>
+                            <td>
+                                @encashmentMemo.Currency
+                                @if (!string.IsNullOrEmpty(encashmentMemo.PaymentMode))
+                                {
+                                    @Html.Raw("&nbsp;- " + encashmentMemo.PaymentMode)
+                                }
+                                <br />
+                                @if (!string.IsNullOrEmpty(encashmentMemo.VesselName))
+                                {
+                                    @Html.Raw("Vessel Name - " + encashmentMemo.VesselName)
+                                }
+                            </td>
+                            <td style="text-align: right;">@encashmentMemo.Amount</td>
+                            <td style="text-align: right;">@encashmentMemo.Rate</td>
+                            <td style="text-align: right;">@encashmentMemo.TotalAmount</td>
+                        </tr>
+                    }
+                    <tr style="background-color: #ffffff !important;">
+                        <td colspan="5" style="border: none;">&nbsp;</td>
+                    </tr>
+                    <tr style="background-color: #ffffff !important;">
+                        <td style="border: none;"></td>
+                        <td style="border: none;"></td>
+                        <td style="border: none;"></td>
+                        <td colspan="2" style="padding: 5px 5px 10px 5px; border: 1px solid; background-color: lightgray !important;">
+                            <div style="text-align: left; float: left;">
+                                <strong>TOTAL (CUSTOMER PAYABLE)</strong>
+                            </div>
+                            <div style="text-align: right; float: right;">
+                                <strong>@ViewData["SellMemoCodeEncashment"].ToString() @ViewData["SellMemoTotalEncashment"].ToString()</strong>
+                            </div>
+                        </td>
+                    </tr>
+                    @{
+                        @*foreach (TotalMemoItemModel single in totalMemoItemEncashment)
+                        {
+                            <tr style="background-color: #ffffff !important;">
+                                <td style="border: none;"></td>
+                                <td style="border: none;"></td>
+                                <td style="border: none;"></td>
+                                <td colspan="2" style="padding: 5px 5px 10px 5px;border: 1px solid;">
+                                    <div id="block_container">
+                                        <div id="bloc1"><strong>@single.TransactionType</strong></div>
+                                        <div id="bloc2"><strong>@ViewData["SellMemoCodeEncashment"].ToString() @single.Amount</strong></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }*@
+                    }
+                </tbody>
+            </table>
+
+            <div class="page-break"></div>
+        }
+
+        <table style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td colspan="3" style="text-align: center; padding-top: 2px;"><strong style="font-size: 26px !important;">ENCASHMENT RECEIPT</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="2" style="text-align: center; padding: 5px; border: 2px solid;">
+                        CUSTOMER COPY
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 73%;">
+                        <strong>GREAT EAST FOREX</strong><br />
+                        <div style="font-size: 16px !important;">
+                            Business Reg No. 40238800C<br />
+                            101 Beach Road<br />
+                            #02-02 The 101<br />
+                            Singapore 189703<br />
+                            Tel: 6339 2828&nbsp;&nbsp;&nbsp;&nbsp;Fax: 6334 2013<br />
+                            Email: support@gefx.sg
+                        </div>
+                    </td>
+                    <td style="width: 17%">
+                        <div style="text-align: right; padding-right: 10px;">
+                            Receipt No.:<br />
+                            Order Date:
+                        </div>
+                    </td>
+                    <td style="width: 10%">
+                        <div>
+                            @sale.MemoID<br />
+                            @sale.IssueDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="margin-bottom: 15px;">
+            <tbody>
+                <tr>
+                    <td style="padding-bottom: 20px;">
+                        <strong>CUSTOMER:</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 10px;">
+                        @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                        {
+                            <strong>@sale.CustomerParticulars.Company_RegisteredName</strong><br />
+                            @sale.CustomerParticulars.Company_BusinessAddress1<br />
+                            @sale.CustomerParticulars.Company_BusinessAddress2<br />
+                            @sale.CustomerParticulars.Company_PostalCode<br />
+                            @("Tel: " + sale.CustomerParticulars.Company_TelNo + "    Fax: " + sale.CustomerParticulars.Company_FaxNo)
+                        }
+                        else
+                        {
+                            <strong>@sale.CustomerParticulars.Natural_Name</strong><br />
+                            @sale.CustomerParticulars.Natural_PermanentAddress<br />
+                            @("Contact: " + sale.CustomerParticulars.Natural_ContactNoO + " (O)    " + sale.CustomerParticulars.Natural_ContactNoM + " (M)")
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 20px;">
+                        <strong>DELIVERY REMARKS:</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 10px;">
+                        @{
+                            if (!string.IsNullOrEmpty(sale.Sale_DeliveryRemarks))
+                            {
+                                @Html.Raw(HttpUtility.HtmlEncode(sale.Sale_DeliveryRemarks).Replace("\n", "<br/>"));
+                            }
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="table" style="margin-bottom: 30px;">
+            <tbody>
+                <tr>
+                    <td style="text-align: right; width: 3%;"><strong>#</strong></td>
+                    <td style="width: 34%"><strong>CURRENCY</strong></td>
+                    <td style="text-align: right; width: 16%"><strong>AMOUNT</strong></td>
+                    <td style="text-align: right; width: 27%"><strong>RATE</strong></td>
+                    <td style="text-align: right; width: 20%"><strong>@ViewData["SellMemoCodeEncashment"].ToString()</strong></td>
+                </tr>
+                @foreach (MemoCurrencyTable encashmentMemo in sellMemosEncashment)
+                {
+                    <tr>
+                        <td style="text-align: right;">@encashmentMemo.RowId</td>
+                        <td>
+                            @encashmentMemo.Currency<br />
+                            @if (!string.IsNullOrEmpty(encashmentMemo.VesselName))
+                            {
+                                @Html.Raw("Vessel Name - " + encashmentMemo.VesselName)
+                            }
+                        </td>
+                        <td style="text-align: right;">@encashmentMemo.Amount</td>
+                        <td style="text-align: right;">@encashmentMemo.Rate</td>
+                        <td style="text-align: right;">@encashmentMemo.TotalAmount</td>
+                    </tr>
+                }
+                <tr style="background-color: #ffffff !important;">
+                    <td colspan="5" style="border: none;">&nbsp;</td>
+                </tr>
+                <tr style="background-color: #ffffff !important;">
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td style="border: none;"></td>
+                    <td colspan="2" style="padding: 5px 5px 10px 5px; border: 1px solid; background-color: lightgray !important;">
+                        <div style="text-align: left; float: left;">
+                            <strong>TOTAL (CUSTOMER PAYABLE)</strong>
+                        </div>
+                        <div style="text-align: right; float: right;">
+                            <strong>@ViewData["SellMemoCodeEncashment"].ToString() @ViewData["SellMemoTotalEncashment"].ToString()</strong>
+                        </div>
+                    </td>
+                </tr>
+                @{
+                    @*foreach (TotalMemoItemModel single in totalMemoItemEncashment)
+                    {
+                        <tr style="background-color: #ffffff !important;">
+                            <td style="border: none;"></td>
+                            <td style="border: none;"></td>
+                            <td style="border: none;"></td>
+                            <td colspan="2" style="padding: 5px 5px 10px 5px;border: 1px solid;">
+                                <div id="block_container">
+                                    <div id="bloc1"><strong>@single.TransactionType</strong></div>
+                                    <div id="bloc2"><strong>@ViewData["SellMemoCodeEncashment"].ToString() @single.Amount</strong></div>
+                                </div>
+                            </td>
+                        </tr>
+                    }*@
+                }
+            </tbody>
+        </table>
+    }
+</body>
+</html>

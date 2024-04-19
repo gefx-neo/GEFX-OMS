@@ -1,0 +1,179 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html class="no-js css-menubar" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta name="description" content="GEFX Operations System">
+    <meta name="author" content="">
+    <title>GEFX Operations System</title>
+    @*<link rel="shortcut icon" href="@Url.Content("~/Content/images/logo.png")">*@
+    <link rel="shortcut icon" href="@Url.Content("~/Content/images/gefx_logo.png")">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/bootstrap.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/bootstrap-extend.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/site.min.css")">
+    <!-- Plugins -->
+    <link rel="stylesheet" href="@Url.Content("~/Content/vendor/animsition/animsition.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/vendor/asscrollable/asScrollable.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/vendor/switchery/switchery.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/vendor/icheck/icheck.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/vendor/intro-js/introjs.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/vendor/slidepanel/slidePanel.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/vendor/flag-icon-css/flag-icon.css")">
+    <!-- Page -->
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/login.css")">
+    <!-- Fonts -->
+    <link rel="stylesheet" href="@Url.Content("~/Content/fonts/web-icons/web-icons.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/fonts/brand-icons/brand-icons.min.css")">
+    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:300,400,500,300italic'>
+    <!--[if lt IE 9]>
+      <script src="@Url.Content("~/Content/vendor/html5shiv/html5shiv.min.js")"></script>
+      <![endif]-->
+    <!--[if lt IE 10]>
+      <script src="@Url.Content("~/Content/vendor/media-match/media.match.min.js")"></script>
+      <script src="@Url.Content("~/Content/vendor/respond/respond.min.js")"></script>
+      <![endif]-->
+    <!-- Scripts -->
+    <script src="@Url.Content("~/Content/vendor/modernizr/modernizr.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/breakpoints/breakpoints.js")"></script>
+    <script>
+        Breakpoints();
+    </script>
+</head>
+<body class="page-login layout-full page-dark">
+    <!--[if lt IE 8]>
+          <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+      <![endif]-->
+    <!-- Page -->
+    <div class="page animsition vertical-align text-center" data-animsition-in="fade-in"
+         data-animsition-out="fade-out">
+        <div class="page-content vertical-align-middle">
+            <div class="brand margin-bottom-5">
+                @*<img class="brand-img" src="@Url.Content("~/Content/images/logo-blue.png")" alt="...">*@
+                <img class="brand-img" style="width:50%" src="@Url.Content("~/Content/images/gefx_logo-blue.png")" alt="...">
+            </div>
+            @using (Html.BeginForm("Index", "TestEmail", FormMethod.Post, new { @class = "margin-top-5", @autocomplete = "off" }))
+            {
+                if (Session["Result"] != null)
+                {
+                    string[] result = Session["Result"].ToString().Split('|');
+
+                    <div class="alert alert-@result[0]">
+                        @Html.Raw(result[1])
+                    </div>
+
+                    Session.Remove("Result");
+                }
+                <p>SMTP Settings</p>
+                <div class="form-group margin-bottom-5">
+                    @Html.TextBox("Username", ViewData["Username"].ToString(), new { @class = "form-control", @placeholder = "Username" })
+                    @Html.ValidationMessage("Username")
+                </div>
+                <div class="form-group margin-bottom-5">
+                    <label class="sr-only" for="inputPassword">Password</label>
+                    @Html.TextBox("Password", ViewData["Password"].ToString(), new { @class = "form-control", @placeholder = "Password" })
+                    @Html.ValidationMessage("Password")
+                </div>
+                <div class="form-group margin-bottom-5">
+                    <label class="sr-only" for="inputHost">Host</label>
+                    @Html.TextBox("Host", ViewData["Host"].ToString(), new { @class = "form-control", @placeholder = "Host" })
+                    @Html.ValidationMessage("Host")
+                </div>
+                <div class="form-group margin-bottom-5">
+                    <label class="sr-only" for="inputPort">Port</label>
+                    @Html.TextBox("Port", ViewData["Port"].ToString(), new { @class = "form-control", @placeholder = "Port" })
+                    @Html.ValidationMessage("Port")
+                </div>
+                <div class="form-group clearfix">
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <div class="checkbox-custom checkbox-inline checkbox-primary pull-left">
+                                <input type="checkbox" id="inputEnableSsl" name="enableSsl" @ViewData["EnableSslCheckbox"].ToString()>
+                                <label for="inputEnableSsl"></label>
+                            </div>
+                        </span>
+                        @Html.TextBox("EnableSslTxt", "Enable Ssl", new { @class = "form-control", @disabled = "disabled" })
+                    </div>
+                    
+                </div>
+                <p>Email Settings</p>
+                <div class="form-group margin-bottom-5">
+                    @Html.TextBox("SendTo", ViewData["SendTo"].ToString(), new { @class = "form-control", @placeholder = "Send To" })
+                    @Html.ValidationMessage("SendTo")
+                </div>
+                <div class="form-group margin-bottom-5">
+                    <label class="sr-only" for="inputPassword">Password</label>
+                    @Html.TextBox("Subject", ViewData["Subject"].ToString(), new { @class = "form-control", @placeholder = "Subject" })
+                    @Html.ValidationMessage("Subject")
+                </div>
+                <div class="form-group margin-bottom-5">
+                    <label class="sr-only" for="inputHost">Host</label>
+                    @Html.TextArea("Message", ViewData["Message"].ToString(), new { @class = "form-control", @placeholder = "Message" })
+                    @Html.ValidationMessage("Message")
+                </div>
+                <button id="btn-submit-form" type="button" class="btn btn-primary btn-block" onclick="SubmitForm()">Send Test Email</button>
+            }
+            <footer class="page-copyright page-copyright-inverse">
+                <p>Great East Forex © @DateTime.Now.ToString("yyyy") All RIGHT RESERVED.</p>
+            </footer>
+        </div>
+    </div>
+    <!-- End Page -->
+    <!-- Core  -->
+    <script src="@Url.Content("~/Content/vendor/jquery/jquery.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/bootstrap/bootstrap.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/icheck/icheck.min.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/animsition/jquery.animsition.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/asscroll/jquery-asScroll.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/mousewheel/jquery.mousewheel.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/asscrollable/jquery.asScrollable.all.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/ashoverscroll/jquery-asHoverScroll.js")"></script>
+    <!-- Plugins -->
+    <script src="@Url.Content("~/Content/vendor/switchery/switchery.min.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/intro-js/intro.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/screenfull/screenfull.js")"></script>
+    <script src="@Url.Content("~/Content/vendor/slidepanel/jquery-slidePanel.js")"></script>
+    <!-- Plugins For This Page -->
+    <script src="@Url.Content("~/Content/vendor/jquery-placeholder/jquery.placeholder.js")"></script>
+    <!-- Scripts -->
+    <script src="@Url.Content("~/Content/js/core.js")"></script>
+    <script src="@Url.Content("~/Content/js/site.js")"></script>
+    <script src="@Url.Content("~/Content/js/sections/menu.js")"></script>
+    <script src="@Url.Content("~/Content/js/sections/menubar.js")"></script>
+    <script src="@Url.Content("~/Content/js/sections/gridmenu.js")"></script>
+    <script src="@Url.Content("~/Content/js/sections/sidebar.js")"></script>
+    <script src="@Url.Content("~/Content/js/configs/config-colors.js")"></script>
+    <script src="@Url.Content("~/Content/js/configs/config-tour.js")"></script>
+    <script src="@Url.Content("~/Content/js/components/asscrollable.js")"></script>
+    <script src="@Url.Content("~/Content/js/components/animsition.js")"></script>
+    <script src="@Url.Content("~/Content/js/components/slidepanel.js")"></script>
+    <script src="@Url.Content("~/Content/js/components/switchery.js")"></script>
+    <script src="@Url.Content("~/Content/js/components/icheck.js")"></script>
+    <!-- Scripts For This Page -->
+    <script src="@Url.Content("~/Content/js/components/jquery-placeholder.js")"></script>
+    <script>
+        (function (document, window, $) {
+            'use strict';
+
+            var Site = window.Site;
+            $(document).ready(function () {
+                Site.run();
+            });
+        })(document, window, jQuery);
+
+        function SubmitForm() {
+            $("#btn-submit-form").attr("disabled", "disabled");
+            $("input, textarea").attr("readonly", "readonly");
+            $("#btn-submit-form").html("Sending");
+
+            $("form").submit();
+        }
+    </script>
+
+</body>
+</html>

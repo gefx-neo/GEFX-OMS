@@ -1,0 +1,252 @@
+﻿@{
+    Layout = null;
+    string sgdDp = ViewData["SGDDP"].ToString();
+    string rateDp = ViewData["RateDP"].ToString();
+}
+    <div class="row">
+        <h5 class="col-sm-offset-3">Cashier View</h5>
+        @using (Html.BeginForm("PendingCashier", "TaskList", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-pending-cashier" }))
+        {
+            <input type="hidden" id="PendingChequeLog" name="PendingChequeLog" value="@ViewData["PendingChequeLog"].ToString()">
+            <input type="hidden" id="PendingBankTransferLog" name="PendingBankTransferLog" value="@ViewData["PendingBankTransferLog"].ToString()">
+
+            <input type="hidden" id="PendingLocalCheque1Log" name="PendingLocalCheque1Log" value="@ViewData["PendingLocalCheque1Log"].ToString()">
+            <input type="hidden" id="PendingLocalCheque2Log" name="PendingLocalCheque2Log" value="@ViewData["PendingLocalCheque2Log"].ToString()">
+            <input type="hidden" id="PendingLocalCheque3Log" name="PendingLocalCheque3Log" value="@ViewData["PendingLocalCheque3Log"].ToString()">
+            <input type="hidden" id="PendingLocalBankTransferLog" name="PendingLocalBankTransferLog" value="@ViewData["PendingLocalBankTransferLog"].ToString()">
+            <div id="div-form-group" class="form-group" style="margin-bottom: 0px;">
+                @Html.Label("Payment Mode:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-3 col-xs-3 margin-bottom-20">
+                    <span class="checkbox-custom checkbox-primary">
+                        <input class="form-control" type="checkbox" id="cash" name="sales.LocalPaymentMode" value="Cash" onchange="LocalPaymentModeChange('cash', 'payment-mode-cash')" @ViewData["LocalPaymentModeCashCheckbox"].ToString() @ViewData["DisabledCheckbox"].ToString() />
+                        <label for="cash">Cash</label>
+                    </span>
+                </div>
+                <div class="col-xs-8 col-sm-5">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">$</span>
+                            @Html.TextBox("CashAmount", ViewData["CashAmount"].ToString(), new { @class = "form-control payment-mode-cash", @placeholder = "Amount" })
+                        </div>
+                        @Html.ValidationMessage("CashAmount")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        @Html.DropDownList("CashBank", (SelectList)ViewData["CashBankDropdown"], new { @class = "form-control payment-mode-cash", @disabled = "disabled" })
+                        @Html.ValidationMessage("CashBank")
+                    </div>
+                </div>
+
+                <div class="col-xs-3 col-sm-3 col-sm-offset-3">
+                    <span class="checkbox-custom checkbox-primary">
+                        <input class="form-control" type="checkbox" id="cheque-1" name="sales.LocalPaymentMode" value="Cheque 1" onchange="LocalPaymentModeChange('cheque-1', 'payment-mode-cheque-1')" @ViewData["LocalPaymentModeCheque1Checkbox"].ToString() @ViewData["DisabledCheckbox"].ToString() />
+                        <label for="cheque-1">Cheque 1</label>
+                    </span>
+                </div>
+                <div class="col-xs-8 col-sm-5">
+                    <div class="form-group">
+                        @Html.TextBox("Cheque1No", ViewData["Cheque1No"].ToString(), new { @class = "form-control payment-mode-cheque-1", @placeholder = "Cheque 1 No." })
+                        @Html.ValidationMessage("Cheque1No")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">$</span>
+                            @Html.TextBox("Cheque1Amount", ViewData["Cheque1Amount"].ToString(), new { @class = "form-control payment-mode-cheque-1", @placeholder = "Cheque 1 Amount" })
+                        </div>
+                        @Html.ValidationMessage("Cheque1Amount")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        @Html.DropDownList("Cheque1Bank", (SelectList)ViewData["Cheque1BankDropdown"], new { @class = "form-control payment-mode-cheque-1" })
+                        @Html.ValidationMessage("Cheque1Bank")
+                    </div>
+                </div>
+
+                <div class="col-xs-3 col-sm-3 col-sm-offset-3">
+                    <span class="checkbox-custom checkbox-primary">
+                        <input class="form-control" type="checkbox" id="cheque-2" name="sales.LocalPaymentMode" value="Cheque 2" onchange="LocalPaymentModeChange('cheque-2', 'payment-mode-cheque-2')" @ViewData["LocalPaymentModeCheque2Checkbox"].ToString() @ViewData["DisabledCheckbox"].ToString() />
+                        <label for="cheque-2">Cheque 2</label>
+                    </span>
+                </div>
+                <div class="col-xs-8 col-sm-5">
+                    <div class="form-group">
+                        @Html.TextBox("Cheque2No", ViewData["Cheque2No"].ToString(), new { @class = "form-control payment-mode-cheque-2", @placeholder = "Cheque 2 No." })
+                        @Html.ValidationMessage("Cheque2No")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">$</span>
+                            @Html.TextBox("Cheque2Amount", ViewData["Cheque2Amount"].ToString(), new { @class = "form-control payment-mode-cheque-2", @placeholder = "Cheque 2 Amount" })
+                        </div>
+                        @Html.ValidationMessage("Cheque2Amount")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        @Html.DropDownList("Cheque2Bank", (SelectList)ViewData["Cheque2BankDropdown"], new { @class = "form-control payment-mode-cheque-2" })
+                        @Html.ValidationMessage("Cheque2Bank")
+                    </div>
+                </div>
+
+                <div class="col-xs-3 col-sm-3 col-sm-offset-3">
+                    <span class="checkbox-custom checkbox-primary">
+                        <input class="form-control" type="checkbox" id="cheque-3" name="sales.LocalPaymentMode" value="Cheque 3" onchange="LocalPaymentModeChange('cheque-3', 'payment-mode-cheque-3')" @ViewData["LocalPaymentModeCheque3Checkbox"].ToString() @ViewData["DisabledCheckbox"].ToString() />
+                        <label for="cheque-3">Cheque 3</label>
+                    </span>
+                </div>
+                <div class="col-xs-8 col-sm-5">
+                    <div class="form-group">
+                        @Html.TextBox("Cheque3No", ViewData["Cheque3No"].ToString(), new { @class = "form-control payment-mode-cheque-3", @placeholder = "Cheque 3 No." })
+                        @Html.ValidationMessage("Cheque3No")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">$</span>
+                            @Html.TextBox("Cheque3Amount", ViewData["Cheque3Amount"].ToString(), new { @class = "form-control payment-mode-cheque-3", @placeholder = "Cheque 3 Amount" })
+                        </div>
+                        @Html.ValidationMessage("Cheque3Amount")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        @Html.DropDownList("Cheque3Bank", (SelectList)ViewData["Cheque3BankDropdown"], new { @class = "form-control payment-mode-cheque-3" })
+                        @Html.ValidationMessage("Cheque3Bank")
+                    </div>
+                </div>
+
+                <div class="col-xs-3 col-sm-3 col-sm-offset-3">
+                    <span class="checkbox-custom checkbox-primary">
+                        <input class="form-control" type="checkbox" id="bank-transfer" name="sales.LocalPaymentMode" value="Bank Transfer" onchange="LocalPaymentModeChange('bank-transfer', 'payment-mode-transfer')" @ViewData["LocalPaymentModeBankTransferCheckbox"].ToString() @ViewData["DisabledCheckbox"].ToString() />
+                        <label for="bank-transfer">Bank Transfer</label>
+                    </span>
+                </div>
+                <div class="col-xs-8 col-sm-5">
+                    <div class="form-group">
+                        @Html.TextBox("BankTransferNo", ViewData["BankTransferNo"].ToString(), new { @class = "form-control payment-mode-transfer", @placeholder = "Bank Transfer No." })
+                        @Html.ValidationMessage("BankTransferNo")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">SGD $</span>
+                            @Html.TextBox("BankTranferAmount", ViewData["BankTranferAmount"].ToString(), new { @class = "form-control payment-mode-transfer", @placeholder = "Bank Tranfer Amount" })
+                        </div>
+                        @Html.ValidationMessage("BankTranferAmount")
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-5 col-sm-offset-6 col-xs-offset-3">
+                    <div class="form-group">
+                        @Html.DropDownList("BankTransferBank", (SelectList)ViewData["BankTransferBankDropdown"], new { @class = "form-control payment-mode-transfer", @placeholder = "Bank Transfer Bank" })
+                        @Html.ValidationMessage("BankTransferBank")
+                    </div>
+                </div>
+
+                @Html.Label("Memo Balance*:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        <span class="input-group-addon">SGD $</span>
+                        @if (ViewData["DisabledCheckbox"].ToString() == "disabled")
+                        {
+                            @Html.TextBox("MemoBalance", ViewData["MemoBalance"].ToString(), new { @class = "form-control payment-mode-memo-balance", @placeholder = "Memo Balance", @disabled = "disabled" })
+                        }
+                        else
+                        {
+                            @Html.TextBox("MemoBalance", ViewData["MemoBalance"].ToString(), new { @class = "form-control payment-mode-memo-balance", @placeholder = "Memo Balance", @onchange = "AmountChange('MemoBalance', true)" })
+                        }
+                    </div>
+                    @Html.ValidationMessage("MemoBalance")
+                </div>
+            </div>
+            <div class="col-sm-9 col-sm-offset-3" style="margin-bottom: 20px;">@Html.ValidationMessage("LocalPaymentMode")</div>
+            <div class="form-group">
+                @Html.Label("Total Local Payment Amount:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-8" style="padding-right: 0px;">
+                    <div class="input-group">
+                        <span class="input-group-addon">SGD $</span>
+                        @Html.TextBox("TotalLocalPaymentAmount", ViewData["TotalLocalPaymentAmount"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="col-sm-12" style="text-align: center;">
+            <button class="btn btn-primary btn-outline" type="button" onclick="SubmitForm('form-pending-cashier')">Approve</button>
+        </div>
+    </div>
+
+<script>
+    $(document).ready(function () {
+        $("#update-sale-memoid").html("Update Sales Record - " + "@ViewData["MemoID"].ToString()");
+
+        LocalPaymentModeChange("cash", "payment-mode-cash");
+        LocalPaymentModeChange("cheque-1", "payment-mode-cheque-1");
+        LocalPaymentModeChange("cheque-2", "payment-mode-cheque-2");
+        LocalPaymentModeChange("cheque-3", "payment-mode-cheque-3");
+        LocalPaymentModeChange("bank-transfer", "payment-mode-transfer");
+    })
+
+    function LocalPaymentModeChange(id, cls) {
+        var checked = $("#" + id);
+        if (checked[0].checked) {
+            $("input." + cls).removeAttr("disabled");
+            if (cls != "payment-mode-cash") {
+                $("select." + cls).removeAttr("disabled");
+            }
+        }
+        else {
+            $("input." + cls).attr("disabled", "disabled");
+            if (cls != "payment-mode-cash") {
+                $("select." + cls).attr("disabled", "disabled");
+            }
+        }
+
+        CheckLocalPaymentMode();
+    }
+
+    function CheckLocalPaymentMode() {
+        if ("@ViewData["TransactionType"].ToString()" == "Buy" || "@ViewData["TransactionType"]" == "Sell") {
+            var checked = $("input[type=checkbox]:checked").length;
+
+            if (checked >= 4) {
+                $("input[type=checkbox]:not(:checked)").attr("disabled", "disabled");
+            }
+            else {
+                $("input[type=checkbox]:disabled").removeAttr("disabled");
+            }
+        }
+    }
+
+    function AmountChange(id, n) {
+        var url = "@Url.Action("ValidateAmount2", "Sale")";
+        var amount = $("#" + id).val();
+
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: url,
+            data: { amount: amount, allowedNegative: n },
+            success: function (data) {
+                data = JSON.parse(data);
+
+                if (data.Result) {
+                    $("#" + id).val(data.Amount);
+                }
+                else {
+                    alertify.alert(data.ErrorMessage);
+                }
+            },
+            error: function (e) {
+                console.log(e);
+                alertify.alert("An error occured while validating amount!");
+            }
+        });
+    }
+</script>

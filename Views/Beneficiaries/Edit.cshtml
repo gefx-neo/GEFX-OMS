@@ -1,0 +1,623 @@
+﻿@using DataAccess.POCO
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "Edit Beneficiary";
+	ViewBag.ManageBeneficiaries = "active open";
+}
+
+<style>
+/* This only works with JavaScript,
+if it's not present, don't show loader */
+
+.preload {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 9998;
+	background: url('@Url.Content("~/Content/images/Preloader_2.gif")') center no-repeat #fff;
+    opacity: 0.7;
+}
+</style>
+
+<div class="preload" style="display:none;"></div>
+
+@using (Html.BeginForm("Edit", "Beneficiaries", FormMethod.Post, new { @class = "form-horizontal", @id = "form-edit" }))
+{
+	Beneficiaries beneficiary = (Beneficiaries)ViewData["Beneficiaries"];
+	<div class="panel">
+		<div class="panel-body container-fluid">
+			<div class="row row-lg">
+				<div class="col-xlg-12 col-md-12">
+					@if (TempData["Result"] != null)
+					{
+						string[] result = TempData["Result"].ToString().Split('|');
+
+						<div class="alert alert-@result[0]">
+							<button type="button" class="close" data-dismiss="alert">&times;</button>
+							@result[1]
+						</div>
+					}
+					<h4>Beneficiary</h4>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.CustomerParticularId, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.DropDownListFor(u => beneficiary.CustomerParticularId, (SelectList)ViewData["CustomerDropdown"], new { @class = "form-control", @data_plugin = "select2" })
+							@Html.ValidationMessageFor(u => beneficiary.CustomerParticularId)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.Type, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							<span class="radio-custom radio-primary radio-inline">
+								<input type="radio" id="beneficiary-type-individual" name="beneficiary.Type" value="0" @ViewData["BeneficiaryTypeIndividual"].ToString()>
+								<label for="beneficiary-type-individual">Individual</label>
+							</span>
+							<span class="radio-custom radio-primary radio-inline">
+								<input type="radio" id="beneficiary-type-business" name="beneficiary.Type" value="1" @ViewData["BeneficiaryTypeBusiness"].ToString()>
+								<label for="beneficiary-type-business">Business</label>
+							</span>
+							<br />
+							@Html.ValidationMessage("beneficiary.Type")
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.IsYourAccount, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							<span class="radio-custom radio-primary radio-inline">
+								<input type="radio" id="beneficiary-isyouraccount-yes" name="beneficiary.IsYourAccount" value="1" @ViewData["BeneficiaryIsYourAccountYes"].ToString()>
+								<label for="beneficiary-isyouraccount-yes">Yes</label>
+							</span>
+							<span class="radio-custom radio-primary radio-inline">
+								<input type="radio" id="beneficiary-isyouraccount-no" name="beneficiary.IsYourAccount" value="0" @ViewData["BeneficiaryIsYourAccountNo"].ToString()>
+								<label for="beneficiary-isyouraccount-no">No</label>
+							</span>
+							<br />
+							@Html.ValidationMessageFor(u => beneficiary.IsYourAccount)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BeneficiaryFriendlyName, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.BeneficiaryFriendlyName, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => beneficiary.BeneficiaryFriendlyName)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BeneficiaryFullName, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.BeneficiaryFullName, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => beneficiary.BeneficiaryFullName)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BeneficiaryContactNoMain, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.BeneficiaryContactNoMain, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => beneficiary.BeneficiaryContactNoMain)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BeneficiaryAddressMain, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.BeneficiaryAddressMain, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => beneficiary.BeneficiaryAddressMain)
+						</div>
+					</div>
+
+					<div id="Business-Div" style="display:none;">
+						<div class="form-group">
+							@Html.LabelFor(u => beneficiary.BeneficiaryCompanyRegistrationNo, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.TextBoxFor(u => beneficiary.BeneficiaryCompanyRegistrationNo, new { @class = "form-control" })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.LabelFor(u => beneficiary.BeneficiaryContactNo, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.TextBoxFor(u => beneficiary.BeneficiaryContactNo, new { @class = "form-control" })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.LabelFor(u => beneficiary.BeneficiaryBusinessCategory, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.DropDownListFor(u => beneficiary.BeneficiaryBusinessCategory, (SelectList)ViewData["BusinessCategoryDropdown"], new { @class = "form-control", onchange = "BusinessCategoryOnChange()" })
+							</div>
+						</div>
+
+						<div class="form-group row">
+							@Html.LabelFor(u => beneficiary.BeneficiaryBusinessCategoryIfOthers, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+
+								@{
+									if (!string.IsNullOrEmpty(beneficiary.BeneficiaryBusinessCategoryIfOthers))
+									{
+										@Html.TextBoxFor(u => beneficiary.BeneficiaryBusinessCategoryIfOthers, new { @class = "form-control", @maxlength = "250" })
+									}
+									else
+									{
+										@Html.TextBoxFor(u => beneficiary.BeneficiaryBusinessCategoryIfOthers, new { @class = "form-control", @maxlength = "250", @disabled = "disabled" })
+									}
+								}
+								@Html.ValidationMessageFor(u => beneficiary.BeneficiaryBusinessCategoryIfOthers)
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BankCountry, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.DropDownListFor(u => beneficiary.BankCountry, (SelectList)ViewData["BankCountryDropdown"], new { @class = "form-control", @data_plugin = "select2", @onchange = "CountryOnChange()" })
+						</div>
+					</div>
+
+					<div class="form-group row">
+						@Html.LabelFor(u => beneficiary.BankCountryIfOthers, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+
+							@{
+								if (!string.IsNullOrEmpty(beneficiary.BankCountryIfOthers))
+								{
+									@Html.TextBoxFor(u => beneficiary.BankCountryIfOthers, new { @class = "form-control", @maxlength = "250" })
+								}
+								else
+								{
+									@Html.TextBoxFor(u => beneficiary.BankCountryIfOthers, new { @class = "form-control", @maxlength = "250", @disabled = "disabled" })
+								}
+							}
+							@Html.ValidationMessageFor(u => beneficiary.BankCountryIfOthers)
+						</div>
+					</div>
+
+					<div id="Individual-Div" style="display:none;">
+						<div class="form-group">
+							@Html.LabelFor(u => beneficiary.BeneficiaryNationality, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+								@Html.DropDownListFor(u => beneficiary.BeneficiaryNationality, (SelectList)ViewData["NationalityDropdown"], new { @class = "form-control", @data_plugin = "select2", @onchange = "NationalityOnChange()" })
+							</div>
+						</div>
+
+						<div class="form-group row">
+							@Html.LabelFor(u => beneficiary.BeneficiaryNationalityIfOthers, new { @class = "col-sm-3 control-label" })
+							<div class="col-sm-9">
+
+								@{
+									if (!string.IsNullOrEmpty(beneficiary.BeneficiaryNationalityIfOthers))
+									{
+										@Html.TextBoxFor(u => beneficiary.BeneficiaryNationalityIfOthers, new { @class = "form-control", @maxlength = "250" })
+									}
+									else
+									{
+										@Html.TextBoxFor(u => beneficiary.BeneficiaryNationalityIfOthers, new { @class = "form-control", @maxlength = "250", @disabled = "disabled" })
+									}
+								}
+								@Html.ValidationMessageFor(u => beneficiary.BeneficiaryNationalityIfOthers)
+							</div>
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BeneficiaryBankName, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.BeneficiaryBankName, new { @class = "form-control" })
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel">
+		<div class="panel-body container-fluid">
+			<div class="row row-lg">
+				<div class="col-xlg-12 col-md-12">
+					<h4>Bank</h4>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BankAccountNo, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.BankAccountNo, new { @class = "form-control" })
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BankAddress, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.BankAddress, new { @class = "form-control" })
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.BankCode, new { @class = "col-sm-3 control-label" })
+						@*<div class="col-sm-9" style="padding-bottom:10px;">
+							<div class="col-sm-9">
+								<span class="radio-custom radio-primary radio-inline">
+									<input type="radio" id="beneficiary-banktype-yes" name="beneficiary.BankType" value="1" @ViewData["BeneficiaryBankTypeBankCode"].ToString()>
+									<label for="beneficiary-isyouraccount-bankcode">Bank Code</label>
+								</span>
+								<span class="radio-custom radio-primary radio-inline">
+									<input type="radio" id="beneficiary-isyouraccount-no" name="beneficiary.BankType" value="2" @ViewData["BeneficiaryBankTypeSWIFT"].ToString()>
+									<label for="beneficiary-banktype-swift">SWIFT / BIC</label>
+								</span>
+								<br />
+								@Html.ValidationMessageFor(u => beneficiary.BankType)
+							</div>
+						</div>
+						<div class="col-sm-3"></div>*@
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.BankCode, new { @class = "form-control" })
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.IBANEuropeBSBAustralia, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextBoxFor(u => beneficiary.IBANEuropeBSBAustralia, new { @class = "form-control" })
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel">
+		<div class="panel-body container-fluid">
+			<div class="row row-lg">
+				<div class="col-xlg-12 col-md-12">
+					<h4>Payment</h4>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.PaymentDetails, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@Html.TextAreaFor(u => beneficiary.PaymentDetails, new { @class = "form-control", @rows = "5" })
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.PurposeOfPayment, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@{
+								if (beneficiary.PurposeOfPayment == 0)
+								{
+									@Html.DropDownListFor(u => beneficiary.PurposeOfPayment, (SelectList)ViewData["PurposeOfPaymentDropdown"], "", new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Select Purpose of Payment", @onchange = "PurposeOfPaymentOnChange()" })
+								}
+								else
+								{
+									@Html.DropDownListFor(u => beneficiary.PurposeOfPayment, (SelectList)ViewData["PurposeOfPaymentDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Select Purpose of Payment", @onchange = "PurposeOfPaymentOnChange()" })
+								}
+							}
+						</div>
+					</div>
+
+					<div class="form-group row">
+						@Html.LabelFor(u => beneficiary.PurposeOfPaymentIfOthers, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+
+							@{
+								if (!string.IsNullOrEmpty(beneficiary.PurposeOfPaymentIfOthers))
+								{
+									@Html.TextBoxFor(u => beneficiary.PurposeOfPaymentIfOthers, new { @class = "form-control", @maxlength = "250" })
+								}
+								else
+								{
+									@Html.TextBoxFor(u => beneficiary.PurposeOfPaymentIfOthers, new { @class = "form-control", @maxlength = "250", @disabled = "disabled" })
+								}
+							}
+							@Html.ValidationMessageFor(u => beneficiary.PurposeOfPaymentIfOthers)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => beneficiary.SourceOfPayment, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+							@{
+								if (beneficiary.SourceOfPayment == 0)
+								{
+									@Html.DropDownListFor(u => beneficiary.SourceOfPayment, (SelectList)ViewData["SourceOfPaymentDropdown"], "", new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Select Source of Payment", @onchange = "SourceOfPaymentOnChange()" })
+								}
+								else
+								{
+									@Html.DropDownListFor(u => beneficiary.SourceOfPayment, (SelectList)ViewData["SourceOfPaymentDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Select Source of Payment", @onchange = "SourceOfPaymentOnChange()" })
+								}
+							}
+						</div>
+					</div>
+
+					<div class="form-group row">
+						@Html.LabelFor(u => beneficiary.SourceOfPaymentIfOthers, new { @class = "col-sm-3 control-label" })
+						<div class="col-sm-9">
+
+							@{
+								if (!string.IsNullOrEmpty(beneficiary.SourceOfPaymentIfOthers))
+								{
+									@Html.TextBoxFor(u => beneficiary.SourceOfPaymentIfOthers, new { @class = "form-control", @maxlength = "250" })
+								}
+								else
+								{
+									@Html.TextBoxFor(u => beneficiary.SourceOfPaymentIfOthers, new { @class = "form-control", @maxlength = "250", @disabled = "disabled" })
+								}
+							}
+							@Html.ValidationMessageFor(u => beneficiary.SourceOfPaymentIfOthers)
+						</div>
+					</div>
+
+					<div class="form-group">
+						<div class="col-sm-9 col-sm-offset-3">
+							<button type="submit" class="btn btn-primary" id="disable_button" onclick="disableButton()">Save</button>
+							<a href="@Url.Action("Edit", new { @id = beneficiary.ID })" class="btn btn-default btn-outline" id="disable_button2" onclick="disableButton2()">Reset</a>
+							@{
+								int page = 1;
+
+								if (ViewData["Page"] != null)
+								{
+									page = Convert.ToInt32(ViewData["Page"]);
+								}
+							}
+							<a href="@Url.Action("Listing", new { @page = page })" class="btn btn-danger" id="disable_button3" onclick="disableButton3()">Back</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+<script>
+	$(document).ready(function ()
+	{
+		//Set Others to last
+		//$("#beneficiary_BankCountry").find("option:contains('Others')").appendTo($("#beneficiary_BankCountry"));
+		$("#beneficiary_BankCountry").find("option:contains('Others')").appendTo($("#beneficiary_BankCountry"));
+
+		$("input[name='beneficiary.Type']").change(function ()
+		{
+			switch ($(this).val())
+			{
+				case '0':
+					$("#Individual-Div").show();
+					$("#Business-Div").hide();
+					break;
+				case '1':
+					$("#Individual-Div").hide();
+					$("#Business-Div").show();
+					break;
+			}
+
+			//ajax to return the purpose of payment records
+			var url = '@Url.Action("GetPurposeOfPaymentList", "Beneficiaries")';
+
+			$.ajax({
+				type: "POST",
+				url: url,
+				data: {
+					beneficiaryType: $(this).val()
+				},
+				error: function (res)
+				{
+					console.log(res)
+				},
+				beforeSend: function ()
+				{
+					// setting a timeout
+					 $(".preload").show();
+				},
+				success: function (res)
+				{
+					//update the select 2 data
+					//empty the select 2 item first
+					console.log(res);
+					if (res.res.success)
+					{
+						$('#beneficiary_PurposeOfPayment').empty().trigger("change");
+						$("#beneficiary_PurposeOfPayment").append("<option></option>");
+
+						for (let i = 0; i < res.res.paymentList.length; i++)
+						{
+							$("#beneficiary_PurposeOfPayment").append("<option value='" + res.res.paymentList[i].ID + "'>" + res.res.paymentList[i].Name + "</option>");
+						}
+						$('#beneficiary_PurposeOfPayment').trigger('change');
+
+						$(".preload").hide();
+					}
+					else
+					{
+						$(".preload").hide();
+					}
+				}
+			});
+		});
+
+		var IndividualCheck = '@ViewData["BeneficiaryTypeIndividual"]';
+		var BusinessCheck = '@ViewData["BeneficiaryTypeBusiness"]';
+
+		if (IndividualCheck == "checked") {
+			$("#Individual-Div").show();
+			$("#Business-Div").hide();
+		}
+		else if (BusinessCheck == "checked")
+		{
+			$("#Individual-Div").hide();
+			$("#Business-Div").show();
+		}
+
+		$("#beneficiary_BeneficiaryBusinessCategory").select2({
+			width: '100%',
+			matcher: matchStart
+		});
+
+		CountryOnChange();
+		BusinessCategoryOnChange();
+		NationalityOnChange();
+		PurposeOfPaymentOnChange();
+		SourceOfPaymentOnChange();
+	});
+
+    function disableButton()
+    {
+        $("#disable_button").attr("disabled", true);
+        $("#disable_button2").attr("disabled", true);
+        $("#disable_button3").attr("disabled", true);
+
+        $("#disable_button2").attr("href", "javascript:void(0)");
+        $("#disable_button3").attr("href", "javascript:void(0)");
+        $('#disable_button2').prop('onclick',null).off('click');
+        $('#disable_button3').prop('onclick', null).off('click');
+
+        $("#form-edit").submit();
+    }
+
+    function disableButton2()
+    {
+        $("#disable_button").attr("disabled", true);
+        $("#disable_button2").attr("disabled", true);
+        $("#disable_button3").attr("disabled", true);
+
+        //javascript:void(0)
+        $("#disable_button2").attr("href", "javascript:void(0)");
+        $("#disable_button3").attr("href", "javascript:void(0)");
+        $('#disable_button2').prop('onclick',null).off('click');
+        $('#disable_button3').prop('onclick', null).off('click');
+
+        window.location.href = '@Url.Action("Edit", new { @id = @ViewData["BeneficiaryID"].ToString() })'
+    }
+
+    function disableButton3()
+    {
+        $("#disable_button").attr("disabled", true);
+        $("#disable_button2").attr("disabled", true);
+        $("#disable_button3").attr("disabled", true);
+
+        $("#disable_button2").attr("href", "javascript:void(0)");
+        $("#disable_button3").attr("href", "javascript:void(0)");
+
+        $('#disable_button2').prop('onclick',null).off('click');
+		$('#disable_button3').prop('onclick', null).off('click');
+
+        @{
+             int page1 = 1;
+
+             if (ViewData["Page"] != null)
+             {
+                  page1 = Convert.ToInt32(ViewData["Page"]);
+             }
+       }
+
+        window.location.href = '@Url.Action("Listing", new { @page = page1 })';
+	}
+
+	function matchStart(params, data)
+	{
+	  // If there are no search terms, return all of the data
+	  if ($.trim(params.term) === '') {
+		return data;
+	  }
+
+	  // Skip if there is no 'children' property
+	  if (typeof data.children === 'undefined') {
+		return null;
+	  }
+
+	  // `data.children` contains the actual options that we are matching against
+	  var filteredChildren = [];
+	  $.each(data.children, function (idx, child) {
+		if (child.text.toUpperCase().indexOf(params.term.toUpperCase()) == 0) {
+		  filteredChildren.push(child);
+		}
+	  });
+
+	  // If we matched any of the timezone group's children, then set the matched children on the group
+	  // and return the group object
+	  if (filteredChildren.length) {
+		var modifiedData = $.extend({}, data, true);
+		modifiedData.children = filteredChildren;
+
+		// You can return modified objects from here
+		// This includes matching the `children` how you want in nested data sets
+		return modifiedData;
+	  }
+
+	  // Return `null` if the term should not be displayed
+	  return null;
+	}
+
+	function CountryOnChange()
+	{
+		var CountryValue = $("#beneficiary_BankCountry option:selected").text();
+
+		if (CountryValue == "Others") {
+			$("#beneficiary_BankCountryIfOthers").prop( "disabled", false );
+		}
+		else
+		{
+			//$("#BankCountryIfOthers").val("");
+			$("#beneficiary_BankCountryIfOthers").prop( "disabled", true );
+		}
+	}
+
+	function BusinessCategoryOnChange()
+	{
+		var BusinessCategoryValue = $("#beneficiary_BeneficiaryBusinessCategory option:selected").text();
+
+		if (BusinessCategoryValue == "Others") {
+			$("#beneficiary_BeneficiaryBusinessCategoryIfOthers").prop( "disabled", false );
+		}
+		else
+		{
+			//$("#BeneficiaryBusinessCategoryIfOthers").val("");
+			$("#beneficiary_BeneficiaryBusinessCategoryIfOthers").prop( "disabled", true );
+		}
+	}
+
+	function NationalityOnChange()
+	{
+		
+		var NationalityValue = $("#beneficiary_BeneficiaryNationality option:selected").text();
+
+		if (NationalityValue == "Others") {
+			$("#beneficiary_BeneficiaryNationalityIfOthers").prop( "disabled", false );
+		}
+		else
+		{
+			//$("#BeneficiaryNationalityIfOthers").val("");
+			$("#beneficiary_BeneficiaryNationalityIfOthers").prop( "disabled", true );
+		}
+	}
+
+	function PurposeOfPaymentOnChange()
+	{
+		var PurposeOfPaymentValue = $("#beneficiary_PurposeOfPayment option:selected").text();
+		if (PurposeOfPaymentValue == "Others") {
+			$("#beneficiary_PurposeOfPaymentIfOthers").prop( "disabled", false );
+		}
+		else
+		{
+			//$("#PurposeOfPaymentIfOthers").val("");
+			$("#beneficiary_PurposeOfPaymentIfOthers").prop( "disabled", true );
+		}
+	}
+
+	function SourceOfPaymentOnChange()
+	{
+		var SourceOfPaymentValue = $("#beneficiary_SourceOfPayment option:selected").text();
+		if (SourceOfPaymentValue == "Others") {
+			$("#beneficiary_SourceOfPaymentIfOthers").prop( "disabled", false );
+		}
+		else
+		{
+			//$("#SourceOfPaymentIfOthers").val("");
+			$("#beneficiary_SourceOfPaymentIfOthers").prop( "disabled", true );
+		}
+	}
+</script>

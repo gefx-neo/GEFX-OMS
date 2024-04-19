@@ -1,0 +1,115 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "Manage Remittance Products";
+	ViewBag.ManageRemittanceProducts = "active open";
+
+	string[] userRoleList = Session["UserRole"].ToString().Split(',');
+}
+
+<div class="panel">
+	<div class="panel-body container-fluid">
+
+		<div class="row">
+			<div class="col-xlg-12 col-md-12">
+				@if (Array.IndexOf(userRoleList, "Sales Admin") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0)
+				{
+					<a class="btn btn-success" href="@Url.Action("Create", "RemittanceProduct")" type="button"><i aria-hidden="true" class="icon wb-plus"></i> New Remittance Product</a>
+				}
+			</div>
+		</div>
+
+		<div class="row margin-top-15">
+			<div class="col-xlg-12 col-md-12">
+				@using (Html.BeginForm("Listing", "RemittanceProduct", FormMethod.Post, new { @class = "page-search-form", @role = "search" }))
+				{
+					<div class="input-search input-search-dark">
+						<button id="search-icon" type="submit" class="input-search-icon icon wb-search" aria-label="Close"></button>
+						@Html.TextBox("SearchKeyword", ViewData["SearchKeyword"].ToString(), new { @class = "form-control", @placeholder = "Search by Product Code or Product Name" })
+						<button id="search-close" type="button" class="input-search-close icon wb-close" aria-label="Close"></button>
+					</div>
+				}
+			</div>
+		</div>
+
+		<div class="row margin-top-15">
+			<div class="col-xlg-12 col-md-12">
+				<!-- Table -->
+				<div>
+					<div class="table-responsive">
+						<table class="table table-hover table-bordered table-striped">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Product Code</th>
+									<th>Name</th>
+									<th>Status</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								@{
+									IPagedList<RemittanceProducts> products = (IPagedList<RemittanceProducts>)ViewData["Products"];
+
+									if (products.Count > 0)
+									{
+										int page = Convert.ToInt32(ViewData["Page"]) - 1;
+										int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+										int i = 1;
+
+										foreach (RemittanceProducts product in products)
+										{
+											<tr>
+												<td>@(i + page * pageSize)</td>
+												<td>@product.CurrencyCode</td>
+												<td>@product.CurrencyName</td>
+												<td>@product.Status</td>
+												<td class="text-nowrap">
+													<a href="@Url.Action("Edit", new { @id = product.ID })" class="btn btn-sm btn-icon btn-round btn-default" data-toggle="tooltip" data-original-title="Edit"><i class="icon wb-edit" aria-hidden="true"></i></a>
+													@{
+														if (product.IsBaseProduct == 0)
+														{
+															if (Array.IndexOf(userRoleList, "Sales Admin") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0)
+															{
+																<button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Delete" onclick="DeleteThisRecord(@product.ID)"><i class="icon wb-close" aria-hidden="true"></i></button>
+															}
+														}
+													}
+												</td>
+											</tr>
+											i++;
+										}
+									}
+									else
+									{
+										<tr>
+											<td colspan="5" class="no-records-found">No record to display</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- End Table -->
+			</div>
+
+			<div class="pagination">
+				@Html.PagedListPager((IPagedList)ViewData["Products"], page => Url.Action("/Listing", "RemittanceProduct", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+			</div>
+		</div>
+	</div>
+</div>
+
+@if (TempData["Result"] != null)
+{
+	<script>
+        $(document).ready(function () {
+            alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+	</script>
+}

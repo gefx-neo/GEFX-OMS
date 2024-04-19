@@ -1,0 +1,259 @@
+﻿@using DataAccess.POCO
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "New Remittance Products (Customer Portal)";
+	ViewBag.ManageRemittanceProducts = "active open";
+}
+
+<div class="panel">
+	<div class="panel-body container-fluid">
+		<div class="row row-lg">
+			<div class="col-xlg-12 col-md-12">
+				@if (TempData["Result"] != null)
+				{
+					string[] result = TempData["Result"].ToString().Split('|');
+
+					<div class="alert alert-@result[0]">
+						<button type="button" class="close" data-dismiss="alert">&times;</button>
+						@result[1]
+					</div>
+				}
+
+				@using (Html.BeginForm("Create", "RemittanceProduct", FormMethod.Post, new { @class = "form-horizontal", @id = "form-submit" }))
+				{
+					RemittanceProducts products = (RemittanceProducts)ViewData["Product"];
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.CurrencyCode, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.CurrencyCode, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.CurrencyCode)
+						</div>
+					</div>
+					<div class="form-group">
+						@Html.LabelFor(u => products.CurrencyName, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.CurrencyName, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.CurrencyName)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.PayRate, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.PayRate, "{0:#.#}", new { @class = "form-control", @placeholder = "Leave Blank To Use Automated Pay Rate", @onkeyup = "CalculateBuyRate()" })
+							@Html.ValidationMessageFor(u => products.PayRate)
+						</div>
+					</div>
+					<div class="form-group">
+						@Html.LabelFor(u => products.AutomatedPayRate, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.AutomatedPayRate, "{0:#.#}", new { @class = "form-control", @disabled = "disabled" })
+							@Html.ValidationMessageFor(u => products.AutomatedPayRate)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.GetRate, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.GetRate, "{0:#.#}", new { @class = "form-control", @placeholder = "Leave Blank To Use Automated GET Rate", @onkeyup = "CalculateSellRate()" })
+							@Html.ValidationMessageFor(u => products.GetRate)
+						</div>
+					</div>
+					<div class="form-group">
+						@Html.LabelFor(u => products.AutomatedGetRate, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.AutomatedGetRate, "{0:#.#}", new { @class = "form-control", @disabled = "disabled" })
+							@Html.ValidationMessageFor(u => products.AutomatedGetRate)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.ProductDecimal, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.DropDownListFor(u => products.ProductDecimal, (SelectList)ViewData["ProductDecimalDropdown"], new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.ProductDecimal)
+						</div>
+					</div>
+					<div class="form-group">
+						@Html.LabelFor(u => products.ProductSymbol, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.ProductSymbol, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.ProductSymbol)
+						</div>
+					</div>
+					<div class="form-group">
+						@Html.LabelFor(u => products.AcceptableRange, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.AcceptableRange, new { @class = "form-control", @data_plugin = "TouchSpin", @data_min = "0", @data_max = "20", @data_step = "0.1", @data_decimals = "1", @data_boostat = "5", @data_maxboostedstep = "10", @data_postfix = "%" })
+							@Html.ValidationMessageFor(u => products.AcceptableRange)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.GuaranteeRates, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.DropDownListFor(u => products.GuaranteeRates, (SelectList)ViewData["GuaranteeRateDropdown"], new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.GuaranteeRates)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.PopularCurrencies, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.DropDownListFor(u => products.PopularCurrencies, (SelectList)ViewData["PopularCurrencyDropdown"], new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.PopularCurrencies)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.BuyRateAdjustment, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.BuyRateAdjustment, new { @class = "form-control", @onkeyup = "CalculateBuyRate()" })
+							@Html.ValidationMessageFor(u => products.BuyRateAdjustment)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.Label("PayRateAdjustmentCalculated", "Pay Rate Adjustment Calculated: ", new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBox("BuyRateAdjustmentCalculated", "0", new { @class = "form-control", @disabled = "disabled" })
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.SellRateAdjustment, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.SellRateAdjustment, new { @class = "form-control", @onkeyup = "CalculateSellRate()" })
+							@Html.ValidationMessageFor(u => products.SellRateAdjustment)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.Label("GetRateAdjustmentCalculated", "Get Rate Adjustment Calculated: ", new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBox("SellRateAdjustmentCalculated", "0", new { @class = "form-control", @disabled = "disabled" })
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.MaxAmount, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.MaxAmount, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.MaxAmount)
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.TransactionFee, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.TextBoxFor(u => products.TransactionFee, new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.TransactionFee)
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Payment Mode Allowed: </label>
+						<div class="col-sm-10">
+
+							@{
+								List<PaymentModeLists> items = (List<PaymentModeLists>)ViewData["PaymentModeCheckBox"];
+
+								string[] isCheck = new string[] { };
+
+								if (ViewData["IsCheck"] as string[] != null)
+								{
+									isCheck = ViewData["IsCheck"] as string[];
+								}
+
+								foreach (var item in items)
+								{
+									<span class="checkbox-custom checkbox-primary">
+
+										@{
+											if (Array.IndexOf(isCheck, item.ID.ToString()) >= 0)
+											{
+												<input class="form-control" type="checkbox" id="payment-mode-allowed-type" name="flags[]" value="@item.ID" checked />
+											}
+											else
+											{
+												<input class="form-control" type="checkbox" id="payment-mode-allowed-type" name="flags[]" value="@item.ID" />
+											}
+										}
+
+										<label for="payment-mode-allowed-type-@item.ID">@item.Name</label>
+									</span>
+								}
+							}
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Transaction Type Allowed: </label>
+						<div class="col-sm-10">
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="transaction-type-allowed" name="customerParticulars.TransactionTypeAllowed" value="Pay" @ViewData["TransactionTypeAllowedPayCheckbox"].ToString()>
+								<label for="transaction-type-allowed-pay">Remittance - you pay</label>
+							</span>
+							<span class="checkbox-custom checkbox-primary">
+								<input class="form-control" type="checkbox" id="transaction-type-allowed" name="customerParticulars.TransactionTypeAllowed" value="Get" @ViewData["TransactionTypeAllowedGetCheckbox"].ToString()>
+								<label for="transaction-type-allowed-get">Remittance - you get</label>
+							</span>
+						</div>
+					</div>
+
+					<div class="form-group">
+						@Html.LabelFor(u => products.Status, new { @class = "col-sm-2 control-label" })
+						<div class="col-sm-10">
+							@Html.DropDownListFor(u => products.Status, (SelectList)ViewData["StatusDropdown"], new { @class = "form-control" })
+							@Html.ValidationMessageFor(u => products.Status)
+						</div>
+					</div>
+
+					<div class="form-group">
+						<div class="col-sm-10 col-sm-offset-2">
+							<button type="button" class="btn btn-primary" onclick="disableButton()" id="disable_button">Save</button>
+							<button type="reset" class="btn btn-default btn-outline">Reset</button>
+							@{
+								int page = 1;
+
+								if (ViewData["Page"] != null)
+								{
+									page = Convert.ToInt32(ViewData["Page"]);
+								}
+							}
+							<a href="@Url.Action("Listing", new { @page = page })" class="btn btn-danger">Back</a>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function disableButton() {
+		$("#disable_button").attr("disabled", true);
+		$("#form-submit").submit();
+	}
+
+	function CalculateBuyRate()
+	{
+		//console.log($this);
+		var OriginalValue = $("#products_PayRate").val();
+		var InputValue = $("#products_BuyRateAdjustment").val();
+		var CalculatedValue = Number(OriginalValue) * (Number(1) - Number(InputValue));
+		$("#BuyRateAdjustmentCalculated").val(CalculatedValue);
+	}
+
+	function CalculateSellRate()
+	{
+		var OriginalValue = $("#products_GetRate").val();
+		var InputValue = $("#products_SellRateAdjustment").val();
+		var CalculatedValue = Number(OriginalValue) * (Number(1) + Number(InputValue));
+
+		$("#SellRateAdjustmentCalculated").val(CalculatedValue);
+	}
+</script>

@@ -1,0 +1,12 @@
+﻿@using DataAccess.POCO
+@{
+	Layout = null;
+}
+
+@{
+	CustomerPortal_SupportContactSetting settings = (CustomerPortal_SupportContactSetting)ViewData["ContactSupportSetting"];
+	<br />
+	<img src="data:image/png;base64,@Convert.ToBase64String(settings.Image)" alt="Image" id="UploadedImage" style="max-width:200px;">
+	<button onclick="ResetImage()" style="display:none;" id="ResetImageButton" class="btn btn-danger" type="button">Reset Image</button>
+	<input type="hidden" value="@Convert.ToBase64String(settings.Image)" id="Hidden_Image" name="Hidden_Image" />
+}

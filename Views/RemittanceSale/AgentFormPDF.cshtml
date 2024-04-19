@@ -1,0 +1,500 @@
+﻿@using DataAccess
+@using DataAccess.POCO
+
+@{
+    Layout = null;
+    Remittances sale = (Remittances)ViewData["Sale"];
+    var countries = (List<Countries>)ViewData["Countries"];
+    var purposeList = (List<PaymentLists>)ViewData["PurposeList"];
+    var sourceFundLists = (List<FundLists>)ViewData["SourceFundList"];
+    var remittanceProductsLists = (List<RemittanceProducts>)ViewData["RemittanceProductsLists"];
+    List<MemoRemittanceCurrencyTable> buyMemos = (List<MemoRemittanceCurrencyTable>)ViewData["BuyMemo"];
+    //List<MemoCurrencyTable> sellMemos = (List<MemoCurrencyTable>)ViewData["SellMemo"];
+    bool allCopy = (bool)ViewData["AllCopy"];
+}
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: Calibri;
+            /*font-family: 'Roboto', sans-serif;*/
+            color: black !important;
+            padding-top: 5px;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .form-group {
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+            margin-bottom: 10px !important;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        .page-break {
+            clear: both;
+            page-break-after: always;
+        }
+
+        table {
+            width: 100%;
+            font-size: 18px !important;
+        }
+
+        .table table, .table td, .table th {
+            border: 1px solid black;
+        }
+
+        table tr td, table th td {
+            vertical-align: top;
+        }
+
+        .table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+            /*.table > tbody > tr:nth-of-type(even) {
+                background-color: rgba(128, 128, 128, .5);
+            }*/
+
+            .table tbody tr td {
+                padding: 6px 5px 5px 5px;
+                border: 1px solid;
+            }
+
+        table tbody tr, table tfoot {
+            page-break-inside: avoid !important;
+        }
+    </style>
+</head>
+<body>
+    @if (buyMemos.Count > 0)
+    {
+        if (ViewData["MemoMode"].ToString() == "Sales" && allCopy)
+        {
+            int i1 = 0;
+            foreach (var data in sale.RemittanceOders)
+            {
+
+                var count = sale.RemittanceOders.Count;
+                <table style="margin-bottom: 30px;">
+                    <tbody>
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding-top: 2px;"><strong style="font-size: 26px !important;">AGENT FORM</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                var getDecimal = data.GetCurrencyDecimal.ProductDecimal;
+                string format = "#,##0";
+                switch (getDecimal)
+                {
+                    case 1:
+                        format += ".0";
+                        break;
+                    case 2:
+                        format += ".00";
+                        break;
+                    case 3:
+                        format += ".000";
+                        break;
+                    case 4:
+                        format += ".0000";
+                        break;
+                    case 5:
+                        format += ".00000";
+                        break;
+                    case 6:
+                        format += ".000000";
+                        break;
+                    case 7:
+                        format += ".0000000";
+                        break;
+                    case 8:
+                        format += ".00000000";
+                        break;
+                    default:
+                        break;
+                }
+                <table style="margin-bottom: 15px;">
+                    <tbody>
+                        <tr>
+                            <td style="padding-bottom: 20px;">
+                                <strong>Date:</strong> @sale.IssueDate.ToString("dd/MM/yyyy")
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom: 20px;">
+                                <strong>Agent:</strong>
+                                @if (sale.AgentId > 0)
+                                {
+                                    <span>@sale.Agent.AgentId - @sale.Agent.CompanyName</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom: 20px;">
+                                <strong>Remittance Amount:</strong> @(remittanceProductsLists.Where(e => e.ID == data.GetCurrency).FirstOrDefault().CurrencyCode)@((data.GetAmount).ToString(format))
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom: 20px;">
+                                <strong>SGD Payable:</strong> @sale.CostPrice
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom: 20px;">
+                                <strong>Agent Rate:</strong> @sale.AgentRate
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom: 20px;">
+                                <strong>Agent Fee :</strong> SGD $@sale.AgentFee
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom: 20px;">
+                                <strong>Remarks:</strong> @sale.Remarks
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table" style="margin-bottom: 30px;border-collapse: collapse">
+                    <tbody>
+                        <tr>
+                            <th colspan="2">Beneficiary's Particulars</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                Beneficiary Name:<br />
+                                <strong>@data.BeneficiaryFullName</strong>
+                            </td>
+                            <td rowspan="2">
+                                <strong>Only For Remittance to Malaysia, Philipines, Thailand and Indonesia</strong><br />
+                                Beneficiary's Company Registration No: @data.BeneficiaryCompanyRegistrationNo<br />
+                                <br />Contact No: @data.BeneficiaryCompanyContactNo
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Beneficiary's Address: @data.BeneficiaryAddressMain
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                Beneficiary's Bank Name: @data.BeneficiaryBankName
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Beneficiary's Bank Address: @data.BeneficiaryBankAddress
+                            </td>
+                            <td>
+                                Country:
+
+                                @if (!string.IsNullOrEmpty(data.BankCountryIfOthers))
+                                {
+                                    <span>@data.BankCountryIfOthers</span>
+                                }
+                                else
+                                {
+                                    var getBankCountryName = countries.Where(e => e.ID == data.BeneficiaryBankCountry).FirstOrDefault().Name;
+                                    <span>@getBankCountryName</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Beneficiary's Account Number (for payment to Europe, please provide IBAN no.):<br />
+                                @data.BeneficiaryBankAccountNo
+
+                                @if (!string.IsNullOrEmpty(data.IBANEuropeBSBAustralia))
+                                {
+                                    <br /><span>IBAN no: @data.IBANEuropeBSBAustralia</span>
+                                }
+                            </td>
+                            <td>
+                                Switft Code/Australia BSB/USA Fed Wire/USA ABA/UK Sort Code: @data.BeneficiaryBankCode
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                Payment Details/Instructions: @data.BeneficiaryPaymentDetails
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Purpose of Remittance:
+                                @if (!string.IsNullOrEmpty(data.PurposeOfPaymentIfOthers))
+                                {
+                                    <span>@data.PurposeOfPaymentIfOthers</span>
+                                }
+                                else
+                                {
+                                    var getPurposePayment = purposeList.Where(e => e.ID == data.BeneficiaryPurposeOfPayment).FirstOrDefault().Name;
+                                    <span>@getPurposePayment</span>
+                                }
+                            </td>
+                            <td>
+                                Source of Payment:
+                                @if (!string.IsNullOrEmpty(data.SourceOfPaymentIfOthers))
+                                {
+                                    <span>@data.SourceOfPaymentIfOthers</span>
+                                }
+                                else
+                                {
+                                    var getSourcePayment = sourceFundLists.Where(e => e.ID == data.BeneficiarySourceOfPayment).FirstOrDefault().Name;
+                                    <span>@getSourcePayment</span>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td style="height: 60px">
+                                Payment by Great East Forex
+                            </td>
+                            <td style="height: 60px"> Company Stamp:</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SGD
+                            </td>
+                            <td>Authorised Signatory:</td>
+                        </tr>
+                    </tbody>
+                </table>
+                i1++;
+                if (i1 < count)
+                {
+                    <div style='page-break-after: always;'> </div>
+                }
+
+            }
+        }
+
+        int i = 0;
+        foreach (var data in sale.RemittanceOders)
+        {
+
+            var count = sale.RemittanceOders.Count;
+            <table style="margin-bottom: 30px;">
+                <tbody>
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding-top: 2px;"><strong style="font-size: 26px !important;">AGENT FORM</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            var payDecimal = data.PayCurrencyDecimal.ProductDecimal;
+            string format = "#,##0";
+            string agentFee = "0.00";
+            if (sale.AgentFee != null)
+            {
+                agentFee = Convert.ToDecimal(sale.AgentFee).ToString("#,##0.00");
+            }
+            switch (payDecimal)
+            {
+                case 1:
+                    format += ".0";
+                    break;
+                case 2:
+                    format += ".00";
+                    break;
+                case 3:
+                    format += ".000";
+                    break;
+                case 4:
+                    format += ".0000";
+                    break;
+                case 5:
+                    format += ".00000";
+                    break;
+                case 6:
+                    format += ".000000";
+                    break;
+                case 7:
+                    format += ".0000000";
+                    break;
+                case 8:
+                    format += ".00000000";
+                    break;
+                default:
+                    break;
+            }
+            <table style="margin-bottom: 15px;">
+                <tbody>
+                    <tr>
+                        <td style="padding-bottom: 20px;">
+                            <strong>Date:</strong> @sale.IssueDate.ToString("dd/MM/yyyy")
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 20px;">
+                            <strong>Agent:</strong>
+                            @if (sale.AgentId > 0)
+                            {
+                                <span>@sale.Agent.AgentId - @sale.Agent.CompanyName</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 20px;">
+                            <strong>Remittance Amount:</strong> @(remittanceProductsLists.Where(e => e.ID == data.GetCurrency).FirstOrDefault().CurrencyCode)@((data.GetAmount).ToString(format))
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 20px;">
+                            <strong>SGD Payable:</strong> @sale.CostPrice
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 20px;">
+                            <strong>Agent Rate:</strong> @sale.AgentRate
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 20px;">
+
+                            <strong>Agent Fee :</strong> SGD $@agentFee
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-bottom: 20px;">
+                            <strong>Remarks:</strong> @sale.Remarks
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table" style="margin-bottom: 30px;border-collapse: collapse">
+                <tbody>
+                    <tr>
+                        <th colspan="2">Beneficiary's Particulars</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            Beneficiary Name:<br />
+                            <strong>@data.BeneficiaryFullName</strong>
+                        </td>
+                        <td rowspan="2">
+                            <strong>Only For Remittance to Malaysia, Philipines, Thailand and Indonesia</strong><br />
+                            Beneficiary's Company Registration No: @data.BeneficiaryCompanyRegistrationNo<br />
+                            <br />Contact No: @data.BeneficiaryCompanyContactNo
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Beneficiary's Address: @data.BeneficiaryAddressMain
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            Beneficiary's Bank Name: @data.BeneficiaryBankName
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Beneficiary's Bank Address: @data.BeneficiaryBankAddress
+                        </td>
+                        <td>
+                            Country:
+
+                            @if (!string.IsNullOrEmpty(data.BankCountryIfOthers))
+                            {
+                                <span>@data.BankCountryIfOthers</span>
+                            }
+                            else
+                            {
+                                var getBankCountryName = countries.Where(e => e.ID == data.BeneficiaryBankCountry).FirstOrDefault().Name;
+                                <span>@getBankCountryName</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Beneficiary's Account Number (for payment to Europe, please provide IBAN no.):<br />
+                            @data.BeneficiaryBankAccountNo
+
+                            @if (!string.IsNullOrEmpty(data.IBANEuropeBSBAustralia))
+                            {
+                                <br /><span>IBAN no: @data.IBANEuropeBSBAustralia</span>
+                            }
+                        </td>
+                        <td>
+                            Switft Code/Australia BSB/USA Fed Wire/USA ABA/UK Sort Code: @data.BeneficiaryBankCode
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            Payment Details/Instructions: @data.BeneficiaryPaymentDetails
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Purpose of Remittance:
+                            @if (!string.IsNullOrEmpty(data.PurposeOfPaymentIfOthers))
+                            {
+                                <span>@data.PurposeOfPaymentIfOthers</span>
+                            }
+                            else
+                            {
+                                var getPurposePayment = purposeList.Where(e => e.ID == data.BeneficiaryPurposeOfPayment).FirstOrDefault().Name;
+                                <span>@getPurposePayment</span>
+                            }
+                        </td>
+                        <td>
+                            Source of Payment:
+                            @if (!string.IsNullOrEmpty(data.SourceOfPaymentIfOthers))
+                            {
+                                <span>@data.SourceOfPaymentIfOthers</span>
+                            }
+                            else
+                            {
+                                var getSourcePayment = sourceFundLists.Where(e => e.ID == data.BeneficiarySourceOfPayment).FirstOrDefault().Name;
+                                <span>@getSourcePayment</span>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="height: 60px">
+                            Payment by Great East Forex
+                        </td>
+                        <td style="height: 60px"> Company Stamp:</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            SGD
+                        </td>
+                        <td>Authorised Signatory:</td>
+                    </tr>
+                </tbody>
+            </table>
+            i++;
+            if (i < count)
+            {
+                <div style='page-break-after: always;'> </div>
+            }
+
+        }
+    }
+
+</body>
+</html>

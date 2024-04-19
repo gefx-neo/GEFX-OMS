@@ -1,0 +1,137 @@
+﻿
+@{
+    Layout = null;
+    int rowId = (int)ViewData["RowId"];
+}
+
+<div class="modal-dialog modal-lg">
+    <div class="modal-content form-horizontal">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">×</span>
+            </button>
+            <h4 class="modal-title" id="modal-label">Beneficiary Info</h4>
+            @*<div class="form-group">
+                    <div class="col-sm-12">
+                        <h4>Beneficiary Info</h4>
+                    </div>
+                </div>*@
+
+            <div class="form-group">
+                <div class="col-sm-9">
+                    <button id="add-new-transaction" type="button" class="btn btn-primary" onclick="AddNewTransaction()">Add New Beneficiary </button>
+                </div>
+                <div class="col-sm-9">@Html.ValidationMessage("Transaction")</div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Beneficiary Friendly Name:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownList("Transaction_BeneficiaryFriendly_" + rowId, (SelectList)ViewData["BeneficiaryDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Beneficiary Name or Company Name", @data_allow_clear = "true", @onchange = "GetBeneficiaryDetail(" + rowId + ")" })
+                    @Html.ValidationMessage("Transaction_BeneficiaryFriendly_" + rowId)
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Full Name:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.TextBox("Transaction_BeneficiaryName_" + rowId, ViewData["Transaction_BeneficiaryName"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Bank Account No:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.TextBox("Transaction_BeneficiaryBankAccount_" + rowId, ViewData["Transaction_BeneficiaryBankAccount"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Bank Code / SWIFT Code:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.TextBox("Transaction_BeneficiaryBankCode_" + rowId, ViewData["Transaction_BeneficiaryBankCode"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Bank Country:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownList("Transaction_BeneficiaryBankCountry_" + rowId, (SelectList)ViewData["CountriesDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Bank Country List", @data_allow_clear = "true" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Bank Address:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.TextBox("Transaction_BeneficiaryBankAddress_" + rowId, ViewData["Transaction_BeneficiaryBankAddress"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Purpose of Payment:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownList("Transaction_BeneficiaryPurposePayment_" + rowId, (SelectList)ViewData["PurposePaymentDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Purpose of Payment", @data_allow_clear = "true" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Source of Funds:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownList("Transaction_BeneficiarySourceFund_" + rowId, (SelectList)ViewData["SourceFundDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Source of Fund", @data_allow_clear = "true" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Supporting Document Type:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownList("Transaction_BeneficiarySupportDocType_" + rowId, (SelectList)ViewData["SupportDocTypeDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Supporting Document Type List", @data_allow_clear = "true" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Upload Supporting:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.TextBox("Transaction_BeneficiaryUploadSuporting_" + rowId, ViewData["Transaction_BeneficiaryUploadSuporting"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Payment Details / Instructions:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.TextBox("Transaction_BeneficiaryPaymentDetails_" + rowId, ViewData["Transaction_BeneficiaryPaymentDetails"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Beneficiary Type:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    <div class="radio-custom radio-primary radio-inline">
+                        <input type="radio" id="individual" name="Transaction_BeneficiaryType_@rowId" value="individual" @ViewData["IndividualRadio"].ToString() />
+                        <label for="individual">Individual</label>
+                    </div>
+                    <div class="radio-custom radio-primary radio-inline">
+                        <input type="radio" id="business" name="Transaction_BeneficiaryType_@rowId" value="business" @ViewData["BusinessRadio"].ToString() />
+                        <label for="business">Business</label>
+                    </div>
+                    @Html.ValidationMessage("Transaction_BeneficiaryType_" + rowId)
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Nationality:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownList("Transaction_BeneficiaryNationality_" + rowId, (SelectList)ViewData["NationalitiesDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Nationalities", @data_allow_clear = "true" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Company Registration No:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.TextBox("Transaction_BeneficiaryCompanyRegistration_" + rowId, ViewData["Transaction_BeneficiaryCompanyRegistration"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Category of Business:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownList("Transaction_BeneficiaryCategoryBusiness_" + rowId, (SelectList)ViewData["NationalitiesDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Business Category", @data_allow_clear = "true" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Company Contact No:", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-9">
+                    @Html.TextBox("Transaction_BeneficiaryCompanyContact_" + rowId, ViewData["Transaction_BeneficiaryCompanyContact"].ToString(), new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+        </div>
+        <div class="modal-body"></div>
+    </div>
+</div>
+<script src="@Url.Content("~/Content/vendor/bootstrap-select/bootstrap-select.js")"></script>
+<script src="@Url.Content("~/Content/vendor/select2/select2.min.js")"></script>
+

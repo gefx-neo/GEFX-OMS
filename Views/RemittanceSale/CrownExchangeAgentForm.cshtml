@@ -1,0 +1,296 @@
+﻿@using DataAccess
+@using DataAccess.POCO
+
+@{
+    Layout = null;
+    Remittances sale = (Remittances)ViewData["Sale"];
+    List<PayBankLists> despositAccountList = (List<PayBankLists>)ViewData["DepositAccountList"];
+    List<MemoRemittanceCurrencyTable> buyMemos = (List<MemoRemittanceCurrencyTable>)ViewData["BuyMemo"];
+    //List<MemoCurrencyTable> sellMemos = (List<MemoCurrencyTable>)ViewData["SellMemo"];
+    bool allCopy = (bool)ViewData["AllCopy"];
+    var name = "";
+    var REGNOorID = "";
+    var REGDateorDOB = "";
+    var REGcountry = "";
+    var REGaddress = "";
+    var REGcontactorfax = "";
+    var REGemail = "";
+    if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+    {
+        name = sale.CustomerParticulars.Company_RegisteredName;
+        REGNOorID = sale.CustomerParticulars.Company_RegistrationNo;
+        REGDateorDOB = sale.CustomerParticulars.Company_DateOfRegistration.HasValue ? sale.CustomerParticulars.Company_DateOfRegistration.Value.ToString("dd-MM-yyyy") : "";
+        REGcountry = sale.CustomerParticulars.Company_Nationality;
+        REGaddress = sale.CustomerParticulars.Company_RegisteredAddress;
+        REGcontactorfax = "Contact: " + sale.CustomerParticulars.Company_ContactNoM + " Fax: " + sale.CustomerParticulars.Company_FaxNo;
+        REGemail = sale.CustomerParticulars.Company_Email;
+    }
+    else
+    {
+        name = sale.CustomerParticulars.Natural_Name;
+        REGNOorID = sale.CustomerParticulars.Natural_ICPassportNo;
+        REGDateorDOB = sale.CustomerParticulars.Natural_DOB.HasValue ? sale.CustomerParticulars.Natural_DOB.Value.ToString("dd-MM-yyyy") : "";
+        REGcountry = sale.CustomerParticulars.Natural_Nationality;
+        REGaddress = sale.CustomerParticulars.Natural_PermanentAddress;
+        REGcontactorfax = "Contact: " + sale.CustomerParticulars.Natural_ContactNoM;
+        REGemail = sale.CustomerParticulars.Natural_Email;
+    }
+    var getRO = sale.RemittanceOders.FirstOrDefault();
+    var countries = (List<Countries>)ViewData["Countries"];
+    var purposeList = (List<PaymentLists>)ViewData["PurposeList"];
+    var sourceFundLists = (List<FundLists>)ViewData["SourceFundList"];
+}
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: Calibri;
+            /*font-family: 'Roboto', sans-serif;*/
+            color: black !important;
+            padding-top: 5px;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .form-group {
+            margin-left: 0px !important;
+            margin-right: 0px !important;
+            margin-bottom: 10px !important;
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        .page-break {
+            clear: both;
+            page-break-after: always;
+        }
+
+        table {
+            width: 100%;
+            font-size: 18px !important;
+        }
+
+            table tr td, table th td {
+                vertical-align: top;
+            }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background-color: rgba(128, 128, 128, .5);
+        }
+
+        table tbody tr td {
+            padding: 6px 5px 5px 5px;
+            border: 1px solid black;
+        }
+
+        table tbody tr, table tfoot {
+            page-break-inside: avoid !important;
+        }
+    </style>
+</head>
+<body>
+    @if (buyMemos.Count > 0)
+    {
+        foreach (var ro in sale.RemittanceOders)
+        {
+            var getSourceFund = sourceFundLists.Where(e => e.ID == ro.BeneficiarySourceOfPayment).FirstOrDefault().Name;
+            var getPurposePayment = purposeList.Where(e => e.ID == ro.BeneficiaryPurposeOfPayment).FirstOrDefault().Name;
+            var getIBAN = ro.IBANEuropeBSBAustralia;
+            var getSWIFTCode = ro.BeneficiaryBankCode;
+            var IBANorSWIFT = "";
+            if (!string.IsNullOrEmpty(getSWIFTCode) && string.IsNullOrEmpty(getIBAN))
+            {
+                IBANorSWIFT = getSWIFTCode + " (SWIFT/CODE)";
+            }
+            else if (!string.IsNullOrEmpty(getIBAN) && string.IsNullOrEmpty(getSWIFTCode))
+            {
+                IBANorSWIFT = getIBAN + " (IBAN/SORT/BSB)";
+            }
+            else if (!string.IsNullOrEmpty(getIBAN) && !string.IsNullOrEmpty(getSWIFTCode))
+            {
+                IBANorSWIFT = getIBAN + " (IBAN/SORT/BSB) ";
+            }
+            <table style="padding-top:10px;">
+                <tbody>
+                    <tr>
+                        <td style="border-right:none!important;border-bottom:none!important"><h2>APPLICATION FOR REMITTANCE</h2></td>
+                        <td style="border-left:none!important;border-bottom:none!important">Date: @sale.IssueDate.ToString("dd-MM-yyyy")</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table style="margin-bottom: 15px;">
+                <tbody>
+                    <tr>
+                        <td style="" colspan="6">
+                            <strong>APPLICANTION'S DETAILS</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="3">
+                            <p>Name of Application: <b>KO SAY GAK</b></p>
+                            <p>NRIC / Passport No: <b>*****41F</b></p>
+                            <p>Date of Birth: <b>-</b></p>
+                            <p>Nationality: <b>SINGAPOREAN</b></p>
+                        </td>
+                        <td style="" colspan="3">
+                            <p>Local / Overseas Address: <br /><b>101 BEACH ROAD #02-02 <br />THE 101, SINGAPORE 456223</b></p>
+                            <p>Tel / Fax No: <b>63392828</b></p>
+                            <p>Email: <b>gef@greateastforex.com</b></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%;" colspan="3">
+                            Residential Status:
+                            <span class="glyphicon glyphicon-check"><input type="checkbox" checked="checked">Singapore Citizen </span>
+                            <span class="glyphicon glyphicon-unchecked"><input type="checkbox">Permanent Resident </span>
+                            <span class="glyphicon glyphicon-unchecked"><input type="checkbox">Employment Pass </span>
+                            <span class="glyphicon glyphicon-unchecked"><input type="checkbox">S Pass / Work Permit </span>
+                            <br /><span class="glyphicon glyphicon-unchecked"><input type="checkbox">Others, Pls Specify: </span>
+                        </td>
+                        <td style="" colspan="3">
+                            Source of Fund:
+                            @*@if (getSourceFund == "Others")
+                            {
+                                <br /><span>@getSourceFund: @ro.SourceOfPaymentIfOthers</span>
+                            }
+                            else
+                            {
+                                <span>@getSourceFund</span>
+                            }*@
+                            <span class="glyphicon glyphicon-unchecked"><input type="checkbox">Salary </span>
+                            <span class="glyphicon  glyphicon-check"><input type="checkbox" checked="checked">Business Income </span>
+                                <span class="glyphicon glyphicon-unchecked"><input type="checkbox">Savings </span>
+                                <br /><span class="glyphicon glyphicon-unchecked"><input type="checkbox">Others, Pls Specify: </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="6">
+                            <strong>PARTICULARS OF WIRE TRANSFER ORIGINATOR (IF APPLICATE)</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="3">
+                            <p>Name of Company / Person: @*@name*@</p>
+                            <p>Co. Regn. No / NRIC / Passport No: @*@REGNOorID*@</p>
+                            <p>Co. Regn. Date / Date of Birth: @*@REGDateorDOB*@</p>
+                            <p>Country of Regn: @*@REGcountry*@</p>
+                        </td>
+                        <td style="" colspan="3">
+                            <p>(Regd) Address: @*@REGaddress*@</p>
+                            <p>Tel / Fax No: @*@REGcontactorfax*@</p>
+                            <p>Email: @*@REGemail*@</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="">
+                            <strong>Currency Code</strong>
+                        </td>
+                        <td style="">
+                            <strong>Amount of Foreign Currency</strong>
+                        </td>
+                        <td style="">
+                            <strong>Exchange Rate</strong>
+                        </td>
+                        <td style="">
+                            <strong>Comission / Charges</strong>
+                        </td>
+                        <td style="">
+                            <strong>SGD (Including Comission)</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="">
+                            @ro.GetCurrencyDecimal.CurrencyCode
+                        </td>
+                        <td style="">
+                            @ro.GetAmount.ToString("#,##0.00")
+                        </td>
+                        <td style="">
+                            @sale.AgentRate
+                        </td>
+                        <td style="">
+                            @sale.AgentFee
+                        </td>
+                        <td style="">
+                            @sale.CostPrice
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-right:none!important;" colspan="2">
+                            <strong>PURPOSE OF REMITTANCE</strong>
+                        </td>
+                        <td style="border-left:none!important;" colspan="4">
+                            @if (getPurposePayment == "Others")
+                            {
+                                <span>@getPurposePayment: @ro.PurposeOfPaymentIfOthers</span>
+                            }
+                            else
+                            {
+                                <span>@getPurposePayment</span>
+                            }
+                            @*<span class="glyphicon glyphicon-unchecked">Savings</span>
+                                <span class="glyphicon glyphicon-unchecked">Business Payment</span>
+                                <span class="glyphicon glyphicon-unchecked">Family Maintenance</span>
+                                <span class="glyphicon glyphicon-unchecked">Purchase of Property</span>
+                                <br /><span class="glyphicon glyphicon-unchecked">Others, Pls Specify: </span>*@
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-right:none!important" colspan="3">
+                            <strong>BENEFICIARY DETAILS</strong>
+                        </td>
+                        <td style="border-left:none!important;" colspan="3">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="3">
+                            <p>Beneficiary Name: @ro.BeneficiaryFullName</p>
+                            <p>NRIC / Passport No: </p>
+                            <p>Address: @ro.BeneficiaryAddressMain</p>
+                            <p>Tel / Hp: @ro.BeneficiaryContactNoMain</p>
+                        </td>
+                        <td style="" colspan="3">
+                            <p>Bank Name: @ro.BeneficiaryBankName</p>
+                            <p>Bank Branch Address: @ro.BeneficiaryBankAddress</p>
+                            <p>Beneficiary Account No: @ro.BeneficiaryBankAccountNo</p>
+                            <p>SWIFT / IBAN / SORT / BSB / Code: <br />@IBANorSWIFT</p>
+                            @*<p>SWIFT / IBAN / SORT / BSB / Code: <br />@(getSWIFTCode + " (SWIFT/CODE)")</p>*@
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="" colspan="6">
+                            <strong>MESSAGE (IF ANY)</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-right:none!important;text-align:center" colspan="2">
+                            <p style="height: 80px"></p>
+                            <strong style="vertical-align: bottom;border-top: 1px solid #000;font-size:16px">Signature of Applicant & Company Stamp</strong>
+                        </td>
+                        <td style="border-left:none!important;border-right:none!important;text-align:center" colspan="2">
+                            <p style="height: 80px"></p>
+                            <strong style="vertical-align: bottom;border-top: 1px solid #000;font-size:16px">Approved By</strong>
+                        </td>
+                        <td style="border-left:none!important;text-align:center" colspan="2">
+                            <p style="height: 80px">
+                                <span><b>TT Confirmation</b></span><br />
+                                <span>We Confirm acceptance of the above instructions</span>
+                            </p>
+                            <strong style="vertical-align: bottom;border-top: 1px solid #000;font-size:16px">for CROWN EXCHANGE PTE. LTD</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+
+    }
+</body>
+</html>

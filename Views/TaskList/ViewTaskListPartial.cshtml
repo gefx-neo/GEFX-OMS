@@ -1,0 +1,167 @@
+﻿@using DataAccess
+@{
+	Layout = null;
+}
+
+<div class="table-responsive">
+	<table class="table table-hover table-bordered table-striped">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>ID</th>
+				<th>Customer/Company</th>
+				<th>Collection Date/Time</th>
+				<th>Transaction Type</th>
+				<th>Type</th>
+				<th>Amount (Foreign)</th>
+				<th>Status</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			@{
+				List<TaskList> taskLists = (List<TaskList>)ViewData["TaskLists"];
+
+				if (taskLists.Count > 0)
+				{
+					int count = 1;
+
+					foreach (TaskList list in taskLists)
+					{
+						<tr class="@list.UrgentClass">
+							<td>@count</td>
+                            <td>
+                                @if (list.Task == "Sale")
+                                {
+                                    <a href="@Url.Action("Edit", "Sale", new { @id = list.ID, @module = "TaskList" })">@list.ReferenceNo</a>
+                                }
+                                else if (list.Task == "RemittanceSale")
+                                {
+                                    <a href="@Url.Action("Edit", "RemittanceSale", new { @id = list.ID, @module = "TaskList" })">@list.ReferenceNo</a>
+                                }
+                                else
+                                {
+                                    if (string.IsNullOrEmpty(list.ReferenceNo))
+                                    {
+
+                                        <a href="@Url.Action("Edit", "Customer", new { @id = list.ID })">-</a>
+
+                                    }
+                                    else
+                                    {
+
+                                        <a href="@Url.Action("Edit", "Customer", new { @id = list.ID })">@list.ReferenceNo</a>
+
+                                    }
+
+                                }
+                            </td>
+							<td>@list.Name</td>
+							<td>
+								@if (list.Task == "Sale")
+								{
+									@(Convert.ToDateTime(list.CollectionDate).ToString("dd/MM/yyyy") + " " + list.CollectionTime)
+                                }
+                                else if(list.Task == "RemittanceSale")
+                                {
+
+                                }
+                                else
+                                {
+                                    @list.CollectionTime
+                                }
+							</td>
+							<td>@list.TransactionType.Replace("Deposit", "Swap")</td>
+							<td>@list.Type</td>
+                            <td>
+                                @list.Amount
+                                @if (list.Task == "Sale")
+                                {
+                                    <a href="javascript:void(0)" onclick="ViewTransactions(@list.ID)" style="text-decoration: none;" data-toggle="tooltip" data-original-title="View Transactions">[+]</a>
+                                }
+                                else if (list.Task == "RemittanceSale")
+                                {
+                                    <a href="javascript:void(0)" onclick="ViewRemittanceTransactions(@list.ID)" style="text-decoration: none;" data-toggle="tooltip" data-original-title="View Transactions">[+]</a>
+                                }
+                            </td>
+							<td>@list.Status</td>
+							<td class="text-nowrap">
+								@if (list.Task == "Sale")
+								{
+									if (list.Status == "Pending GM Approval")
+									{
+										<a href="@Url.Action("GMApprovalSale", new { @id = list.ID, @approval = "approve" })" class="btn btn-sm btn-icon btn-round btn-success" data-toggle="tooltip" data-original-title="Approve Sale"><i class="icon wb-check" aria-hidden="true"></i></a>
+										<button class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Reject Sale" onclick="GMDisapproveSale(@list.ID, '@list.ReferenceNo')"><i class="icon wb-close" aria-hidden="true"></i></button>
+									}
+									else if (list.Status == "Pending Delete GM Approval")
+									{
+										<button type="button" class="btn btn-sm btn-icon btn-round btn-success" onclick="UpdateSale(@list.ID)"><i class="icon wb-check" aria-hidden="true"></i></button>
+									}
+									else if (!(list.Status == "Pending Assign Delivery" || list.Status.Contains("Pending Incoming Delivery by")))
+									{
+										if (Session["UserRole"].ToString() != "Ops Manager")
+										{
+											<button type="button" class="btn btn-sm btn-icon btn-round btn-success" onclick="UpdateSale(@list.ID)"><i class="icon wb-check" aria-hidden="true"></i></button>
+											//if (!(list.Status == "Pending Cashier" || list.Status == "Pending GM Approval (Rejected)"))
+											if (list.Status != "Pending GM Approval (Rejected)")
+											{
+												<button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Disapprove" onclick="DisapproveSale(@list.ID, '@list.ReferenceNo')"><i class="icon wb-close" aria-hidden="true"></i></button>
+											}
+										}
+									}
+								}
+								else if (list.Task == "RemittanceSale")
+								{
+									if (list.Status == "Pending GM Approval")
+									{
+										<a href="@Url.Action("GMApprovalRemittanceSale", new { @id = list.ID, @approval = "approve" })" class="btn btn-sm btn-icon btn-round btn-success" data-toggle="tooltip" data-original-title="Approve Sale"><i class="icon wb-check" aria-hidden="true"></i></a>
+										<button class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Reject Sale" onclick="GMDisapproveRemittanceSale(@list.ID, '@list.ReferenceNo')"><i class="icon wb-close" aria-hidden="true"></i></button>
+									}
+									else if (list.Status == "Pending Delete GM Approval")
+									{
+										<button type="button" class="btn btn-sm btn-icon btn-round btn-success" onclick="UpdateRemittanceSale(@list.ID)"><i class="icon wb-check" aria-hidden="true"></i></button>
+									}
+									else if (!(list.Status == "Cancelled"))
+									{
+										if (Session["UserRole"].ToString().Contains("Dealer") || Session["UserRole"].ToString().Contains("Finance") || Session["UserRole"].ToString().Contains("General Manager"))
+										{
+											<button type="button" class="btn btn-sm btn-icon btn-round btn-success" onclick="UpdateRemittanceSale(@list.ID)"><i class="icon wb-check" aria-hidden="true"></i></button>
+											//if (!(list.Status == "Pending Cashier" || list.Status == "Pending GM Approval (Rejected)"))
+											if (list.Status != "Pending GM Approval (Rejected)")
+											{
+												<button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Disapprove" onclick="DisapproveRemittanceSale(@list.ID, '@list.ReferenceNo')"><i class="icon wb-close" aria-hidden="true"></i></button>
+											}
+										}
+									}
+								}
+								else
+								{
+									if (Session["UserRole"].ToString().Contains("General Manager"))
+									{
+										<button class="btn btn-sm btn-icon btn-round btn-success" data-toggle="tooltip" data-original-title="Approve" onclick="CustomerApproval(@list.ID, 'approve')">
+											<i class="icon wb-check" aria-hidden="true"></i>
+										</button>
+										<button class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip" data-original-title="Disapprove" onclick="CustomerApproval(@list.ID, 'disapprove')">
+											<i class="icon wb-close" aria-hidden="true"></i>
+										</button>
+										if (list.Status == "Pending Approval")
+										{
+											<a target="_blank" href="@Url.Action("Compare","Customer", new { @id = list.ID })" class="btn btn-sm btn-icon btn-round btn-warning" data-toggle="tooltip" data-original-title="View"><i class="icon wb-eye" aria-hidden="true"></i></a>
+										}
+									}
+								}
+							</td>
+						</tr>
+						count++;
+					}
+				}
+				else
+				{
+					<tr>
+						<td class="no-records-found" colspan="9">No record to display</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

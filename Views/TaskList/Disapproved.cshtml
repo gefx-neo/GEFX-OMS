@@ -1,0 +1,417 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+    Sale sales = (Sale)ViewData["Sales"];
+}
+
+<div class="row">
+    <div class="form-group margin-horizontal-0">
+        <div class="col-sm-12">
+            <h5 class="margin-0">GM Exec View (if transaction is disapproved at any point)</h5>
+        </div>
+    </div>
+    <div class="form-group margin-horizontal-0">
+        <div class="col-sm-12">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered margin-bottom-0">
+                    <tbody>
+                        <tr>
+                            <th>Memo ID</th>
+                            <td>@sales.MemoID</td>
+                            <th>Customer</th>
+                            <td>
+                                @if (sales.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                {
+                                    if (sales.CustomerParticulars.Others[0].CustomerProfile == "Incomplete")
+                                    {
+                                        @(sales.CustomerParticulars.CustomerCode + " - " + sales.CustomerParticulars.Company_RegisteredName + " (" + sales.CustomerParticulars.Others[0].CustomerProfile + ")")
+                                    }
+                                    else
+                                    {
+                                        @(sales.CustomerParticulars.CustomerCode + " - " + sales.CustomerParticulars.Company_RegisteredName)
+                                    }
+                                }
+                                else
+                                {
+                                    if (sales.CustomerParticulars.Others[0].CustomerProfile == "Incomplete")
+                                    {
+                                        @(sales.CustomerParticulars.CustomerCode + " - " + sales.CustomerParticulars.Natural_Name + " (" + sales.CustomerParticulars.Others[0].CustomerProfile + ")")
+                                    }
+                                    else
+                                    {
+                                        @(sales.CustomerParticulars.CustomerCode + " - " + sales.CustomerParticulars.Natural_Name)
+                                    }
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Issue Date</th>
+                            <td>@sales.IssueDate.ToString("dd/MM/yyyy")</td>
+                            <th>Collection Date/Time</th>
+                            <td>@Convert.ToDateTime(sales.CollectionDate).ToString("dd/MM/yyyy") @sales.CollectionTime</td>
+                        </tr>
+                        <tr>
+                            <th>Transaction Type</th>
+                            <td>@sales.TransactionType</td>
+                            <th>Status</th>
+                            <td>@sales.Status</td>
+                        </tr>
+                        @if (sales.TransactionType == "Buy" || sales.TransactionType == "Sell")
+                        {
+                            List<string> localPaymentModes = new List<string>();
+
+                            if (!string.IsNullOrEmpty(sales.LocalPaymentMode))
+                            {
+                                if (sales.LocalPaymentMode.Contains("Cash"))
+                                {
+                                    localPaymentModes.Add("Cash: SGD" + Convert.ToDecimal(sales.CashAmount).ToString(ViewData["SGDDP"].ToString()));
+                                }
+
+                                if (sales.LocalPaymentMode.Contains("Cheque 1"))
+                                {
+                                    localPaymentModes.Add(String.Format("Cheque 1: SGD{0} ({1})", Convert.ToDecimal(sales.Cheque1Amount).ToString(ViewData["SGDDP"].ToString()), sales.Cheque1No));
+                                }
+
+                                if (sales.LocalPaymentMode.Contains("Cheque 2"))
+                                {
+                                    localPaymentModes.Add(String.Format("Cheque 2: SGD{0} ({1})", Convert.ToDecimal(sales.Cheque2Amount).ToString(ViewData["SGDDP"].ToString()), sales.Cheque2No));
+                                }
+
+                                if (sales.LocalPaymentMode.Contains("Cheque 3"))
+                                {
+                                    localPaymentModes.Add(String.Format("Cheque 3: SGD{0} ({1})", Convert.ToDecimal(sales.Cheque3Amount).ToString(ViewData["SGDDP"].ToString()), sales.Cheque3No));
+                                }
+
+                                if (sales.LocalPaymentMode.Contains("Bank Transfer"))
+                                {
+                                    localPaymentModes.Add(String.Format("Bank Transfer: SGD{0} ({1})", Convert.ToDecimal(sales.BankTransferAmount).ToString(ViewData["SGDDP"].ToString()), sales.BankTransferNo));
+                                }
+                            }
+                            <tr>
+                                <th>Local Payment Mode</th>
+                                <td colspan="3">@Html.Raw(String.Join("<br/>", localPaymentModes))</td>
+                            </tr>
+                        }
+                        <tr>
+                            <th>Remarks</th>
+                            <td colspan="3">@Html.Raw(sales.Remarks)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="form-group margin-horizontal-0">
+        <div class="col-sm-12">
+            <h5 class="margin-0">Sale Transactions</h5>
+        </div>
+    </div>
+    <div class="form-group margin-horizontal-0">
+        <div class="col-sm-12">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            @if (sales.TransactionType == "Buy" || sales.TransactionType == "Sell")
+                            {
+                                <th style="min-width: 50px;">ID</th>
+                                <th style="min-width: 50px;">Type</th>
+                                <th style="min-width: 150px;">Currency</th>
+                                <th style="min-width: 200px;">Amount (Foreign)</th>
+                                <th style="min-width: 150px;">Rate</th>
+                                <th style="min-width: 150px;">Unit</th>
+                                <th style="min-width: 200px;">Amount (Local)</th>
+                                <th style="min-width: 150px;">Payment Mode</th>
+                                <th style="min-width: 200px;">Cheque No.</th>
+                                <th style="min-width: 200px;">Bank Transfer No.</th>
+                                <th style="min-width: 200px;">Vessel Name</th>
+                                <th style="min-width: 550px;">Outgoing Denomination</th>
+                            }
+                            else if (sales.TransactionType == "Encashment" || sales.TransactionType == "Swap")
+                            {
+                                <th style="min-width: 50px;">ID</th>
+                                <th style="min-width: 50px;">Type</th>
+                                <th style="min-width: 150px;">Currency</th>
+                                <th style="min-width: 200px;">Amount (Foreign)</th>
+                                <th style="min-width: 150px;">Rate</th>
+                                <th style="min-width: 150px;">Encashment Rate</th>
+                                <th style="min-width: 150px;">Unit</th>
+                                <th style="min-width: 200px;">Amount (Local)</th>
+                                <th style="min-width: 150px;">Payment Mode</th>
+                                <th style="min-width: 200px;">Cheque No.</th>
+                                <th style="min-width: 200px;">Bank Transfer No.</th>
+                                <th style="min-width: 200px;">Vessel Name</th>
+                                <th style="min-width: 550px;">Outgoing Denomination</th>
+                            }
+                            else
+                            {
+                                <th style="min-width: 50px;">ID</th>
+                                <th style="min-width: 50px;">Type</th>
+                                <th style="min-width: 150px;">Currency</th>
+                                <th style="min-width: 200px;">Amount (Foreign)</th>
+                                <th style="min-width: 150px;">Rate</th>
+                                <th style="min-width: 150px;">Cross Rate</th>
+                                <th style="min-width: 150px;">Unit</th>
+                                <th style="min-width: 200px;">Amount (Local)</th>
+                                <th style="min-width: 150px;">Payment Mode</th>
+                                <th style="min-width: 200px;">Cheque No.</th>
+                                <th style="min-width: 200px;">Bank Transfer No.</th>
+                                <th style="min-width: 200px;">Vessel Name</th>
+                                <th style="min-width: 550px;">Outgoing Denomination</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (sales.TransactionType == "Buy" || sales.TransactionType == "Sell")
+                        {
+                            foreach (SaleTransaction transaction in sales.SaleTransactions)
+                            {
+                                string amountForeignFormat = "#,##0.00";
+
+                                switch (transaction.Products.Decimal)
+                                {
+                                    case 0:
+                                        amountForeignFormat = "#,##0";
+                                        break;
+                                    case 1:
+                                        amountForeignFormat = "#,##0.0";
+                                        break;
+                                    case 2:
+                                        amountForeignFormat = "#,##0.00";
+                                        break;
+                                    case 3:
+                                        amountForeignFormat = "#,##0.000";
+                                        break;
+                                    case 4:
+                                        amountForeignFormat = "#,##0.0000";
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                <tr>
+                                    <td style="min-width: 50px;">@transaction.TransactionID</td>
+                                    <td style="min-width: 50px;">@transaction.TransactionType</td>
+                                    <td style="min-width: 150px;">@transaction.Products.CurrencyCode</td>
+                                    <td style="min-width: 200px;">@transaction.AmountForeign.ToString(amountForeignFormat)</td>
+                                    <td style="min-width: 150px;">@transaction.Rate.ToString("#,##0.########")</td>
+                                    <td style="min-width: 150px;">@transaction.Unit</td>
+                                    <td style="min-width: 200px;">@transaction.AmountLocal.ToString(ViewData["SGDDP"].ToString())</td>
+                                    <td style="min-width: 150px;">@transaction.PaymentMode</td>
+                                    <td style="min-width: 200px;">@transaction.ChequeNo</td>
+                                    <td style="min-width: 200px;">@transaction.BankTransferNo</td>
+                                    <td style="min-width: 200px;">@transaction.VesselName</td>
+                                    <td style="min-width: 550px;">
+                                        @if (transaction.SaleTransactionDenominations.Count > 0)
+                                        {
+                                            foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+                                            {
+                                                string deno = "";
+
+                                                if (denomination.Denomination == 0)
+                                                {
+                                                    deno = "coins [Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(amountForeignFormat) + "]";
+                                                }
+                                                else
+                                                {
+                                                    deno = denomination.Denomination + " [Pieces: " + denomination.Pieces.ToString("#,##0") + ", Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(amountForeignFormat) + "]";
+                                                }
+
+                                                @deno <br />
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+
+                        }
+                        else if (sales.TransactionType == "Encashment" || sales.TransactionType == "Swap")
+                        {
+                            foreach (SaleTransaction transaction in sales.SaleTransactions)
+                            {
+                                string amountForeignFormat = "#,##0.00";
+
+                                switch (transaction.Products.Decimal)
+                                {
+                                    case 0:
+                                        amountForeignFormat = "#,##0";
+                                        break;
+                                    case 1:
+                                        amountForeignFormat = "#,##0.0";
+                                        break;
+                                    case 2:
+                                        amountForeignFormat = "#,##0.00";
+                                        break;
+                                    case 3:
+                                        amountForeignFormat = "#,##0.000";
+                                        break;
+                                    case 4:
+                                        amountForeignFormat = "#,##0.0000";
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                <tr>
+                                    <td style="min-width: 50px;">@transaction.TransactionID</td>
+                                    <td style="min-width: 50px;">@transaction.TransactionType</td>
+                                    <td style="min-width: 150px;">@transaction.Products.CurrencyCode</td>
+                                    <td style="min-width: 200px;">@transaction.AmountForeign.ToString(amountForeignFormat)</td>
+                                    <td style="min-width: 150px;">@transaction.Rate.ToString("#,##0.########")</td>
+                                    <td style="min-width: 150px;">
+                                        @if (transaction.EncashmentRate != null)
+                                        {
+                                            @Convert.ToDecimal(transaction.EncashmentRate).ToString("#,##0.########")
+                                        }
+                                    </td>
+                                    <td style="min-width: 150px;">@transaction.Unit</td>
+                                    <td style="min-width: 200px;">@transaction.AmountLocal.ToString(ViewData["SGDDP"].ToString())</td>
+                                    <td style="min-width: 150px;">@transaction.PaymentMode</td>
+                                    <td style="min-width: 200px;">@transaction.ChequeNo</td>
+                                    <td style="min-width: 200px;">@transaction.BankTransferNo</td>
+                                    <td style="min-width: 200px;">@transaction.VesselName</td>
+                                    <td style="min-width: 550px;">
+                                        @if (transaction.SaleTransactionDenominations.Count > 0)
+                                        {
+                                            foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+                                            {
+                                                string deno = "";
+
+                                                if (denomination.Denomination == 0)
+                                                {
+                                                    deno = "coins [Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(amountForeignFormat) + "]";
+                                                }
+                                                else
+                                                {
+                                                    deno = denomination.Denomination + " [Pieces: " + denomination.Pieces.ToString("#,##0") + ", Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(amountForeignFormat) + "]";
+                                                }
+
+                                                @deno <br />
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            foreach (SaleTransaction transaction in sales.SaleTransactions)
+                            {
+                                string amountForeignFormat = "#,##0.00";
+
+                                switch (transaction.Products.Decimal)
+                                {
+                                    case 0:
+                                        amountForeignFormat = "#,##0";
+                                        break;
+                                    case 1:
+                                        amountForeignFormat = "#,##0.0";
+                                        break;
+                                    case 2:
+                                        amountForeignFormat = "#,##0.00";
+                                        break;
+                                    case 3:
+                                        amountForeignFormat = "#,##0.000";
+                                        break;
+                                    case 4:
+                                        amountForeignFormat = "#,##0.0000";
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                <tr>
+                                    <td style="min-width: 50px;">@transaction.TransactionID</td>
+                                    <td style="min-width: 50px;">@transaction.TransactionType</td>
+                                    <td style="min-width: 150px;">@transaction.Products.CurrencyCode</td>
+                                    <td style="min-width: 200px;">@transaction.AmountForeign.ToString(amountForeignFormat)</td>
+                                    <td style="min-width: 150px;">@transaction.Rate.ToString("#,##0.########")</td>
+                                    <td style="min-width: 150px;">
+                                        @if (transaction.CrossRate != null)
+                                        {
+                                            @Convert.ToDecimal(transaction.CrossRate).ToString("#,##0.########")
+                                        }
+                                    </td>
+                                    <td style="min-width: 150px;">@transaction.Unit</td>
+                                    <td style="min-width: 200px;">@transaction.AmountLocal.ToString(ViewData["SGDDP"].ToString())</td>
+                                    <td style="min-width: 150px;">@transaction.PaymentMode</td>
+                                    <td style="min-width: 200px;">@transaction.ChequeNo</td>
+                                    <td style="min-width: 200px;">@transaction.BankTransferNo</td>
+                                    <td style="min-width: 200px;">@transaction.VesselName</td>
+                                    <td style="min-width: 550px;">
+                                        @if (transaction.SaleTransactionDenominations.Count > 0)
+                                        {
+                                            foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+                                            {
+                                                string deno = "";
+
+                                                if (denomination.Denomination == 0)
+                                                {
+                                                    deno = "coins [Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(amountForeignFormat) + "]";
+                                                }
+                                                else
+                                                {
+                                                    deno = denomination.Denomination + " [Pieces: " + denomination.Pieces.ToString("#,##0") + ", Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(amountForeignFormat) + "]";
+                                                }
+
+                                                @deno <br />
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="form-group text-center">
+        <div class="col-sm-12">
+            <button class="btn btn-success btn-outline" type="button" onclick="RepackMemo(@ViewData["SaleId"].ToString())">Repack Memo</button>
+            <button class="btn btn-danger btn-outline" type="button" onclick="CancelMemo(@ViewData["SaleId"].ToString())">Cancel Memo</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#update-sale-memoid").html("Update Sales Record - " + "@ViewData["MemoID"].ToString()");
+    })
+
+    function RepackMemo(id) {
+        var status = "Repack";
+        var url = "@Url.Action("UpdateDisapprovedSale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id, status: status },
+            success: function (data) {
+                data = JSON.parse(data);
+                if (data.result == "success") {
+                    window.location.href = "@Url.Action("Listing")";
+                }
+                else {
+                    alertify.alert(data.msg);
+                }
+            }
+        });
+    }
+
+    function CancelMemo(id) {
+        var status = "Cancel";
+        var url = "@Url.Action("UpdateDisapprovedSale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id, status: status },
+            success: function (data) {
+                data = JSON.parse(data);
+                if (data.result == "success") {
+                    window.location.href = "@Url.Action("Listing")";
+                }
+                else {
+                    alertify.alert(data.msg);
+                }
+            }
+        });
+    }
+</script>

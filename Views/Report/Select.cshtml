@@ -1,0 +1,482 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Reports";
+    ViewBag.Reports = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row row-lg">
+            <div class="col-xlg-10 col-md-10">
+                <div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+                        <span class="help-block text-danger"><i class="wb-info-circle"></i> @ViewData["HasClosedEndDayTrade"].ToString()</span>
+                        <button type="button" id="btn-close-end-of-day-trade" class="btn btn-lg btn-danger">CLOSE END OF DAY TRADE </button>
+                        <span class="help-block"><i class="wb-info-circle"></i> This should only be clicked at the end of the day to capture the average exchange rate for all transactions.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row row-lg">
+            <div class="col-xlg-10 col-md-10">
+                @using (Html.BeginForm("Select", "Report", FormMethod.Post, new { @class = "form-horizontal" }))
+                {
+                    <div class="form-group">
+                        @Html.Label("Report Name *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportName", (SelectList)ViewData["ReportNameDropdown"], new { @class = "form-control", @data_plugin = "selectpicker", @onchange = "ReportNameChange()" })
+                            @Html.ValidationMessage("ReportName")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-customer">
+                        @Html.Label("Company/Customer *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportCustomer", (SelectList)ViewData["ReportCustomerDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Customer ID or Company Name or Name", @data_allow_clear = "false" })
+                            @Html.ValidationMessage("ReportCustomer")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-multicustomer">
+                        @Html.Label("Company/Customer *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportMultipleCustomer", (MultiSelectList)ViewData["ReportMultipleCustomerDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Customer ID or Company Name or Name", @data_allow_clear = "false", @multiple = "" })
+                            @Html.ValidationMessage("ReportMultipleCustomer")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-product">
+                        @Html.Label("Currency *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.ListBox("e => ReportProduct", (MultiSelectList)ViewData["ReportProductDropdown"], new { @class = "form-control", @multiple = "", @id = "ReportProduct", @Name = "ReportProduct", @data_plugin = "selectpicker", @data_none_selected_text = "All Products", @data_live_search = "true", @data_live_search_placeholder = "Search by Currency Code or Currency Name", @data_allow_clear = "false" })
+                            @Html.ValidationMessage("ReportProduct")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-remittance-product">
+                        @Html.Label("Currency *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.ListBox("e => ReportRemittanceProduct", (MultiSelectList)ViewData["ReportRemittanceProductDropdown"], new { @class = "form-control", @multiple = "", @id = "ReportRemittanceProduct", @Name = "ReportRemittanceProduct", @data_plugin = "selectpicker", @data_none_selected_text = "All Remittance Products", @data_live_search = "true", @data_live_search_placeholder = "Search by Currency Code or Currency Name", @data_allow_clear = "false" })
+                            @Html.ValidationMessage("ReportRemittanceProduct")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-status">
+                        @Html.Label("Status *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.ListBox("e => ReportStatus", (MultiSelectList)ViewData["ReportStatusDropdown"], new { @class = "form-control", @data_plugin = "selectpicker", @data_none_selected_text = "All Status", @multiple = "", @id = "ReportStatus", @Name = "ReportStatus" })
+                            @Html.ValidationMessage("ReportStatus")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-transactionType">
+                        @Html.Label("Transaction Type *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.ListBox("e => TransactionType", (MultiSelectList)ViewData["ReportTranscationTypeDropdown"], new { @class = "form-control", @data_plugin = "selectpicker", @data_none_selected_text = "All Transaction Type", @multiple = "", @id = "TransactionType", @Name = "TransactionType" })
+                            @Html.ValidationMessage("TransactionType")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-agents">
+                        @Html.Label("Agents:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportAgents", (MultiSelectList)ViewData["AgentsDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Agent Name", @data_allow_clear = "false", @multiple = "" })
+                            @Html.ValidationMessage("ReportAgents")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-countries">
+                        @Html.Label("Country:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportCountries", (MultiSelectList)ViewData["CountriesDropdown"], new { @class = "form-control", @data_plugin = "select2", @data_placeholder = "Search by Country Name", @data_allow_clear = "false", @multiple = "" })
+                            @Html.ValidationMessage("ReportCountries")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-customer-type">
+                        @Html.Label("Customer Type:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportCustomerType", (SelectList)ViewData["CustomerTypeDropdown"], new { @class = "form-control", @data_plugin = "selectpicker" })
+                            @Html.ValidationMessage("ReportCustomerType")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-sales-status">
+                        @Html.Label("Status *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportSalesStatus", (SelectList)ViewData["ReportSalesStatusDropdown"], new { @class = "form-control", @data_plugin = "selectpicker" })
+                            @Html.ValidationMessage("ReportSalesStatus")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-remittance-status">
+                        @Html.Label("Status *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownList("ReportRemittanceStatus", (SelectList)ViewData["ReportRemittanceStatusDropdown"], new { @class = "form-control", @data_plugin = "selectpicker" })
+                            @Html.ValidationMessage("ReportRemittanceStatus")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-date">
+                        @Html.Label("Date *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.TextBox("ReportDate", ViewData["ReportDate"].ToString(), new { @class = "form-control" })
+                            @Html.ValidationMessage("ReportDate")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-fromDate">
+                        @Html.Label("From Date *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.TextBox("ReportFromDate", ViewData["ReportFromDate"].ToString(), new { @class = "form-control" })
+                            @Html.ValidationMessage("ReportFromDate")
+                        </div>
+                    </div>
+                    <div class="form-group" id="div-toDate">
+                        @Html.Label("To Date *:", new { @class = "col-sm-3 control-label" })
+                        <div class="col-sm-9">
+                            @Html.TextBox("ReportToDate", ViewData["ReportToDate"].ToString(), new { @class = "form-control" })
+                            @Html.ValidationMessage("ReportToDate")
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-9 col-sm-offset-3">
+                            <button type="submit" class="btn btn-primary" id="ViewBtn">View </button>
+                            <button type="button" class="btn btn-primary" onclick="DownloadToExcel()">Download to excel</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+@if (TempData["Result"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+    </script>
+}
+
+<script>
+    $(document).ready(function () {
+
+        ReportNameChange();
+    });
+
+    $("#btn-close-end-of-day-trade").on("click", function () {
+        $("#btn-close-end-of-day-trade").attr("disabled", "disabled");
+
+        var url = "@Url.Action("CheckPendingDeleteSales")";
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            success: function (data) {
+                data = JSON.parse(data);
+
+                console.log(data);
+
+                if (data.Result) {
+                    if (data.PendingDeleteSales) {
+                        var msg = "The below sale(s) is/are pending delete GM Approval. Do you want to close the end of day trade by reverting all 'pending deletion' status to 'complete' status and continue the closing of end of day trade?";
+                        msg += "<div class='text-center padding-horizontal-10' style='width:100%'>";
+
+                        for (var i = 0; i < data.Sales.length; i++) {
+                            msg += "- " + data.Sales[i] + "<br/>";
+                        }
+
+                        msg += "</div>";
+
+                        alertify.confirm(msg, function (e) {
+                            if (e) {
+                                window.location.href = "@Url.Action("RevertPendingDeleteSales")?ids=" + data.SaleIds;
+                            }
+                            else {
+                                $("#btn-close-end-of-day-trade").removeAttr("disabled");
+                            }
+                        });
+                    }
+                    else {
+                        window.location.href = "@Url.Action("CloseEndOfDayTrade")";
+                    }
+                }
+                else {
+                    alertify.alert(data.ErrorMessage);
+                    $("#btn-close-end-of-day-trade").removeAttr("disabled");
+                }
+            },
+            error: function (e) {
+                console.log(e);
+                alertify.alert("An error occured while checking pending delete sales!");
+                $("#btn-close-end-of-day-trade").removeAttr("disabled");
+            }
+        });
+    })
+
+    function ReportNameChange() {
+        var reportName = $("#ReportName").val();
+
+        $("#div-status option[value='Pending Assign Delivery']").remove();
+        $("#ReportStatus").selectpicker("refresh");
+        $("#ReportSalesStatus").selectpicker("refresh");
+        $("#ReportRemittanceStatus").selectpicker("refresh");
+        $("#ReportTransactionType").selectpicker("refresh");
+        if (reportName == "OST" || reportName == "OPT") {
+            $('#ReportStatus').append('<option value="Pending Assign Delivery">Pending Assign Delivery</option>');
+
+            var checkSession = "@Session["ReportStatus"]";
+
+            if (checkSession != "") {
+                var res = checkSession.split(",");
+
+                let optArr = [];
+
+                for (var i = 0; i < res.length; i++) {
+                    optArr.push(res[i]);
+                }
+
+                //This is to set back the previous selection when user click back button
+                $('#ReportStatus').selectpicker('val', optArr);
+            }
+
+            $("#ReportStatus").selectpicker("refresh");
+
+        }
+
+        if (reportName == "STS" || reportName == "PTS") {
+            $("#div-customer").show();
+            $("#div-product").show();
+            $("#div-remittance-product").hide();
+            $("#div-date").hide();
+            $("#div-fromDate").show();
+            $("#div-toDate").show();
+            $("#div-status").hide();
+            $("#div-remittance-status").hide();
+            $("#div-multicustomer").hide();
+            $("#div-transactionType").hide();
+            $("#div-sales-status").show();
+            $("#ViewBtn").show();
+            $("#div-agents").hide();
+            $("#div-countries").hide();
+            $("#div-customer-type").hide();
+        }
+        else if (reportName == "OST" || reportName == "OPT") {
+            $("#div-customer").hide();
+            $("#div-product").show();
+            $("#div-remittance-product").hide();
+            $("#div-date").hide();
+            $("#div-multicustomer").hide();
+            $("#div-fromDate").show();
+            $("#div-toDate").show();
+            $("#div-status").show();
+            $("#div-remittance-status").hide();
+            $("#div-sales-status").hide();
+            $("#div-transactionType").hide();
+            $("#ViewBtn").show();
+            $("#div-agents").hide();
+            $("#div-countries").hide();
+            $("#div-customer-type").hide();
+        }
+        else if (reportName == "BPB") {
+            $("#div-customer").hide();
+            $("#div-product").hide();
+            $("#div-remittance-product").hide();
+            $("#div-date").show();
+            $("#div-fromDate").hide();
+            $("#div-toDate").hide();
+            $("#div-status").hide();
+            $("#div-remittance-status").hide();
+            $("#div-multicustomer").hide();
+            $("#div-sales-status").hide();
+            $("#div-transactionType").hide();
+            $("#ViewBtn").show();
+            $("#div-agents").hide();
+            $("#div-countries").hide();
+            $("#div-customer-type").hide();
+        }
+        else if (reportName == "STTS" || reportName == "STTSS") {
+            $("#div-customer").hide();
+            $("#div-product").hide();
+            $("#div-remittance-product").hide();
+            $("#div-date").hide();
+            $("#div-fromDate").show();
+            $("#div-toDate").show();
+            $("#div-status").hide();
+            $("#div-remittance-status").hide();
+            $("#div-multicustomer").show();
+            $("#div-transactionType").show();
+            $("#div-sales-status").hide();
+            $("#ViewBtn").hide();
+            $("#div-agents").hide();
+            $("#div-countries").hide();
+            $("#div-customer-type").hide();
+        }
+        else if (reportName == "SMTS" || reportName == "SMTSS") {
+            $("#div-customer").hide();
+            $("#div-product").show();
+            $("#div-remittance-product").hide();
+            $("#div-date").hide();
+            $("#div-fromDate").show();
+            $("#div-toDate").show();
+            $("#div-status").hide();
+            $("#div-remittance-status").hide();
+            $("#div-multicustomer").show();
+            $("#div-transactionType").show();
+            $("#div-sales-status").hide();
+            $("#ViewBtn").hide();
+            $("#div-agents").hide();
+            $("#div-countries").hide();
+            $("#div-customer-type").hide();
+        }
+        else if (reportName == "CustomerSummary") {
+            $("#div-customer").hide();
+            $("#div-product").hide();
+            $("#div-remittance-product").hide();
+            $("#div-date").hide();
+            $("#div-fromDate").show();
+            $("#div-toDate").show();
+            $("#div-status").hide();
+            $("#div-sales-status").hide();
+            $("#div-remittance-status").hide();
+            $("#div-multicustomer").hide();
+            $("#div-transactionType").hide();
+            $("#ViewBtn").hide();
+            $("#div-agents").hide();
+            $("#div-countries").hide();
+            $("#div-customer-type").hide();
+        }
+        else if (reportName == "RMTR") {
+            $("#div-customer").hide();
+            $("#div-product").hide();
+            $("#div-remittance-product").show();
+            $("#div-date").hide();
+            $("#div-fromDate").show();
+            $("#div-toDate").show();
+            $("#div-status").hide();
+            $("#div-sales-status").hide();
+            $("#div-remittance-status").hide();
+            $("#div-multicustomer").hide();
+            $("#div-transactionType").hide();
+            $("#ViewBtn").hide();
+            $("#div-agents").show();
+            $("#div-countries").show();
+            $("#div-customer-type").show();
+        }
+        else if (reportName == "RMTT") {
+            $("#div-customer").hide();
+            $("#div-product").hide();
+            $("#div-remittance-product").show();
+            $("#div-date").hide();
+            $("#div-fromDate").show();
+            $("#div-toDate").show();
+            $("#div-status").hide();
+            $("#div-sales-status").hide();
+            $("#div-remittance-status").show();
+            $("#div-multicustomer").show();
+            $("#div-transactionType").hide();
+            $("#ViewBtn").hide();
+            $("#div-agents").hide();
+            $("#div-countries").hide();
+            $("#div-customer-type").hide();
+        }
+        else {
+            $("#div-customer").hide();
+            $("#div-product").hide();
+            $("#div-remittance-product").hide();
+            $("#div-date").hide();
+            $("#div-fromDate").show();
+            $("#div-toDate").show();
+            $("#div-status").hide();
+            $("#div-sales-status").hide();
+            $("#div-remittance-status").hide();
+            $("#div-multicustomer").hide();
+            $("#div-transactionType").hide();
+            $("#ViewBtn").show();
+            $("#div-agents").hide();
+            $("#div-countries").hide();
+            $("#div-customer-type").hide();
+        }
+    }
+
+    $("#ReportFromDate, #ReportToDate").datepicker({
+        autoclose: true,
+        format: "dd/mm/yyyy"
+    });
+
+    $("#ReportDate").datepicker({
+        autoclose: true,
+        format: "dd/mm/yyyy",
+        endDate: new Date()
+    });
+
+    function DownloadToExcel() {
+        var reportName = $("#ReportName").val();
+        var reportCustomer = $("#ReportCustomer").val();
+        var reportProduct = $("#ReportProduct").val();
+        var reportRemittanceProduct = $("#ReportRemittanceProduct").val();
+        var reportDate = $("#ReportDate").val();
+        var reportFromDate = $("#ReportFromDate").val();
+        var reportToDate = $("#ReportToDate").val();
+        var reportStatus = $("#ReportStatus").val();
+        var reportSalesStatus = $("#ReportSalesStatus").val();
+        var reportRemittanceStatus = $("#ReportRemittanceStatus").val();
+        var reportMultipleCustomer = $("#ReportMultipleCustomer").val();
+        var reportTransactionType = $("#TransactionType").val();
+        var reportAgents = $("#ReportAgents").val();
+        var reportCountries = $("#ReportCountries").val();
+        var reportCustomerType = $("#ReportCustomerType").val();
+
+        if (reportProduct == null) {
+            reportProduct = "";
+        }
+
+        if (reportRemittanceProduct == null) {
+            reportRemittanceProduct = "";
+        }
+
+        if (reportStatus == null) {
+            reportStatus = "";
+        }
+
+        if (reportSalesStatus == null) {
+            reportSalesStatus = "";
+        }
+
+        if (reportRemittanceStatus == null) {
+            reportRemittanceStatus = "";
+        }
+
+        if (reportAgents == null) {
+            reportAgents = "0";
+        }
+
+        if (reportCountries == null) {
+            reportCountries = "0";
+        }
+
+        var errorMsg = "";
+
+        if (reportName == "") {
+            errorMsg += "Report Name is required!<br/>";
+        }
+
+        if (reportDate == "" && reportName == "BPB") {
+            errorMsg += "Date is required!";
+        }
+
+        if (reportFromDate == "" && (reportName != "BPB" && reportName != "OST" && reportName != "OPT")) {
+            errorMsg += "From Date is required!";
+        }
+
+        if (reportToDate == "" && (reportName != "BPB" && reportName != "OST" && reportName != "OPT")) {
+            errorMsg += "To Date is required!";
+        }
+
+        if (errorMsg == "") {
+            window.location.href = "@Url.Action("SetDateSession")?reportName=" + reportName + "&reportCustomer=" + reportCustomer + "&reportProduct=" + reportProduct + "&reportRemittanceProduct=" + reportRemittanceProduct + "&reportStatus=" + reportStatus + "&reportSalesStatus=" + reportSalesStatus + "&reportRemittanceStatus=" + reportRemittanceStatus + "&reportDate=" + reportDate + "&reportFromDate=" + reportFromDate + "&reportToDate=" + reportToDate + "&reportMultipleCustomer=" + reportMultipleCustomer + "&transactionType=" + reportTransactionType + "&reportCountries=" + reportCountries + "&reportCustomerType=" + reportCustomerType + "&reportAgents=" + reportAgents;
+        }
+        else {
+            alertify.alert(errorMsg);
+        }
+    }
+</script>

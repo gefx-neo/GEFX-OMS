@@ -1,0 +1,213 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Sales Summary";
+    ViewBag.SalesSummary = "active open";
+    string sgdFormat = ViewData["SGDDP"].ToString();
+}
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <div class="col-xlg-12 col-md-12">
+                <div>
+                    <div class="col-xlg-12 col-md-6" style="height:50%;">
+                        <div class="widget widget-shadow bg-blue-600 white" id="widgetLinepoint">
+                            <div class="widget-content">
+                                <div class="padding-top-25 padding-horizontal-30">
+                                    <div class="row no-space">
+                                        <div class="col-xs-6">
+                                            <p>Today's Buy Memo</p>
+                                            <p class="blue-200">Pending S$@ViewData["TodayTotalPendingBuy"].ToString()</p>
+                                        </div>
+                                        <div class="col-xs-6 text-right">
+                                            <p class="font-size-30 text-nowrap">S$@ViewData["TodayTotalBuy"].ToString()</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ct-chart height-120"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xlg-12 col-md-6" style="height:50%;">
+                        <div class="widget widget-shadow bg-blue-600 white" id="widgetSaleBar">
+                            <div class="widget-content">
+                                <div class="padding-top-25 padding-horizontal-30">
+                                    <div class="row no-space">
+                                        <div class="col-xs-6">
+                                            <p>Today's Sell Memo</p>
+                                            <p class="blue-200">Pending S$@ViewData["TodayTotalPendingSell"].ToString()</p>
+                                        </div>
+                                        <div class="col-xs-6 text-right">
+                                            <p class="font-size-30 text-nowrap">S$@ViewData["TodayTotalSell"].ToString()</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ct-chart height-120"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="widget widget-shadow widget-responsive" id="widgetOverallViews">
+                            <div class="widget-content padding-30">
+                                <div class="row padding-bottom-30" style="height:calc(100% - 250px);">
+                                    <div class="col-xs-4">
+                                        <div class="counter counter-md text-left">
+                                            <div class="counter-label">TRANSACTIONS FOR THE WEEK</div>
+                                            <div class="counter-number-group text-truncate">
+                                                <span class="counter-number-related red-600">$</span>
+                                                <span class="counter-number red-600">@ViewData["WeeklyTotalTransaction"].ToString()</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <div class="counter counter-sm text-left inline-block">
+                                            <div class="counter-label">TOTAL BUY</div>
+                                            <div class="counter-number-group">
+                                                <span class="counter-number-related">$</span>
+                                                <span class="counter-number">@ViewData["WeeklyTotalBuy"].ToString()</span>
+                                            </div>
+                                        </div>
+                                        <div class="ct-chart inline-block small-bar-one"></div>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <div class="counter counter-sm text-left inline-block">
+                                            <div class="counter-label">TOTAL SELL</div>
+                                            <div class="counter-number-group">
+                                                <span class="counter-number-related">$</span>
+                                                <span class="counter-number">@ViewData["WeeklyTotalSell"].ToString()</span>
+                                            </div>
+                                        </div>
+                                        @*<div class="ct-chart inline-block small-bar-two"></div>*@
+                                    </div>
+                                </div>
+                                @*<div class="ct-chart line-chart height-250"></div>*@
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <h4>All Pending Transactions For Today</h4>
+                        <div class="page-user-sortlist pull-right margin-top-15">
+                            View: <a class="dropdown-toggle inline-block" data-toggle="dropdown"
+                                     href="#" aria-expanded="false">@ViewData["CurrentStatus"].ToString()<span class="caret"></span></a>
+                            <ul class="dropdown-menu animation-scale-up animation-top-right animation-duration-250"
+                                role="menu">
+                                <li class="@ViewData["AllPendingActive"].ToString()" role="presentation"><a href="@Url.Action("Summary", new { @searchStatus = "Pending" })">Today's Pending</a></li>
+                                <li class="@ViewData["PendingAssignDeliveryActive"].ToString()" role="presentation"><a href="@Url.Action("Summary", new { @searchStatus = "Pending Assign Delivery" })">Today's Pending Assign Delivery Only</a></li>
+                                <li class="@ViewData["PendingDeliveryActive"].ToString()" role="presentation"><a href="@Url.Action("Summary", new { @searchStatus = "Pending Delivery" })">Today's Pending Delivery Only</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-12 margin-top-15">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Memo ID</th>
+                                        <th>Customer/Company</th>
+                                        <th>Collection Date/Time</th>
+										<th>Transaction Type</th>
+                                        <th>Type</th>
+                                        <th>Amount (Foreign)</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        IPagedList<Sale> sales = (IPagedList<Sale>)ViewData["Sale"];
+
+                                        if (sales.Count > 0)
+                                        {
+                                            int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                            int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                            int i = 1;
+
+                                            foreach (Sale sale in sales)
+                                            {
+                                                string highlight = "";
+
+                                                if (sale.Urgent == "Urgent" && (sale.Status != "Completed" && sale.Status != "Pending Delete GM Approval"))
+                                                {
+                                                    highlight = "bg-red-100";
+                                                }
+
+                                                <tr class="@highlight">
+                                                    <td>@(i + page * pageSize)</td>
+                                                    <td>@sale.MemoID</td>
+                                                    <td>
+                                                        @if (sale.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+                                                        {
+                                                            @sale.CustomerParticulars.Company_RegisteredName
+                                                        }
+                                                        else
+                                                        {
+                                                            @sale.CustomerParticulars.Natural_Name
+                                                        }
+                                                    </td>
+                                                    <td>@(Convert.ToDateTime(sale.CollectionDate).ToString("dd/MM/yyyy") + " " + sale.CollectionTime)</td>
+                                                    <td>@sale.TransactionType</td>
+													<td>@sale.SaleTransactions[0].Products.CurrencyCode</td>
+                                                    <td>@(sale.SaleTransactions[0].Products.Symbol + @sale.SaleTransactions[0].AmountForeign.ToString("#,##0.########"))</td>
+                                                    <td>@sale.Status</td>
+                                                    <td class="text-nowrap"><button type="button" class="btn btn-sm btn-icon btn-round btn-default" data-toggle="tooltip" data-original-title="View Detail" onclick="ViewSaleDetail(@sale.ID)"><i class="icon wb-eye" aria-hidden="true"></i></button></td>
+                                                </tr>
+                                                i++;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td class="no-records-found" colspan="8">No Pending Sale for Today</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="pagination">
+                        @Html.PagedListPager((IPagedList)ViewData["Sale"], page => Url.Action("/Summary", "Sale", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sale-detail-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog" style="width: 1200px;">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label"></h4>
+            </div>
+            <div class="modal-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function ViewSaleDetail(id) {
+        var url = "@Url.Action("ViewSaleDetail")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-detail-modal .modal-body").html(data);
+                $("#sale-detail-modal").modal("show");
+            }
+        });
+    }
+</script>

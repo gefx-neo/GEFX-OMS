@@ -1,0 +1,248 @@
+﻿@using DataAccess
+@using DataAccess.POCO
+@{
+    Layout = null;
+    Remittances sale = (Remittances)ViewData["Sale"];
+}
+    <div class="row">
+        <div class="col-sm-12">Are you sure you want to approve this remittance sale?</div>
+
+        @using (Html.BeginForm("PendingAccountRemittance", "TaskList", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-pending-dealer" }))
+        {
+            @*if (ViewData["SaleTransactionsData"] != null)
+            {
+                List<RemittanceOrderData> transactionData = (List<RemittanceOrderData>)ViewData["SaleTransactionsData"];
+                if (transactionData.Count > 0)
+                {
+                    foreach (var data in transactionData)
+                    {
+                        <h5>Transaction ID: @data.transactionID</h5>
+                        <p>Amount(Pay) @data.PayAmount @data.PayCurrency - Amount (Get) @data.GetAmount @data.GetCurrency || Rate(@data.Rate), Transaction Fees(@data.transactionFees)</p>
+                        <div class="row" style="margin-left: auto!important; margin-right: auto!important;">
+                            @Html.Label("Payment Type :", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-4">
+                                @Html.DropDownList("Transaction_PayPaymentType_" + data.transactionID, data.PayPaymentModeDDL, new { @class = "form-control", @onchange = "PaymentModeChange(" + data.transactionID.ToString() + ")" })
+                                @Html.ValidationMessage("Transaction_PayPaymentType_" + data.transactionID)
+                            </div>
+                        </div>
+                        <div class="row" style="margin-left: auto!important; margin-right: auto!important;">
+                            @Html.Label("Cheque No :", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-6">
+                                @if (data.DisabledChequeNo == "disabled")
+                                {
+                                    <div class="col-sm-4" style="padding-left: 0;padding-right: 5px; width:80%;">@Html.TextBox("Transaction_ChequeNo_" + data.transactionID, null, new { @class = "form-control", @disabled = "disabled" })</div>
+                                }
+                                else
+                                {
+                                    <div class="col-sm-4" style="padding-left: 0;padding-right: 5px; width:80%;">@Html.TextBox("Transaction_ChequeNo_" + data.transactionID, data.ChequeNo, new { @class = "form-control" })</div>
+                                }
+                                @Html.ValidationMessage("Transaction_ChequeNo_" + data.transactionID)
+                            </div>
+                        </div>
+                        <div class="row" style="margin-left: auto!important; margin-right: auto!important;">
+                            @Html.Label("Bank Transfer No :", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-6">
+                                @if (data.DisabledBankTransferNo == "disabled")
+                                {
+                                    <div class="col-sm-4" style="padding-left: 0;padding-right: 5px; width:80%;">@Html.TextBox("Transaction_BankTransferNo_" + data.transactionID, null, new { @class = "form-control", @disabled = "disabled" })</div>
+                                }
+                                else
+                                {
+                                    <div class="col-sm-4" style="padding-left: 0;padding-right: 5px; width:80%;">@Html.TextBox("Transaction_BankTransferNo_" + data.transactionID, data.BankTransferNo, new { @class = "form-control" })</div>
+                                }
+                                @Html.ValidationMessage("Transaction_BankTransferNo_" + data.transactionID)
+                            </div>
+                        </div>
+                        <div class="row" style="margin-left: auto!important; margin-right: auto!important;">
+                            @Html.Label("Deposit Account :", new { @class = "col-sm-2 control-label" })
+                            <div class="col-sm-4">
+                                @if (data.DisabledDepositAccount == "disabled")
+                                {
+                                    @Html.DropDownList("Transaction_DepositAccount_" + data.transactionID, data.DepositAccountDDL, new { @class = "form-control", disabled = "disabled" })
+                                    @Html.ValidationMessage("Transaction_DepositAccount_" + data.transactionID)
+                                }
+                                else
+                                {
+                                    @Html.DropDownList("Transaction_DepositAccount_" + data.transactionID, data.DepositAccountDDL, new { @class = "form-control" })
+                                    @Html.ValidationMessage("Transaction_DepositAccount_" + data.transactionID)
+                                }
+                            </div>
+                        </div>
+                        <hr />
+                    }
+                }
+            }*@
+            @*<div class="form-group">
+                @Html.Label("Remarks :", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-8">
+                    @Html.TextArea("Remarks", ViewData["Remarks"].ToString(), new { @class = "form-control", @rows = "4" })
+                    @Html.ValidationMessage("Remarks")
+                </div>
+            </div>*@
+        }
+        @*<div class="form-group">
+            <div class="col-sm-12 col-sm-offset-3">
+                <a href="@Url.Action("GenerateMemo", "RemittanceSale", new { @id = ViewData["SaleId"].ToString() })" class="btn btn-success btn-outline">Print Transaction Memo</a>
+            </div>
+        </div>*@
+        <div class="col-sm-12" style="text-align: right;">
+            <button class="btn alertify-button-cancel" type="button" data-dismiss="modal" aria-label="Close">Cancel</button>
+            <button class="btn btn-success" type="button" onclick="SubmitForm('form-pending-dealer')">Approve</button>
+        </div>
+    </div>
+@*<div class="modal fade" id="cheque-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label">New Cheque</h4>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="bank-transfer-modal" aria-hidden="false" aria-labelledby="modal-label"
+     role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content form-horizontal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <h4 class="modal-title" id="modal-label">New Bank Transfer</h4>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>*@
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#update-sale-memoid").html("Update Remittance Sales Record - " + "@ViewData["MemoID"].ToString()");
+    })
+    function PaymentModeChange(rowId) {
+        if (rowId >= 10) {
+            rowId = "0" + rowId;
+        }
+        else {
+            rowId = "00" + rowId;
+        }
+            var mode = $("#Transaction_PayPaymentType_" + rowId).val();
+            console.log(rowId);
+		if (mode == "2")
+		{
+
+			//Enable Cheque Button.
+			//$("#update-cheque-btn-" + rowId).attr('onclick', 'UpdateCheque(' + rowId + ')');
+			//$("#update-cheque-btn-" + rowId).css('pointer-events', '');
+			//$("#Transaction_ChequeNo_" + rowId).attr('readonly', true);
+			$("#Transaction_ChequeNo_" + rowId).removeAttr("disabled");
+
+			//Disable Bank Transfer Button
+			//$("#update-bank-transfer-btn-" + rowId).prop("onclick", null);
+			//$("#update-bank-transfer-btn-" + rowId).css('pointer-events', 'none');
+            $("#Transaction_BankTransferNo_" + rowId).attr("disabled", "disabled");
+            $("#Transaction_DepositAccount_" + rowId).removeAttr("disabled", "disabled");
+            $("#Transaction_BankTransferNo_" + rowId).val("");
+        }
+		else if (mode == "3")
+		{
+			//Disable Cheque Button.
+			//$("#update-cheque-btn-" + rowId).prop("onclick", null);
+			//$("#update-cheque-btn-" + rowId).css('pointer-events', 'none');
+			$("#Transaction_ChequeNo_" + rowId).attr("disabled", "disabled");
+
+			//Enable Cheque Button.
+			//$("#update-bank-transfer-btn-" + rowId).attr('onclick', 'UpdateBankTransfer(' + rowId + ')');
+			//$("#update-bank-transfer-btn-" + rowId).css('pointer-events', '');
+			//$("#Transaction_BankTransferNo_" + rowId).attr('readonly', true);
+            $("#Transaction_BankTransferNo_" + rowId).removeAttr("disabled");
+            $("#Transaction_DepositAccount_" + rowId).removeAttr("disabled");
+			$("#Transaction_ChequeNo_" + rowId).val("");
+        }
+        else
+		{
+			//Disable Cheque Button.
+			//$("#update-cheque-btn-" + rowId).prop("onclick", null);
+			//$("#update-cheque-btn-" + rowId).css('pointer-events', 'none');
+			$("#Transaction_ChequeNo_" + rowId).attr("disabled", "disabled");
+			$("#Transaction_ChequeNo_" + rowId).val("");
+
+			//Disable Bank Transfer Button
+			//$("#update-bank-transfer-btn-" + rowId).prop("onclick", null);
+			//$("#update-bank-transfer-btn-" + rowId).css('pointer-events', 'none');
+            $("#Transaction_BankTransferNo_" + rowId).attr("disabled", "disabled");
+            $("#Transaction_BankTransferNo_" + rowId).val("");
+            $("#Transaction_DepositAccount_" + rowId).attr("disabled", "disabled");
+            $("#Transaction_DepositAccount_" + rowId).val("0");
+        }
+    }
+    	//Update Cheque Model
+	@*function UpdateCheque(id)
+    {
+        if (id >= 10) {
+            id = "0" + id;
+        }
+        else {
+            id = "00" + id;
+        }
+		//console.log("Update Cheque with ID " + id);
+        var url = "@Url.Action("AddChequeModel")";
+        $.ajax({
+			type: "GET",
+			beforeSend: function() {
+				 $(".preload").show();
+			},
+            url: url,
+            data: { id: id },
+			success: function (data)
+			{
+                $("#cheque-modal .modal-body").html(data);
+				$("#cheque-modal").modal("show");
+				$(".preload").hide();
+			},
+			error: function (e)
+			{
+                console.log(e.status + " - " + e.statusText);
+                $(".preload").hide();
+            }
+        });
+    }*@
+
+@*function UpdateBankTransfer(id)
+{
+        if (id >= 10) {
+            id = "0" + id;
+        }
+        else {
+            id = "00" + id;
+        }
+		//console.log("Update Bank Transfer with ID " + id);
+        var url = "@Url.Action("AddBankTransferModel")";
+        $.ajax({
+			type: "GET",
+			beforeSend: function() {
+				 $(".preload").show();
+			},
+            url: url,
+            data: { id: id },
+			success: function (data)
+			{
+                $("#bank-transfer-modal .modal-body").html(data);
+				$("#bank-transfer-modal").modal("show");
+				$(".preload").hide();
+			},
+			error: function (e)
+			{
+                console.log(e.status + " - " + e.statusText);
+                $(".preload").hide();
+            }
+        });
+	}*@
+</script>

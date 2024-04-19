@@ -1,0 +1,39 @@
+﻿@{
+    Layout = null;
+}
+
+<tr id="pep-screening-report-tr-@ViewData["RowId"].ToString()">
+    <td>@Html.Hidden("PEPScreeningReport_Date_" + ViewData["RowId"].ToString(), ViewData["Date"].ToString())@ViewData["Date"].ToString()</td>
+    <td>@Html.Hidden("PEPScreeningReport_DateOfAcra_" + ViewData["RowId"].ToString(), ViewData["DateOfAcra"].ToString())@ViewData["DateOfAcra"].ToString()</td>
+    <td>@Html.Hidden("PEPScreeningReport_ScreenedBy_" + ViewData["RowId"].ToString(), ViewData["ScreenedBy"].ToString())@ViewData["ScreenedBy"].ToString()</td>
+    <td>
+        @{
+            string screeningReport1 = "wb-check";
+            string screeningReport2 = "wb-check";
+
+            if (ViewData["ScreeningReport_1"].ToString() != "Yes")
+            {
+                screeningReport1 = "wb-close";
+            }
+
+            if (ViewData["ScreeningReport_2"].ToString() != "Yes")
+            {
+                screeningReport2 = "wb-close";
+            }
+        }
+        
+        <div class="margin-bottom-15">
+            <i class="icon @screeningReport1"></i> @("Screening of all Directors, Secretary and Shareholders on Acra")
+            @Html.Hidden("PEPScreeningReport_ScreeningReport1_" + ViewData["RowId"].ToString(), ViewData["ScreeningReport_1"].ToString())
+        </div>
+        <div class="margin-bottom-15">
+            <i class="icon @screeningReport2"></i> @("Screening of all Authorized Persons in Account Opening Form and/or Update Form")
+            @Html.Hidden("PEPScreeningReport_ScreeningReport2_" + ViewData["RowId"].ToString(), ViewData["ScreeningReport_2"].ToString())
+        </div>
+    </td>
+    <td>@Html.Hidden("PEPScreeningReport_Remarks_" + ViewData["RowId"].ToString(), ViewData["Remarks"].ToString())@ViewData["Remarks"].ToString()</td>
+    <td>
+        <button id="pep-screening-report-btn-remove-@ViewData["RowId"].ToString()" type="button" class="btn btn-pure btn-xs btn-danger icon wb-close" data-toggle="tooltip" data-original-title="Remove Screening Report" onclick="RemoveScreeningReport(@ViewData["RowId"].ToString())"></button>
+    </td>
+</tr>
+

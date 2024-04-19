@@ -1,0 +1,22 @@
+.page-login:before {
+  background-image: url("../images/login.jpg");
+}
+.page-login form {
+  width: 340px;
+  margin: 30px 0;
+}
+.page-login form a {
+  margin-left: 20px;
+}
+@media (max-width: 767px) {
+  .page-login form {
+    width: auto;
+  }
+}
+
+span.field-validation-error{
+    color: #f96868;
+}
+.page-login h1, .page-login h2, .page-login h3, .page-login h4{
+    color: #fff !important;
+}

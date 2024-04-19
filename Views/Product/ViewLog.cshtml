@@ -1,0 +1,444 @@
+﻿@using DataAccess
+@using DataAccess.POCO
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "View Log";
+    ViewBag.ManageProducts = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <h2>Inventory Logs</h2>
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time Stamp</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IEnumerable<Inventory> inventoryLogs = (IEnumerable<Inventory>)ViewData["InventoryLog"];
+                                @*List<ViewLog> inventoryLogs = (List<ViewLog>)ViewData["InventoryLog"];
+
+                                if (inventoryLogs.Count > 0)
+                                {
+                                    int i = 1;
+
+                                    foreach (ViewLog log in inventoryLogs)
+                                    {
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@log.Type</td>
+                                            <td>@log.Amount</td>
+                                            <td>@log.Description</td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }*@
+                                if (inventoryLogs.Count() > 0)
+                                {
+                                    int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                    int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                    int i = 1;
+
+                                    foreach (Inventory log in inventoryLogs)
+                                    //foreach (ViewLog log in inventoryLogs)
+                                    {
+                                        <tr>
+                                            <td>@(i + page * pageSize)</td>
+                                            <td>@log.CreatedOn</td>
+                                            <td>@log.Type</td>
+                                            <td>@ViewData["Symbol"]@log.Amount.ToString("0.00")</td>
+                                            <td>@log.Description</td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="no-records-found">No record to display</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!--Pagination-->
+        @if (Convert.ToInt32(ViewData["getPaging"]) >= 1)
+        {
+            <ul class="pagination">
+                @if (Convert.ToInt32(ViewData["getPaging"]) > 1)
+                {
+                    <li>
+                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]"><< First</a>
+                    </li>
+                    <li>
+                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@(Convert.ToInt32(ViewData["getPaging"]) - 1)">< Previous</a>
+                    </li>
+
+                }
+                @if (Convert.ToInt32(ViewData["getPaging"]) < Convert.ToInt32(ViewData["Paginations"]))
+                {
+                    int getTotalPages = Convert.ToInt32(ViewData["Paginations"]);
+                    if (Convert.ToInt32(ViewData["getPaging"]) <= 6)
+                    {
+                        if (Convert.ToInt32(ViewData["getPaging"]) == 1)
+                        {
+                            if (getTotalPages < 10)
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= getTotalPages; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= Convert.ToInt32(ViewData["getPaging"]) + 9; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+
+
+                        }
+                        else if (Convert.ToInt32(ViewData["getPaging"]) == 2)
+                        {
+                            if (getTotalPages < 10)
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 1; page <= getTotalPages; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 1; page <= Convert.ToInt32(ViewData["getPaging"]) + 8; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+
+                        }
+
+                        else if (Convert.ToInt32(ViewData["getPaging"]) == 3)
+                        {
+                            if (getTotalPages < 10)
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 2; page <= getTotalPages; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 2; page <= Convert.ToInt32(ViewData["getPaging"]) + 7; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+
+                        }
+
+                        else if (Convert.ToInt32(ViewData["getPaging"]) == 4)
+                        {
+                            if (getTotalPages < 10)
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= getTotalPages; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= Convert.ToInt32(ViewData["getPaging"]) + 6; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                        }
+
+                        else if (Convert.ToInt32(ViewData["getPaging"]) == 5)
+                        {
+                            if (getTotalPages < 10)
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= getTotalPages; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                        }
+
+                        else if (Convert.ToInt32(ViewData["getPaging"]) == 6)
+                        {
+                            if (getTotalPages < 10)
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= getTotalPages; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 4; page++)
+                                {
+                                    <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                    </li>
+                                }
+                            }
+                        }
+
+                        if (getTotalPages < 10)
+                        {
+
+                        }
+                        else
+                        {
+                            <li class="disabled PagedList-ellipses">
+                                <a>...</a>
+                            </li>
+                            <li>
+                                <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@(Convert.ToInt32(ViewData["Paginations"]))">@Convert.ToInt32(ViewData["Paginations"])</a>
+                            </li>
+                        }
+
+                    }
+                    else
+                    {
+                        int getCurentPage = Convert.ToInt32(ViewData["getPaging"]);
+                        if (getTotalPages < 10)
+                        {
+
+                        }
+                        else
+                        {
+                            <li class="disabled PagedList-ellipses">
+                                <a>...</a>
+                            </li>
+                        }
+
+
+                        if (getCurentPage == getTotalPages - 6)
+                        {
+                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 3; page <= Convert.ToInt32(ViewData["getPaging"]) + 6; page++)
+                            {
+                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                    <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                </li>
+                            }
+                        }
+
+                        else if (getCurentPage == getTotalPages - 5)
+                        {
+                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 4; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                            {
+                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                    <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                </li>
+                            }
+                        }
+
+                        else if (getCurentPage == getTotalPages - 4)
+                        {
+                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 4; page++)
+                            {
+                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                    <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                </li>
+                            }
+                        }
+
+                        else if (getCurentPage == getTotalPages - 3)
+                        {
+                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 6; page <= Convert.ToInt32(ViewData["getPaging"]) + 3; page++)
+                            {
+                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                    <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                </li>
+                            }
+
+                        }
+
+                        else if (getCurentPage == getTotalPages - 2)
+                        {
+                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 7; page <= Convert.ToInt32(ViewData["getPaging"]) + 2; page++)
+                            {
+                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                    <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                </li>
+                            }
+
+                        }
+
+                        else if (getCurentPage == getTotalPages - 1)
+                        {
+                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 8; page <= Convert.ToInt32(ViewData["getPaging"]) + 1; page++)
+                            {
+                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                    <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                </li>
+                            }
+
+                        }
+                        else
+                        {
+                            for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]) + 5; page++)
+                            {
+                                <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                    <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                                </li>
+                            }
+
+                            <li class="disabled PagedList-ellipses">
+                                <a>...</a>
+                            </li>
+                            <li>
+                                <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@(Convert.ToInt32(ViewData["Paginations"]))">@Convert.ToInt32(ViewData["Paginations"])</a>
+                            </li>
+
+
+
+                        }
+                    }
+
+                    <li>
+                        <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@(Convert.ToInt32(ViewData["getPaging"]) + 1)">Next ></a>
+                    </li>
+
+                }
+                else
+                {
+                    int getTotalPages = Convert.ToInt32(ViewData["Paginations"]);
+                    if (getTotalPages < 10)
+                    {
+                        <li></li>
+                    }
+                    else
+                    {
+                        <li class="disabled PagedList-ellipses">
+                            <a>...</a>
+                        </li>
+                    }
+
+                    if (getTotalPages < 10)
+                    {
+                        for (var page = Convert.ToInt32(ViewData["getPaging"]); page <= getTotalPages; page++)
+                        {
+                            <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                            </li>
+                        }
+                    }
+
+                    else
+                    {
+                        for (var page = Convert.ToInt32(ViewData["getPaging"]) - 5; page <= Convert.ToInt32(ViewData["getPaging"]); page++)
+                        {
+                            <li class="@(page == Convert.ToInt32(ViewData["getPaging"]) ? "active" : "")">
+                                <a href="~/Product/ViewLog?symbol=@ViewData["Symbol"]&id=@ViewData["currency_ID"]&dp=@ViewData["dp"]&page=@page">@page</a>
+                            </li>
+                        }
+                    }
+
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <h2>Pending Update Logs</h2>
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                List<ViewLog> pendingLogs = (List<ViewLog>)ViewData["PendingUpdateLogs"];
+
+                                if (pendingLogs.Count > 0)
+                                {
+                                    int i = 1;
+
+                                    foreach (ViewLog log in pendingLogs)
+                                    {
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@log.Type</td>
+                                            <td>@log.Amount</td>
+                                            <td>@log.Description</td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="no-records-found">No record to display</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-sm-12">
+                    <button class="btn btn-default" type="button" onclick="window.close(); return false;">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

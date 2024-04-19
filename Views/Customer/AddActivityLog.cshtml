@@ -1,0 +1,13 @@
+﻿@{
+	Layout = null;
+}
+
+<tr id='customer-activity-log-tr-@ViewData["RowId"].ToString()'>
+	<td>@Html.Hidden("CustomerActivityLogs_Key_Title_" + ViewData["RowId"].ToString(), ViewData["title"].ToString())@ViewData["title"].ToString()</td>
+	<td>@Html.Hidden("CustomerActivityLogs_Key_DateTime_" + ViewData["RowId"].ToString(), ViewData["activityDateTime"].ToString())@ViewData["activityDateTime"].ToString()</td>
+	<td>@Html.Hidden("CustomerActivityLogs_Key_Note_" + ViewData["RowId"].ToString(), ViewData["Note"].ToString())@ViewData["Note"].ToString()</td>
+	<td>
+		<button id="customer-activity-log-btn-remove-@ViewData["RowId"].ToString()" type='button' class='btn btn-pure btn-xs btn-danger icon wb-close' data-toggle='tooltip' data-original-title='Remove Activity Log' onclick='RemoveActivityLog(@ViewData["RowId"].ToString())'></button>
+	</td>
+</tr>
+

@@ -1,0 +1,288 @@
+﻿@using DataAccess
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = ViewData["SiteName"].ToString();
+	ViewBag.PageTitle = "Task List";
+	ViewBag.TaskList = "active open";
+}
+
+<div class="panel">
+	<div class="panel-body container-fluid">
+		<div class="row">
+			<div class="col-xlg-12 col-md-12" id="TaskListingPartialDiv">
+				Loading...
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="sale-transaction-modal" aria-hidden="false" aria-labelledby="modal-label"
+	 role="dialog" tabindex="-1">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content form-horizontal">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+				<h4 class="modal-title" id="modal-label"></h4>
+			</div>
+			<div class="modal-body">
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="update-sale-modal" aria-hidden="false" aria-labelledby="update-sale-memoid"
+	 role="dialog" tabindex="-1">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content form-horizontal">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+				<h4 class="modal-title" id="update-sale-memoid"></h4>
+			</div>
+			<div class="modal-body">
+
+			</div>
+		</div>
+	</div>
+</div>
+
+@if (TempData["Result"] != null)
+{
+	<script>
+        $(document).ready(function () {
+			alertify.alert("@TempData["Result"].ToString().Split('|')[1]");
+        });
+	</script>
+}
+
+<script>
+	$(document).ready(function ()
+	{
+		//Preload Task Listing
+		$("#TaskListingPartialDiv").load("@Url.Action("ViewTaskListPartial")");
+    });
+</script>
+
+<script>
+    function ViewTransactions(id) {
+        var url = "@Url.Action("ViewTransactions", "Sale")";
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+    }
+
+        function ViewRemittanceTransactions(id) {
+        var url = "@Url.Action("ViewTransactions", "RemittanceSale")";
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                $("#sale-transaction-modal .modal-body").html(data);
+                $("#sale-transaction-modal").modal("show");
+            }
+        });
+    }
+
+    function UpdateSale(id) {
+        var url = "@Url.Action("UpdateSale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                if (data.indexOf('"result":"error"') == -1) {
+                    $("#update-sale-modal .modal-body").html(data);
+                    $("#update-sale-modal").modal("show");
+                }
+                else {
+                    var url = "@Url.Action("Listing")";
+                    window.location.href = url;
+                }
+            },
+            error: function (e) {
+                console.log($(e.responseText.replace(/\r\n/g, "")));
+                alertify.alert(e.responseText);
+            }
+        });
+    }
+
+        function UpdateRemittanceSale(id) {
+        var url = "@Url.Action("UpdateRemittanceSale")";
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: { id: id },
+            success: function (data) {
+                if (data.indexOf('"result":"error"') == -1) {
+                    $("#update-sale-modal .modal-body").html(data);
+                    $("#update-sale-modal").modal("show");
+                }
+                else {
+                    var url = "@Url.Action("Listing")";
+                    window.location.href = url;
+                }
+            },
+            error: function (e) {
+                console.log($(e.responseText.replace(/\r\n/g, "")));
+                alertify.alert(e.responseText);
+            }
+        });
+    }
+
+    function SubmitForm(id) {
+        var url = $("#" + id)[0].action;
+        var form = $("#" + id).serialize();
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: form,
+            success: function (data) {
+                data = JSON.parse(data);
+                if (data.result == "success") {
+                    $("#update-sale-modal").modal("hide");
+                    window.location.href = "@Url.Action("Listing")";
+                }
+                else if (data.result == "form-error") {
+                    $("span.field-validation-valid").each(function () {
+                        this.innerHTML = "";
+                    });
+
+                    for (var i = 0; i < data.msg.length; i++) {
+                        $("span.field-validation-valid[data-valmsg-for=" + data.msg[i].id + "]")[0].innerHTML = data.msg[i].error;
+                    }
+                    alertify.alert("There is something wrong in the form!");
+                }
+                else {
+                    alertify.alert(data.msg);
+                }
+            }
+        })
+    }
+
+    function DisapproveSale(id, memoID){
+        alertify.confirm("Are you sure you want to disapprove " + memoID + "?", function(e){
+            if (e) {
+                var url = "@Url.Action("DisapproveSale")";
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    data: { id: id },
+                    success: function (data) {
+                        if (data.indexOf('"result":"error"') == -1) {
+                            $("#update-sale-modal .modal-body").html(data);
+                            $("#update-sale-modal").modal("show");
+                        }
+                        else {
+                            var url = "@Url.Action("Listing")";
+                            window.location.href = url;
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function DisapproveRemittanceSale(id, memoID){
+        alertify.confirm("Are you sure you want to disapprove " + memoID + "?", function(e){
+            if (e) {
+                var url = "@Url.Action("DisapproveRemittanceSale")";
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    data: { id: id },
+                    success: function (data) {
+                        if (data.indexOf('"result":"error"') == -1) {
+                            $("#update-sale-modal .modal-body").html(data);
+                            $("#update-sale-modal").modal("show");
+                        }
+                        else {
+                            var url = "@Url.Action("Listing")";
+                            window.location.href = url;
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function GMDisapproveSale(id, memoID) {
+        alertify.confirm("Are you sure you want to reject " + memoID + "?", function (e) {
+            if (e) {
+                window.location.href = "@Url.Action("GMApprovalSale")/" + id + "?approval=disapprove";
+            }
+        });
+    }
+
+    function GMDisapproveRemittanceSale(id, memoID) {
+        alertify.confirm("Are you sure you want to reject " + memoID + "?", function (e) {
+            if (e) {
+                window.location.href = "@Url.Action("GMApprovalRemittanceSale")/" + id + "?approval=disapprove";
+            }
+        });
+    }
+
+	function CustomerApproval(id, approval)
+	{
+		if (approval == "disapprove")
+		{
+			alertify.prompt("Are you sure you want to " + approval + " this customer?<br/>Reason:", function (e, value)
+			{
+				if (e)
+				{
+					if (!$.trim(value))
+					{
+						alert("Please enter reason!");
+					}
+					else
+					{
+						window.location.href = "@Url.Action("CustomerApproval", "Customer")/" + id + "?approval=" + approval + "&reason=" + value;
+					}
+				}
+			}).set('type', 'text');
+		}
+		else
+		{
+			alertify.confirm("Are you sure you want to " + approval + " this customer?", function (e) {
+				if (e) {
+					window.location.href = "@Url.Action("CustomerApproval", "Customer")/" + id + "?approval=" + approval;
+				}
+			});
+		}
+        
+    }
+
+    function GMDeleteSaleApproval(d, m, i) {
+        alertify.confirm("Are you sure you want to " + d + " deletion for " + m + "?", function (e) {
+            if (e) {
+                $("#GMDeleteSale").val(d);
+
+                window.location.href = "@Url.Action("GMDeleteSaleApproval")/" + i + "?d=" + d;
+            }
+        });
+    }
+
+        function GMDeleteRemittanceSaleApproval(d, m, i) {
+        alertify.confirm("Are you sure you want to " + d + " deletion for " + m + "?", function (e) {
+            if (e) {
+                $("#GMDeleteSale").val(d);
+
+                window.location.href = "@Url.Action("GMDeleteRemittanceSaleApproval")/" + i + "?d=" + d;
+            }
+        });
+    }
+</script>

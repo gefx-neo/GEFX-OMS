@@ -1,0 +1,89 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Audit Log";
+    ViewBag.AuditLog = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportExcel", new { @logTable = ViewData["LogTable"].ToString(), @fromDate = ViewData["FromDate"].ToString(), @toDate = ViewData["ToDate"].ToString() })" class="btn btn-primary" style="float:left;margin-right:10px;">Download to Excel</a>
+            <a href="@Url.Action("Select")" class="btn btn-default" style="float:left;">Back</a>
+            @using (Html.BeginForm("Listing", "AuditLog", FormMethod.Post, new { @id = "page-size" }))
+            {
+                <div class="col-md-3 pull-right">
+                    @Html.DropDownList("PageSize", (SelectList)ViewData["PageSizeDropdown"], new { @class = "form-control" })
+                </div>
+                @Html.Label("Page Size:", new { @class = "col-md-3 pull-right", @style = "top:6px;text-align:right;" })
+            }
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Log ID</th>
+                                    <th>IP Address</th>
+                                    <th>Timestamp</th>
+                                    <th>User Triggering</th>
+                                    <th>Table Affected</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    IPagedList<AuditLog> logs = (IPagedList<AuditLog>)ViewData["AuditLogs"];
+
+                                    if (logs.Count > 0)
+                                    {
+                                        int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                        int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                        int i = 1;
+
+                                        foreach (AuditLog log in logs)
+                                        {
+                                            <tr>
+                                                <td>@(i + page * pageSize)</td>
+                                                <td>@log.ID</td>
+                                                <td>@log.IpAddress</td>
+                                                <td>@log.Timestamp.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                                <td>@log.Users.Name</td>
+                                                <td>@log.TableAffected</td>
+                                                <td>@log.Description</td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="no-records-found">No record to display</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["AuditLogs"], page => Url.Action("/Listing", "AuditLog", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#PageSize").on("change", function () {
+        $("#page-size").submit();
+    });
+</script>

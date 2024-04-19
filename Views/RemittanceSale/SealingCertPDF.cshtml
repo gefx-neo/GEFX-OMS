@@ -1,0 +1,220 @@
+﻿@using DataAccess.POCO
+@{
+    Layout = null;
+    string sgdFormat = ViewData["SGDFormat"].ToString();
+}
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/bootstrap.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/bootstrap-extend.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/site.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/examples/css/dashboard/v1.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/fonts/web-icons/web-icons.min.css")">
+    <style type="text/css">
+        body{
+            font-family: Arial !important;
+            color: black !important;
+            font-size: 10px !important;
+            padding: 0px;
+            margin: 0px;
+        }
+        table, th, tr, td{
+            border: 1px solid black !important;
+            color: black !important;
+            padding: 1px !important;
+            font-size: 18px !important;
+        }
+        .control-label{
+            text-align: left !important;
+        }
+
+        .page-break {
+            clear: both;
+            page-break-after: always;
+        }
+
+        .bordered-bottom{
+            border-bottom: 1px solid;
+        }
+        .form-group{
+            margin-bottom: 5px !important;
+        }
+
+        .move-right{
+            margin-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    @{
+        List<SaleTransaction> transactions = (List<SaleTransaction>)ViewData["SaleTransaction"];
+
+        foreach (SaleTransaction transaction in transactions)
+        {
+            string amountForeignFormat = "#,##0";
+
+            switch (transaction.Products.Decimal)
+            {
+                case 1:
+                    amountForeignFormat += ".0";
+                    break;
+                case 2:
+                    amountForeignFormat += ".00";
+                    break;
+                case 3:
+                    amountForeignFormat += ".000";
+                    break;
+                case 4:
+                    amountForeignFormat += ".0000";
+                    break;
+                case 5:
+                    amountForeignFormat += ".00000";
+                    break;
+                case 6:
+                    amountForeignFormat += ".000000";
+                    break;
+                case 7:
+                    amountForeignFormat += ".0000000";
+                    break;
+                case 8:
+                    amountForeignFormat += ".00000000";
+                    break;
+                default:
+                    break;
+            }
+            <div class="form-horizontal">
+                <div class="form-group" style="margin-left:0px;">
+                    <div class="col-sm-12">
+                        <div style="font-size:19px;font-weight:bold;text-decoration: underline;">
+                            @transaction.Products.CurrencyCode CASH SEALING CERT
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="font-size:17px;">
+                        <label class="col-sm-5 control-label">Date</label>
+                        <div class="col-sm-7 text-center bordered-bottom">
+                            @ViewData["Date"].ToString()
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="font-size:17px;">
+                        <label class="col-sm-5 control-label">Customer Requested</label>
+                        <div class="col-sm-7 text-center bordered-bottom">
+                            @ViewData["CustomerRequested"].ToString()
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="font-size:17px;">
+                        <label class="col-sm-5 control-label">Vessel Name</label>
+                        <div class="col-sm-7 text-center bordered-bottom">
+                            @transaction.VesselName&nbsp;
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="font-size:17px;">
+                        <label class="col-sm-5 control-label">Amount Requested</label>
+                        <div class="col-sm-7 text-center bordered-bottom">
+                            @transaction.Products.Symbol @transaction.AmountForeign.ToString(amountForeignFormat)
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="font-size:17px;">
+                        <label class="col-sm-5 control-label">1<sup>st</sup> Inspection Check</label>
+                        <div class="col-sm-7 text-center bordered-bottom">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12" style="font-size:17px;">
+                        <label class="col-sm-5 control-label">2<sup>nd</sup> Inspection Check</label>
+                        <div class="col-sm-7 text-center bordered-bottom">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="col-sm-12" style="text-transform: uppercase;font-style: italic;font-weight:bold;font-size:18px;">Cash Content</div>
+                <div class="move-right">
+                    <table class="table table-responsive">
+                        <thead>
+                            <tr>
+                                <th style="width:40%;font-weight:bold;">DENOMINATION</th>
+                                <th style="width:30%;font-weight:bold;">PIECES</th>
+                                <th style="width:20%;font-weight:bold;">AMOUNT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+            if (transaction.SaleTransactionDenominations.Count > 0)
+            {
+                List<SaleTransactionDenomination> denominations = transaction.SaleTransactionDenominations.OrderByDescending(e => e.Denomination).ToList();
+
+                foreach (SaleTransactionDenomination denomination in denominations)
+                {
+                    if (denomination.Denomination == 0)
+                    {
+                        <tr>
+                            <td>coins</td>
+                            <td>-</td>
+                            <td>@denomination.AmountForeign.ToString(sgdFormat)</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>@denomination.Denomination</td>
+                            <td>@denomination.Pieces.ToString("#,##0")</td>
+                            <td>@denomination.AmountForeign.ToString(sgdFormat)</td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                Dictionary<int, IList<ProductDenomination>> transactionsWithNoDenomination = (Dictionary<int, IList<ProductDenomination>>)ViewData["TransactionsWithNoDenomination"];
+
+                foreach (ProductDenomination denomination in transactionsWithNoDenomination[transaction.ID])
+                {
+                    if (denomination.DenominationValue == 0)
+                    {
+                        <tr>
+                            <td>Coins</td>
+                            <td>-</td>
+                            <td></td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>@denomination.DenominationValue</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    }
+                }
+            }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td style="font-weight:bold;">@transaction.Products.CurrencyCode</td>
+                                <td style="font-weight:bold;">TOTAL</td>
+                                <td>@transaction.AmountForeign.ToString(amountForeignFormat)</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            </div>
+            <div class="page-break"></div>
+        }
+    }
+</body>
+</html>

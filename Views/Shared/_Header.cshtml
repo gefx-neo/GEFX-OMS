@@ -1,0 +1,385 @@
+﻿<nav class="site-navbar navbar navbar-default navbar-fixed-top navbar-mega" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle hamburger hamburger-close navbar-toggle-left hided"
+                data-toggle="menubar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="hamburger-bar"></span>
+        </button>
+        <button type="button" class="navbar-toggle collapsed" data-target="#site-navbar-collapse" data-toggle="collapse">
+            <i class="icon wb-more-horizontal" aria-hidden="true"></i>
+        </button>
+        <div class="navbar-brand navbar-brand-center site-gridmenu-toggle" data-toggle="gridmenu">
+            @*<img class="navbar-brand-logo" src="@Url.Content("~/Content/images/logo.png")" title="Great East Forex" />*@
+            <img class="navbar-brand-logo" src="@Url.Content("~/Content/images/gefx_logo.png")" title="Great East Forex" />
+            <span class="navbar-brand-text"> Great East Forex</span>
+        </div>
+    </div>
+    <div class="navbar-container container-fluid">
+        <!-- Navbar Collapse -->
+        <div class="collapse navbar-collapse navbar-collapse-toolbar" id="site-navbar-collapse">
+            <!-- Navbar Toolbar -->
+            <ul class="nav navbar-toolbar">
+                <li class="hidden-float" id="toggleMenubar">
+                    <a data-toggle="menubar" href="#" role="button">
+                        <i class="icon hamburger hamburger-arrow-left">
+                            <span class="sr-only">Toggle menubar</span>
+                            <span class="hamburger-bar"></span>
+                        </i>
+                    </a>
+                </li>
+            </ul>
+            <!-- End Navbar Toolbar -->
+            <!-- Navbar Toolbar Right -->
+            <ul class="nav navbar-toolbar navbar-right navbar-toolbar-right">
+                <li class="dropdown">
+                    <a class="navbar-avatar dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false"
+                       data-animation="scale-up" role="button">
+                        <i class="icon wb-user bg-blue-800 white icon-circle" aria-hidden="true"></i> @Session["UserName"].ToString()
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li role="presentation">
+                            <a href="@Url.Action("Index", "UserProfile")" role="menuitem"><i class="icon wb-user" aria-hidden="true"></i> Profile</a>
+                        </li>
+                        <li class="divider" role="presentation"></li>
+                        <li role="presentation">
+                            <a href="@Url.Action("Logout", "Access")" role="menuitem"><i class="icon wb-power" aria-hidden="true"></i> Logout</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- End Navbar Toolbar Right -->
+        </div>
+        <!-- End Navbar Collapse -->
+    </div>
+</nav>
+<div class="site-menubar">
+    <div class="site-menubar-body">
+        <div>
+            <div>
+				<ul class="site-menu">
+					@{
+						string userRole = Session["UserRole"].ToString();
+						string[] userRoleList = userRole.Split(',');
+
+						@*<li class="site-menu-category">@userRole</li>*@
+
+						<li class="site-menu-item @ViewBag.TaskList">
+							<a href="@Url.Action("Index", "TaskList")" data-slug="dashboard">
+								<i class="site-menu-icon wb-dashboard" aria-hidden="true"></i>
+								<span class="site-menu-title">Task List</span>
+								<div class="site-menu-badge">
+									<span class="badge badge-success">@ViewData["TaskListCount"].ToString()</span>
+								</div>
+							</a>
+						</li>
+
+						//Dealer,Finance
+
+						if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "Finance") >= 0 || Array.IndexOf(userRoleList, "Junior Dealer") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.NewSales">
+								<a href="@Url.Action("Create", "Sale")">
+									<i class="site-menu-icon wb-payment" aria-hidden="true"></i>
+									<span class="site-menu-title">New Sales</span>
+								</a>
+							</li>
+						}
+
+						@*if (userRole.Contains("Dealer") || userRole.Contains("Finance"))
+			{
+				<li class="site-menu-item @ViewBag.NewSales">
+					<a href="@Url.Action("Create", "Sale")">
+						<i class="site-menu-icon wb-payment" aria-hidden="true"></i>
+						<span class="site-menu-title">New Sales</span>
+					</a>
+				</li>
+			}*@
+
+						if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "Finance") >= 0 || Array.IndexOf(userRoleList, "Inventory") >= 0 || Array.IndexOf(userRoleList, "Ops Manager") >= 0 || Array.IndexOf(userRoleList, "Cashier") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0 || Array.IndexOf(userRoleList, "Junior Dealer") >= 0 || Array.IndexOf(userRoleList, "Sales Admin") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.ManageSales">
+								<a href="@Url.Action("Index", "Sale")">
+									<i class="site-menu-icon wb-payment" aria-hidden="true"></i>
+									<span class="site-menu-title">Manage Sales</span>
+								</a>
+							</li>
+						}
+
+						//Dealer, Finance,Inventory,Ops Manager,Cashier,General Manager, Super Admin
+						@*if (userRole.Contains("Dealer") || userRole.Contains("Finance") || userRole.Contains("Inventory") || userRole.Contains("Ops Manager") || userRole.Contains("General Manager") || userRole.Contains("Super Admin"))
+			{
+				<li class="site-menu-item @ViewBag.ManageSales">
+					<a href="@Url.Action("Index", "Sale")">
+						<i class="site-menu-icon wb-payment" aria-hidden="true"></i>
+						<span class="site-menu-title">Manage Sales</span>
+					</a>
+				</li>
+			}*@
+						if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "Ops Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0 || Array.IndexOf(userRoleList, "Sales Admin") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.SalesSummary">
+								<a href="@Url.Action("SummaryIndex", "Sale")">
+									<i class="site-menu-icon wb-graph-up" aria-hidden="true"></i>
+									<span class="site-menu-title">Sales Summary</span>
+								</a>
+							</li>
+						}
+
+						//Dealer,Ops Manager, Super Admin
+						@*if (userRole.Contains("Dealer") || userRole.Contains("Ops Manager") || userRole.Contains("General Manager") || userRole.Contains("Super Admin"))
+			{
+				<li class="site-menu-item @ViewBag.SalesSummary">
+					<a href="@Url.Action("SummaryIndex", "Sale")">
+						<i class="site-menu-icon wb-graph-up" aria-hidden="true"></i>
+						<span class="site-menu-title">Sales Summary</span>
+					</a>
+				</li>
+			}*@
+						if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0 || Array.IndexOf(userRoleList, "Customer Viewer") >= 0 || Array.IndexOf(userRoleList, "Sales Admin") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.ManageCustomers">
+								<a href="@Url.Action("Index", "Customer")">
+									<i class="site-menu-icon wb-users" aria-hidden="true"></i>
+									<span class="site-menu-title">Manage Customers</span>
+								</a>
+							</li>
+						}
+
+						if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.ManageBeneficiaries">
+								<a href="@Url.Action("Index", "Beneficiaries")">
+									<i class="site-menu-icon wb-users" aria-hidden="true"></i>
+									<span class="site-menu-title">Manage Beneficiaries</span>
+								</a>
+							</li>
+						}
+
+						//Dealer,General Manager,super admin
+						@*if (userRole.Contains("Dealer") || userRole.Contains("General Manager") || userRole.Contains("Super Admin"))
+			{
+				<li class="site-menu-item @ViewBag.ManageCustomers">
+					<a href="@Url.Action("Index", "Customer")">
+						<i class="site-menu-icon wb-users" aria-hidden="true"></i>
+						<span class="site-menu-title">Manage Customers</span>
+					</a>
+				</li>
+			}*@
+						if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "Finance") >= 0 || Array.IndexOf(userRoleList, "Junior Dealer") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.NewRemittanceSales">
+								<a href="@Url.Action("Create", "RemittanceSale")">
+									<i class="site-menu-icon wb-payment" aria-hidden="true"></i>
+									<span class="site-menu-title">New Remittance Sales</span>
+								</a>
+							</li>
+						}
+						if (Array.IndexOf(userRoleList, "Dealer") >= 0 || Array.IndexOf(userRoleList, "Finance") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0 || Array.IndexOf(userRoleList, "Junior Dealer") >= 0 || Array.IndexOf(userRoleList, "Sales Admin") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.ManageRemittanceSales">
+								<a href="@Url.Action("Index", "RemittanceSale")">
+									<i class="site-menu-icon wb-payment" aria-hidden="true"></i>
+									<span class="site-menu-title">Manage Remittance Sales</span>
+								</a>
+							</li>
+						}
+						if (Array.IndexOf(userRoleList, "Sales Admin") >= 0 || Array.IndexOf(userRoleList, "Finance") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.ManageRemittanceProducts">
+								<a href="@Url.Action("Index", "RemittanceProduct")">
+									<i class="site-menu-icon wb-inbox" aria-hidden="true"></i>
+									<span class="site-menu-title">Remittance Products</span>
+								</a>
+							</li>
+						}
+
+						<li class="site-menu-item @ViewBag.ManageAgents">
+							<a href="@Url.Action("Index", "Agent")">
+								<i class="site-menu-icon wb-user-circle" aria-hidden="true"></i>
+								<span class="site-menu-title">Agents</span>
+							</a>
+						</li>
+
+						if (Array.IndexOf(userRoleList, "Finance") >= 0 || Array.IndexOf(userRoleList, "General Manager") >= 0 || Array.IndexOf(userRoleList, "Super Admin") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.ManageProducts">
+								<a href="@Url.Action("Index", "Product")">
+									<i class="site-menu-icon wb-inbox" aria-hidden="true"></i>
+									<span class="site-menu-title">Manage Products/Inventory</span>
+								</a>
+							</li>
+
+							//Finanace,General Manager, Super Admin
+							<li class="site-menu-item @ViewBag.Reports">
+								<a href="@Url.Action("Index", "Report")">
+									<i class="site-menu-icon wb-stats-bars" aria-hidden="true"></i>
+									<span class="site-menu-title">Reports</span>
+								</a>
+							</li>
+
+							//Finanace,General Manager, Super Admin
+							<li class="site-menu-item @ViewBag.ExportDAT">
+								<a href="@Url.Action("Index", "ExportDAT")">
+									<i class="site-menu-icon wb-download" aria-hidden="true"></i>
+									<span class="site-menu-title">Export DAT</span>
+								</a>
+							</li>
+						}
+
+						//Finance,General Manager,super admin
+						@*if (userRole.Contains("Finance") || userRole.Contains("General Manager") || userRole.Contains("Super Admin"))
+			{
+				<li class="site-menu-item @ViewBag.ManageProducts">
+					<a href="@Url.Action("Index", "Product")">
+						<i class="site-menu-icon wb-inbox" aria-hidden="true"></i>
+						<span class="site-menu-title">Manage Products/Inventory</span>
+					</a>
+				</li>
+
+				//Finanace,General Manager, Super Admin
+				<li class="site-menu-item @ViewBag.Reports">
+					<a href="@Url.Action("Index", "Report")">
+						<i class="site-menu-icon wb-stats-bars" aria-hidden="true"></i>
+						<span class="site-menu-title">Reports</span>
+					</a>
+				</li>
+
+				//Finanace,General Manager, Super Admin
+				<li class="site-menu-item @ViewBag.ExportDAT">
+					<a href="@Url.Action("Index", "ExportDAT")">
+						<i class="site-menu-icon wb-download" aria-hidden="true"></i>
+						<span class="site-menu-title">Export DAT</span>
+					</a>
+				</li>
+			}*@
+
+						if (Array.IndexOf(userRoleList, "Ops Exec") >= 0)
+						{
+							//Ops Exec
+							<li class="site-menu-item @ViewBag.ScanOutgoing">
+								<a href="@Url.Action("Index", "ScanOutgoing")">
+									<i class="site-menu-icon wb-fullscreen" aria-hidden="true"></i>
+									<span class="site-menu-title">Scan Outgoing</span>
+								</a>
+							</li>
+						}
+
+						@*if (userRole.Contains("Ops Exec"))
+			{
+				//Ops Exec
+				<li class="site-menu-item @ViewBag.ScanOutgoing">
+					<a href="@Url.Action("Index", "ScanOutgoing")">
+						<i class="site-menu-icon wb-fullscreen" aria-hidden="true"></i>
+						<span class="site-menu-title">Scan Outgoing</span>
+					</a>
+				</li>
+
+				//Ops Exec
+				<li class="site-menu-item @ViewBag.ScanIncoming">
+					<a href="@Url.Action("Index", "ScanIncoming")">
+						<i class="site-menu-icon wb-fullscreen" aria-hidden="true"></i>
+						<span class="site-menu-title">Scan Incoming</span>
+					</a>
+				</li>
+			}*@
+						if (Array.IndexOf(userRoleList, "Super Admin") >= 0)
+						{
+							<li class="site-menu-item @ViewBag.ManageUsers">
+								<a href="@Url.Action("Index", "User")">
+									<i class="site-menu-icon wb-user" aria-hidden="true"></i>
+									<span class="site-menu-title">Manage Users</span>
+								</a>
+							</li>
+
+							<li class="site-menu-item @ViewBag.AuditLog">
+								<a href="@Url.Action("Index", "AuditLog")">
+									<i class="site-menu-icon wb-time" aria-hidden="true"></i>
+									<span class="site-menu-title">Audit Log</span>
+								</a>
+							</li>
+							<li class="site-menu-item @ViewBag.ExportData">
+								<a href="@Url.Action("Index", "ExportData")">
+									<i class="site-menu-icon wb-download" aria-hidden="true"></i>
+									<span class="site-menu-title">Export Data</span>
+								</a>
+							</li>
+
+							<li class="site-menu-item has-sub @ViewBag.Settings">
+
+								<a href="javascript:void(0)">
+									<i class="site-menu-icon wb-download" aria-hidden="true"></i>
+									<span class="site-menu-title">Settings</span>
+									<span class="site-menu-arrow"></span>
+								</a>
+
+								<ul class="site-menu-sub">
+									<li class="site-menu-item @ViewBag.SystemSettings">
+										<a href="@Url.Action("Index", "Setting")">
+											<i class="site-menu-icon wb-settings" aria-hidden="true"></i>
+											<span class="site-menu-title">System Settings</span>
+										</a>
+									</li>
+
+									<li class="site-menu-item @ViewBag.ContactSupportSettings">
+										<a href="@Url.Action("Index", "ContactSupportSetting")">
+											<i class="site-menu-icon wb-settings" aria-hidden="true"></i>
+											<span class="site-menu-title">Contact Support Settings</span>
+										</a>
+									</li>
+
+									<li class="site-menu-item @ViewBag.PaymentModeSettings">
+										<a href="@Url.Action("Index", "PaymentModeSetting")">
+											<i class="site-menu-icon wb-settings" aria-hidden="true"></i>
+											<span class="site-menu-title">Payment Mode Settings</span>
+										</a>
+									</li>
+								</ul>
+							</li>
+						}
+
+						@*if (userRole.Contains("Super Admin"))
+			{
+				<li class="site-menu-item @ViewBag.ManageUsers">
+					<a href="@Url.Action("Index", "User")">
+						<i class="site-menu-icon wb-user" aria-hidden="true"></i>
+						<span class="site-menu-title">Manage Users</span>
+					</a>
+				</li>
+
+				<li class="site-menu-item @ViewBag.AuditLog">
+					<a href="@Url.Action("Index", "AuditLog")">
+						<i class="site-menu-icon wb-time" aria-hidden="true"></i>
+						<span class="site-menu-title">Audit Log</span>
+					</a>
+				</li>
+				<li class="site-menu-item @ViewBag.ExportData">
+					<a href="@Url.Action("Index", "ExportData")">
+						<i class="site-menu-icon wb-download" aria-hidden="true"></i>
+						<span class="site-menu-title">Export Data</span>
+					</a>
+				</li>
+				<li class="site-menu-item @ViewBag.SystemSettings">
+					<a href="@Url.Action("Index", "Setting")">
+						<i class="site-menu-icon wb-settings" aria-hidden="true"></i>
+						<span class="site-menu-title">System Settings</span>
+					</a>
+				</li>
+			}*@
+						//Task List, New Sales, Manage Sales, Manage Customers, Manage Users, Sales Summary, Manage Products, Reports, ExportDAT, Audit Log, Export Data, System Settings
+					}
+				</ul>
+            </div>
+        </div>
+    </div>
+    <div class="site-menubar-footer">
+        <a href="@Url.Action("Index", "Sale")" class="fold-show" data-placement="top" data-toggle="tooltip" data-original-title="All Sales">
+            <span class="icon wb-payment" aria-hidden="true"></span>
+        </a>
+        <a href="@Url.Action("Index", "Report")" data-placement="top" data-toggle="tooltip" data-original-title="Reports">
+            <span class="icon wb-stats-bars" aria-hidden="true"></span>
+        </a>
+        <a href="@Url.Action("Logout", "Access")" data-placement="top" data-toggle="tooltip" data-original-title="Logout">
+            <span class="icon wb-power" aria-hidden="true"></span>
+        </a>
+    </div>
+</div>

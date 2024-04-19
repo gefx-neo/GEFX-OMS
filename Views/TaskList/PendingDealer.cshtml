@@ -1,0 +1,34 @@
+﻿@{
+    Layout = null;
+}
+<div class="row">
+    <div class="col-sm-12">Are you sure you want to approve this remittance sale?</div>
+    @using (Html.BeginForm("PendingDealer", "TaskList", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-pending-dealer" }))
+    {
+        @*<div class="form-group">
+                @Html.Label("Remarks :", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-8">
+                    @Html.TextArea("Remarks", ViewData["Remarks"].ToString(), new { @class = "form-control", @rows = "4" })
+                    @Html.ValidationMessage("Remarks")
+                </div>
+            </div>*@
+    }
+    @*<div class="form-group">
+            <div class="col-sm-12 col-sm-offset-3">
+                <a href="@Url.Action("GenerateMemo", "RemittanceSale", new { @id = ViewData["SaleId"].ToString() })" class="btn btn-success btn-outline">Print Transaction Memo</a>
+            </div>
+        </div>*@
+    <div class="col-sm-12" style="text-align: right;">
+        <button class="btn alertify-button-cancel" type="button" data-dismiss="modal" aria-label="Close">Cancel</button>
+        <button class="btn btn-success" type="button" onclick="SubmitForm('form-pending-dealer')">Approve</button>
+    </div>
+</div>
+
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#update-sale-memoid").html("Update Remittance Sales Record - " + "@ViewData["MemoID"].ToString()");
+    })
+</script>

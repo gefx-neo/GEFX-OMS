@@ -1,0 +1,94 @@
+﻿@using DataAccess.POCO
+@using PagedList
+@using PagedList.Mvc
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = ViewData["SiteName"].ToString();
+    ViewBag.PageTitle = "Users Data";
+    ViewBag.ExportData = "active open";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <a href="@Url.Action("ExportUserExcel", new { @fromDate = ViewData["FromDate"].ToString(), @toDate = ViewData["ToDate"].ToString() })" class="btn btn-primary" style="float:left;margin-right:10px;">Download to Excel</a>
+            <a href="@Url.Action("Options")" class="btn btn-default" style="float:left;">Back</a>
+            @using (Html.BeginForm("User", "ExportData", FormMethod.Post, new { @id = "page-size" }))
+            {
+                <div class="col-md-3 pull-right">
+                    @Html.DropDownList("PageSize", (SelectList)ViewData["PageSizeDropdown"], new { @class = "form-control" })
+                </div>
+                @Html.Label("Page Size:", new { @class = "col-md-3 pull-right", @style = "top:6px;text-align:right;" })
+            }
+        </div>
+        <div class="row margin-top-15">
+            <div class="col-xlg-12 col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>NRIC</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                IPagedList<User> users = (IPagedList<User>)ViewData["User"];
+
+                                if (users.Count > 0)
+                                {
+                                    int page = Convert.ToInt32(ViewData["Page"]) - 1;
+                                    int pageSize = Convert.ToInt32(ViewData["PageSize"]);
+                                    int i = 1;
+
+                                    foreach (User user in users)
+                                    {
+                                        <tr>
+                                            <td>@(i + page * pageSize)</td>
+                                            <td>@user.NRIC</td>
+                                            <td>@user.Name</td>
+                                            <td>@user.Email</td>
+                                            <td>
+                                                @{
+                                                    string[] roles = user.Role.Split(',');
+
+                                                    foreach (string role in roles)
+                                                    {
+                                                        @role<br />
+                                                    }
+                                                }
+                                            </td>
+                                            <td>@user.Status</td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="no-records-found">No record to display</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pagination">
+                @Html.PagedListPager((IPagedList)ViewData["User"], page => Url.Action("/User", "ExportData", new { page, currentFilter = ViewBag.CurrentFilter }), new PagedListRenderOptions { LinkToFirstPageFormat = "<< First", LinkToPreviousPageFormat = "< Previous", LinkToNextPageFormat = "Next >", LinkToLastPageFormat = "Last >>" })
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#PageSize").on("change", function () {
+        $("#page-size").submit();
+    });
+</script>

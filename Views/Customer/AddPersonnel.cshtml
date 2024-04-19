@@ -1,0 +1,30 @@
+﻿@{
+    Layout = null;
+    string fullname = ViewData["FullName"].ToString();
+    string icpassport = ViewData["ICPassport"].ToString();
+    string nationality = ViewData["Nationality"].ToString();
+    string jobtitle = ViewData["JobTitle"].ToString();
+    //string signature = ViewData["Signature"].ToString();
+    int count = (int)ViewData["Count"];
+}
+
+<tr id="personnel_@count">
+    <td>@Html.Hidden("Personnel_FullName_" + count, fullname)@fullname</td>
+    <td>@Html.Hidden("Personnel_ICPassport_" + count, icpassport)@icpassport</td>
+    <td>@Html.Hidden("Personnel_Nationality_" + count, nationality)@nationality</td>
+    <td>@Html.Hidden("Personnel_JobTitle_" + count, jobtitle)@jobtitle</td>
+    @*<td>
+        @Html.Hidden("Personnel_SpecimenSignature_" + count, signature)
+        @{
+            string[] files = signature.Split(',');
+            int fileCount = 1;
+
+            foreach (string file in files)
+            {
+                <a id="personnel-download-@count-@fileCount" href="@Url.Content("~/FileUploads/Temp/" + file)" target="_blank" data-toggle="tooltip" data-original-title="Download @file" data-placement="right">download</a><br />
+                fileCount++;
+            }
+        }
+    </td>*@
+    <td><button id="personnel-remove-@count" type="button" class="btn btn-pure btn-xs btn-danger icon wb-close" data-toggle="tooltip" data-original-title="Remove Personnel" onclick="RemovePersonnel(@count)"></button></td>
+</tr>

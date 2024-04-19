@@ -1,0 +1,281 @@
+﻿@using DataAccess.POCO
+
+@{
+    Layout = null;
+    string sgdFormat = ViewData["SGDFormat"].ToString();
+    string rateFormat = ViewData["RateFormat"].ToString();
+}
+
+@{
+    Sale sales = (Sale)ViewData["Sale"];
+
+    string customer = "";
+    string contact = "";
+    string address = "";
+
+    if (sales.CustomerParticulars.CustomerType == "Corporate & Trading Company")
+    {
+        customer = sales.CustomerParticulars.Company_RegisteredName;
+        contact = "Tel No.: " + sales.CustomerParticulars.Company_TelNo + "," + "Fax No.: " + sales.CustomerParticulars.Company_FaxNo;
+        address = sales.CustomerParticulars.Company_BusinessAddress1 + ", ";
+        if (!string.IsNullOrEmpty(sales.CustomerParticulars.Company_BusinessAddress2))
+        {
+            address += sales.CustomerParticulars.Company_BusinessAddress2 + ", " + sales.CustomerParticulars.Company_PostalCode;
+        }
+        else
+        {
+            address += sales.CustomerParticulars.Company_PostalCode;
+        }
+    }
+    else
+    {
+        customer = sales.CustomerParticulars.Natural_Name;
+        contact = "(H) : " + sales.CustomerParticulars.Natural_ContactNoH + "," + "(O) : " + sales.CustomerParticulars.Natural_ContactNoO + "," + "(M) : " + sales.CustomerParticulars.Natural_ContactNoM;
+        address = sales.CustomerParticulars.Natural_PermanentAddress;
+    }
+}
+<div class="row">
+    <div class="col-sm-12 table-responsive" style="margin-bottom:15px;">
+        <!--Sale Information Table-->
+        <table class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+            <tbody>
+                <tr>
+                    <th style="width:20%;">Memo ID</th>
+                    <td style="width:30%;">@sales.MemoID</td>
+                    <th style="width:20%;">Issue Date</th>
+                    <td style="width:30%;">@sales.IssueDate.ToString("dd/MM/yyyy")</td>
+                </tr>
+                <tr>
+                    <th>Customer</th>
+                    <td>@customer</td>
+                    <th>Contact</th>
+                    <td>
+                        @{
+                            string[] contacts = contact.Split(',');
+
+                            foreach (string c in contacts)
+                            {
+                                @c <br />
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Address</th>
+                    <td colspan="3">@address</td>
+                </tr>
+                <tr>
+                    <th>Collection Date</th>
+                    <td>@Convert.ToDateTime(sales.CollectionDate).ToString("dd/MM/yyyy")</td>
+                    <th>Collection Time</th>
+                    <td>@sales.CollectionTime</td>
+                </tr>
+                <tr>
+                    <th>Created By</th>
+                    <td>@sales.Users.Name</td>
+                    <th>Urgent</th>
+                    <td>@sales.Urgent</td>
+                </tr>
+                <tr>
+                    <th>Transaction Type</th>
+                    <td>@sales.TransactionType.Replace("Deposit", "Swap")</td>
+                    <th>Local Payment Mode</th>
+                    <td>
+                        @{
+                            if (!string.IsNullOrEmpty(sales.LocalPaymentMode))
+                            {
+                                string[] paymentMode = sales.LocalPaymentMode.Split(',');
+
+                                foreach (string mode in paymentMode)
+                                {
+                                    if (mode == "Cash")
+                                    {
+                                        @(mode + " [Cash Amount: SGD$" + Convert.ToDecimal(sales.CashAmount).ToString(sgdFormat) + "]")<br />
+                                    }
+                                    else if (mode == "Cheque 1")
+                                    {
+                                        if (!string.IsNullOrEmpty(sales.Cheque1No))
+                                        {
+                                            @(mode + " [Cheque 1 No.: " + sales.Cheque1No + ", Cheque 1 Amount: SGD$" + Convert.ToDecimal(sales.Cheque1Amount).ToString(sgdFormat) + "]")<br />
+                                        }
+                                        else
+                                        {
+                                            @(mode + " [Cheque 1 No.: - , Cheque 1 Amount: SGD$" + Convert.ToDecimal(sales.Cheque1Amount).ToString(sgdFormat) + "]")<br />
+                                        }
+                                    }
+                                    else if (mode == "Cheque 2")
+                                    {
+                                        if (!string.IsNullOrEmpty(sales.Cheque2No))
+                                        {
+                                            @(mode + " [Cheque 2 No.: " + sales.Cheque2No + ", Cheque 2 Amount: SGD$" + Convert.ToDecimal(sales.Cheque2Amount).ToString(sgdFormat) + "]")<br />
+                                        }
+                                        else
+                                        {
+                                            @(mode + " [Cheque 2 No.: - , Cheque 2 Amount: SGD$" + Convert.ToDecimal(sales.Cheque2Amount).ToString(sgdFormat) + "]")<br />
+                                        }
+                                    }
+                                    else if (mode == "Cheque 3")
+                                    {
+                                        if (!string.IsNullOrEmpty(sales.Cheque3No))
+                                        {
+                                            @(mode + " [Cheque 3 No.: " + sales.Cheque3No + ", Cheque 3 Amount: SGD$" + Convert.ToDecimal(sales.Cheque3Amount).ToString(sgdFormat) + "]")<br />
+                                        }
+                                        else
+                                        {
+                                            @(mode + " [Cheque 3 No.: - , Cheque 3 Amount: SGD$" + Convert.ToDecimal(sales.Cheque3Amount).ToString(sgdFormat) + "]")<br />
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!string.IsNullOrEmpty(sales.BankTransferNo))
+                                        {
+                                            @(mode + " [Bank Transfer No.: " + sales.BankTransferNo + ", Bank Transfer Amount: SGD$" + Convert.ToDecimal(sales.BankTransferAmount).ToString(sgdFormat) + "]")<br />
+                                        }
+                                        else
+                                        {
+                                            @(mode + " [Bank Transfer No.: - , Bank Transfer Amount: SGD$" + Convert.ToDecimal(sales.BankTransferAmount).ToString(sgdFormat) + "]")<br />
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Bag No</th>
+                    <td>@sales.BagNo</td>
+                    <th>Delivery Confirmation</th>
+                    <td>
+                        @if (!string.IsNullOrEmpty(sales.DeliveryConfirmation))
+                        {
+                            string[] files = sales.DeliveryConfirmation.Split(',');
+
+                            foreach (string file in files)
+                            {
+                                <a href="@Url.Content("~/FileUploads/DeliveryConfirmation/" + file)" target="_blank">@file</a><br />
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Remarks</th>
+                    <td>@sales.Remarks</td>
+                    <th>Disapproved Reason</th>
+                    <td>@sales.DisapprovedReason</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-sm-12 table-responsive" style="margin-bottom:15px;">
+        <!--Sale Transaction Table-->
+        @{
+            string encashmentHide = "display: none;";
+            string colSpan = "2";
+            if (sales.TransactionType == "Encashment" || sales.TransactionType == "Deposit")
+            {
+                encashmentHide = "";
+                colSpan = "3";
+            }
+        }
+        <h5>Transaction Details:</h5>
+        <table class="table table-hover table-condensed table-bordered" data-striped="true" data-height="250" data-mobile-responsive="true">
+            <thead>
+                <tr>
+                    <th style="min-width: 50px;">ID</th>
+                    <th style="min-width: 50px;">Type</th>
+                    <th style="min-width: 150px;">Currency</th>
+                    <th style="min-width: 200px;">Amount (Foreign)</th>
+                    <th style="min-width: 150px;">Rate</th>
+                    <th style="min-width: 150px;@encashmentHide">Encashment Rate</th>
+                    <th style="min-width: 150px;">Unit</th>
+                    <th style="min-width: 200px;">Amount (Local)</th>
+                    <th style="min-width: 150px;">Payment Mode</th>
+                    <th style="min-width: 200px;">Cheque No.</th>
+                    <th style="min-width: 200px;">Bank Transfer No.</th>
+                    <th style="min-width: 200px;">Vessel Name</th>
+                    <th style="min-width: 550px;">Outgoing Denomination</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (SaleTransaction transaction in sales.SaleTransactions.OrderBy(e => e.ID))
+                {
+                    decimal totalCalculatedForeign = 0;
+
+                    foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+                    {
+                        totalCalculatedForeign += denomination.AmountForeign;
+                    }
+
+                    <tr>
+                        <td>@transaction.TransactionID</td>
+                        <td>@transaction.TransactionType</td>
+                        <td>@transaction.Products.CurrencyCode</td>
+                        <td>@transaction.AmountForeign.ToString(sgdFormat)</td>
+                        <td>@transaction.Rate.ToString(rateFormat)</td>
+                        <td style="@encashmentHide">
+                            @if (transaction.EncashmentRate != null)
+                            {
+                                @Convert.ToDecimal(transaction.EncashmentRate).ToString("#,##0.########")
+                            }
+                        </td>
+                        <td>@transaction.Unit</td>
+                        <td>@transaction.AmountLocal.ToString(sgdFormat)</td>
+                        <td>
+                            @transaction.PaymentMode
+                        </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(transaction.ChequeNo))
+                            {
+                                transaction.ChequeNo = "-";
+                            }
+                            @transaction.ChequeNo
+                        </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(transaction.BankTransferNo))
+                            {
+                                transaction.BankTransferNo = "-";
+                            }
+                            @transaction.BankTransferNo
+                        </td>
+                        <td>@transaction.VesselName</td>
+                        <td>
+                            @foreach (SaleTransactionDenomination denomination in transaction.SaleTransactionDenominations)
+                            {
+                                string deno = "";
+
+                                if (denomination.Denomination == 0)
+                                {
+                                    deno = "coins [Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(sgdFormat) + "]";
+                                }
+                                else
+                                {
+                                    deno = denomination.Denomination + " [Pieces: " + denomination.Pieces.ToString("#,##0") + ", Amount Foreign: " + transaction.Products.Symbol + denomination.AmountForeign.ToString(sgdFormat) + "]";
+                                }
+
+                                @deno <br />
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right">Total (Foreign)</td>
+                    <td id="transaction-total-foreign">$@sales.TotalAmountForeign.ToString(sgdFormat)</td>
+                    <td colspan="@colSpan" class="text-right">Total (Local)</td>
+                    <td id="transaction-total-local">$@sales.TotalAmountLocal.ToString(sgdFormat)</td>
+                    <td colspan="5"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="col-sm-10">
+        <button class="btn btn-primary btn-outline" data-dismiss="modal" type="button">Close</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#modal-label").html("Sale Details of @sales.MemoID");
+    })
+</script>

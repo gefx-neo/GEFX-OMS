@@ -1,0 +1,189 @@
+﻿@{
+    Layout = "../Shared/_Layout.cshtml";
+    ViewBag.Title = "Home Page";
+    ViewBag.PageTitle = "Task List";
+}
+
+<div class="panel">
+    <div class="panel-body container-fluid">
+        <div class="row">
+            <div class="col-xlg-12 col-md-12">
+                <!-- Table -->
+                <div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>ID</th>
+                                    <th>Customer/Company</th>
+                                    <th>Delivery Date/Time</th>
+                                    <th>Type</th>
+                                    <th>Vessel</th>
+                                    <th>Amount (Cur)</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-red-100">
+                                    <td>1</td>
+                                    <td><a href="#">S160000001</a></td>
+                                    <td>Customer A</td>
+                                    <td>30/6/2016 14:00</td>
+                                    <td>USD</td>
+                                    <td>Vessal ABC</td>
+                                    <td>1,000</td>
+                                    <td>Pending Accounts</td>
+                                    <td class="text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-success" data-target="#exampleFormModal" data-toggle="modal">
+                                            <i class="icon wb-check" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip"
+                                                data-original-title="Disapprove" data-plugin="alertify" data-alert-message="You have rejected a sale">
+                                            <i class="icon wb-close" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td><a href="#">B160000002</a></td>
+                                    <td>Customer B</td>
+                                    <td>30/6/2016 14:00</td>
+                                    <td>USD</td>
+                                    <td></td>
+                                    <td>1,000</td>
+                                    <td>Pending Packing</td>
+                                    <td class="text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-success" data-target="#exampleFormModal" data-toggle="modal">
+                                            <i class="icon wb-check" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip"
+                                                data-original-title="Disapprove" data-plugin="alertify" data-alert-message="You have rejected a sale">
+                                            <i class="icon wb-close" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td><a href="#">S160000003</a></td>
+                                    <td>Customer C</td>
+                                    <td>30/6/2016 14:00</td>
+                                    <td>USD</td>
+                                    <td></td>
+                                    <td>1,000</td>
+                                    <td>Pending Assign Delivery</td>
+                                    <td class="text-nowrap"></td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td><a href="#">B160000004</a></td>
+                                    <td>Customer D</td>
+                                    <td>30/6/2016 14:00</td>
+                                    <td>USD</td>
+                                    <td></td>
+                                    <td>1,000</td>
+                                    <td>Pending Delivery by Mr ABC</td>
+                                    <td class="text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-success" data-target="#exampleFormModal" data-toggle="modal">
+                                            <i class="icon wb-check" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip"
+                                                data-original-title="Disapprove" data-plugin="alertify" data-alert-message="You have rejected a sale">
+                                            <i class="icon wb-close" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td><a href="#">B160000005</a></td>
+                                    <td>Customer E</td>
+                                    <td>30/6/2016 14:00</td>
+                                    <td>USD</td>
+                                    <td></td>
+                                    <td>1,000</td>
+                                    <td>Pending Incoming Delivery by Mr ABC</td>
+                                    <td class="text-nowrap"></td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td><a href="#">S160000006</a></td>
+                                    <td>Customer F</td>
+                                    <td>30/6/2016 14:00</td>
+                                    <td>USD</td>
+                                    <td></td>
+                                    <td>1,000</td>
+                                    <td>Pending Cashier</td>
+                                    <td class="text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-success" data-target="#exampleFormModal" data-toggle="modal">
+                                            <i class="icon wb-check" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td><a href="#">C160006</a></td>
+                                    <td>Customer New</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>Vessal ABC</td>
+                                    <td>-</td>
+                                    <td>Pending Review New Customer</td>
+                                    <td class="text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-success">
+                                            <i class="icon wb-check" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip"
+                                                data-original-title="Disapprove" data-plugin="alertify" data-alert-message="You have rejected update to customer">
+                                            <i class="icon wb-close" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td><a href="#">C160007</a></td>
+                                    <td>Customer New</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>Pending Review Existing Customer</td>
+                                    <td class="text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-success">
+                                            <i class="icon wb-check" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip"
+                                                data-original-title="Disapprove" data-plugin="alertify" data-alert-message="You have rejected update to customer">
+                                            <i class="icon wb-close" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td><a href="#">C160008</a></td>
+                                    <td>Customer Review</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>Pending Review Customer</td>
+                                    <td class="text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-success">
+                                            <i class="icon wb-check" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-icon btn-round btn-danger" data-toggle="tooltip"
+                                                data-original-title="Disapprove" data-plugin="alertify" data-alert-message="You have rejected update to customer">
+                                            <i class="icon wb-close" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- End Table -->
+            </div>
+
+        </div>
+    </div>
+</div>

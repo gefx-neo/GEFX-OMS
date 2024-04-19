@@ -1,0 +1,39 @@
+﻿@using DataAccess.POCO
+@{
+    Layout = null;
+    Remittances sales = (Remittances)ViewData["Sales"];
+}
+    <div class="row">
+        <div class="col-sm-12">Are you sure you want to approve this remittance sale?</div>
+        @using (Html.BeginForm("GMDeleteRemittanceSaleApproval", "TaskList", new { @id = ViewData["SaleId"].ToString() }, FormMethod.Post, new { @id = "form-pending-dealer" }))
+        {
+            @*<div class="form-group">
+                @Html.Label("Remarks :", new { @class = "col-sm-3 control-label" })
+                <div class="col-sm-8">
+                    @Html.TextArea("Remarks", ViewData["Remarks"].ToString(), new { @class = "form-control", @rows = "4" })
+                    @Html.ValidationMessage("Remarks")
+                </div>
+            </div>*@
+        }
+        @*<div class="form-group">
+            <div class="col-sm-12 col-sm-offset-3">
+                <a href="@Url.Action("GenerateMemo", "RemittanceSale", new { @id = ViewData["SaleId"].ToString() })" class="btn btn-success btn-outline">Print Transaction Memo</a>
+            </div>
+        </div>*@
+        <div class="form-group margin-horizontal-0 text-center">
+            <div class="col-sm-12">
+                <button type="button" class="btn btn-success btn-outline" onclick="GMDeleteRemittanceSaleApproval('approve', '@sales.MemoID', @sales.ID)">Approve</button>
+                <button type="button" class="btn btn-danger btn-outline" onclick="GMDeleteRemittanceSaleApproval('reject', '@sales.MemoID', @sales.ID)">Reject</button>
+                @Html.Hidden("GMDeleteSale")
+            </div>
+        </div>
+    </div>
+
+<link rel="stylesheet" href="@Url.Content("~/Content/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css")">
+<script src="@Url.Content("~/Content/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js")"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#update-sale-memoid").html("Delete Remittance Sales Record - " + "@ViewData["MemoID"].ToString()");
+    })
+</script>
